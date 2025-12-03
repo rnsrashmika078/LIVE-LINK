@@ -4,8 +4,8 @@ import Image from "next/image";
 const Avatar = React.memo(
   ({
     image,
-    width = 12,
-    height = 12,
+    width = 10,
+    height = 10,
   }: {
     width?: number;
     height?: number;

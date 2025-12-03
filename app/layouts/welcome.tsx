@@ -1,5 +1,4 @@
 "use client";
-import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "../component/button";
 import { BsGoogle } from "react-icons/bs";
@@ -8,22 +7,10 @@ import { useSelector } from "react-redux";
 import { PusherChatState } from "../types";
 import { useRouter } from "next/navigation";
 const Welcome = () => {
-  const [authenticated, setAuthenticated] = useState(false);
-  const authuser = useSelector((store: PusherChatState) => store.chat.authUser);
-
-  useEffect(() => {
-    if (!authuser) return;
-    const auth = async () => {
-      if (authuser?.uid) {
-        await setAuthenticated(true);
-      }
-    };
-    auth();
-  }, [authuser]);
-
-  console.log("auth user data ", authuser);
-  console.log("auth  ", authenticated);
+  const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
   const router = useRouter();
+
+  const authenticated = !!authUser?.uid;
 
   return (
     <div className="h-screen w-full flex flex-col justify-center items-center text-center space-y-2">

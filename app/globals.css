@@ -54,6 +54,6 @@ body {
     font-weight: bolder;
 }
 .sub-header {
-    font-size: medium;
+    font-size: small;
     color: var(--pattern_4);
 }

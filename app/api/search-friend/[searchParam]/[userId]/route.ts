@@ -19,7 +19,7 @@ export async function GET(
       });
 
     const users = await User.find({
-      _id: { $ne: userId },
+      uid: { $ne: userId.trim() },
       name: { $regex: searchParam, $options: "i" },
     }).limit(10);
 
@@ -31,7 +31,7 @@ export async function GET(
       });
     }
     return NextResponse.json({
-      sucess: true,
+      success: true,
       message: "Successfully get the users",
       users,
     });

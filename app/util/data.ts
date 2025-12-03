@@ -1,40 +1,44 @@
 import { BiArchive, BiMessage, BiPhoneCall, BiUser } from "react-icons/bi";
-import { FaRegCircleDot } from "react-icons/fa6";
+import { FaMessage, FaRegCircleDot, FaUsers } from "react-icons/fa6";
 import { SlSettings } from "react-icons/sl";
 import { TbTagStarred } from "react-icons/tb";
 
 //side bar items array
 export const StartItems = [
-    {
-        name: "chats",
-        icon: BiMessage,
-    },
-    {
-        name: "calls",
-        icon: BiPhoneCall,
-    },
-    {
-        name: "status",
-        icon: FaRegCircleDot,
-    },
+  {
+    name: "chats",
+    icon: BiMessage,
+  },
+  {
+    name: "calls",
+    icon: BiPhoneCall,
+  },
+  {
+    name: "status",
+    icon: FaRegCircleDot,
+  },
+  {
+    name: "connections",
+    icon: FaUsers,
+  },
 ];
 export const MiddleItems = [
-    {
-        name: "starred",
-        icon: TbTagStarred,
-    },
-    {
-        name: "archive",
-        icon: BiArchive,
-    },
+  {
+    name: "starred",
+    icon: TbTagStarred,
+  },
+  {
+    name: "archive",
+    icon: BiArchive,
+  },
 ];
 export const EndItems = [
-    {
-        name: "settings",
-        icon: SlSettings,
-    },
-    {
-        name: "users",
-        icon: BiUser,
-    },
+  {
+    name: "settings",
+    icon: SlSettings,
+  },
+  {
+    name: "users",
+    icon: BiUser,
+  },
 ];

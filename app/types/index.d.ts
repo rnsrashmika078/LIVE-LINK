@@ -3,21 +3,23 @@ import { store } from "../lib/redux/store";
 //app types
 
 export type AuthUser = {
-    // or user
-    _id?: string;
-    uid: string;
-    email: string;
-    dp: string;
-    name: string;
+  // or user
+  _id?: string;
+  uid: string;
+  email: string;
+  dp: string;
+  name: string;
+  message?: string;
+  type?: string;
 };
 
 export type Message = {
-    _id?: string;
-    chatId: string;
-    senderId: string;
-    receiverId: string;
-    content: string;
-    status: "sent";
+  _id?: string;
+  chatId: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  status?: "sent";
 };
 // type Participants = {
 //     uid: string;
@@ -25,25 +27,25 @@ export type Message = {
 //     name: string;
 // };
 type Unread = {
-    userId: string;
-    count: string;
+  userId: string;
+  count: string;
 };
 export type ChatsType = {
-    _id?: string;
-    uid: string;
-    friendId: string;
-    friendName: string;
-    friendEmail: string;
-    friendDp: string;
-    chatId: string;
-    participants: AuthUser[];
-    lastMessage: string;
-    unreadCount: Unread[];
+  _id?: string;
+  chatId: string;
+  uid: string;
+  name: string;
+  email: string;
+  dp: string;
+  lastMessage: ch.lastMessage;
+  type?: string;
+  message?: string;
+  unreadCount?: Unread[];
 };
 
 //this type is use to switch between the chat list layout and the chat info layout
 export type SectionType = {
-    section: string;
+  section: string;
 };
 //redux types
 export type PusherChatState = ReturnType<typeof store.getState>;

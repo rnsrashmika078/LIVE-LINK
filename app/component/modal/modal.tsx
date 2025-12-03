@@ -3,7 +3,6 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
 import SearchArea from "../../component/ui/searcharea";
@@ -11,14 +10,24 @@ import Avatar from "../ui/avatar";
 import { UserCard } from "../ui/cards";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { RxCross1, RxReload } from "react-icons/rx";
-import { findFriend } from "@/app/actions/server_action";
-import { AuthUser, PusherChatState } from "@/app/types";
-import { useSearchFriend } from "@/app/lib/tanstack/tanstackQuery";
+import {
+  AuthUser,
+  ChatsType,
+  PusherChatDispatch,
+  PusherChatState,
+} from "@/app/types";
+import {
+  useGetFriends,
+  useSearchFriend,
+  useSendFriendRequests,
+} from "@/app/lib/tanstack/tanstackQuery";
 import { CgProfile } from "react-icons/cg";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Button } from "../button";
 import { logoutUser } from "@/app/util/auth-options/client_options";
 import { useRouter } from "next/navigation";
+import Spinner from "../spinner";
+import { setActiveChat } from "@/app/lib/redux/chatslicer";
 
 export type ModalProps = {
   children: ReactNode;
@@ -51,12 +60,36 @@ export const BaseModal = ({
 export const NewChat = React.memo(({ className }: { className?: string }) => {
   const [selection, setSelection] = useState<string>("");
   const { openModal, setOpenModal } = useBaseModal();
+  const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
+  const activeChat = useSelector(
+    (store: PusherChatState) => store.chat.activeChat
+  );
+  const { data: friends, isPending: isGettingFriends } = useGetFriends(
+    authUser?.uid ?? ""
+  );
+
+  const dispatch = useDispatch<PusherChatDispatch>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function handleOpenChat(fr: any) {
+    //generate chatId
+    const chatId = [authUser?.uid, fr?.uid].sort().join("-");
+    const newActiveChat = {
+      chatId: chatId,
+      lastMessage: "",
+      uid: fr?.uid ?? "",
+      name: fr?.name ?? "",
+      email: fr?.email ?? "",
+      dp: fr?.dp ?? "",
+    };
+    setOpenModal(false);
+    dispatch(setActiveChat(newActiveChat));
+  }
   return (
     <>
-      <div className="fixed inset-0 bg-black/80 z-40"></div>
+      <div className="fixed inset-0 bg-black/80 z-40 "></div>
       <div className=" z-50 point-events-none h-screen w-full absolute flex items-center justify-center">
         <div
-          className={`${className} z-0 border border-[var(--pattern_5)] transition-all overflow-y-auto h-[500px] custom-scrollbar-y space-y-2  bg-[var(--pattern_2)]  rounded-lg shadow-lg w-auto `}
+          className={`${className}  pb-2 z-0 border border-[var(--pattern_5)] transition-all overflow-y-auto h-[500px] custom-scrollbar-y space-y-2  bg-[var(--pattern_2)]  rounded-lg shadow-lg w-auto `}
         >
           {selection.toLowerCase() !== "add friend" ? (
             <>
@@ -94,25 +127,32 @@ export const NewChat = React.memo(({ className }: { className?: string }) => {
               </div>
               <p className="sub-header px-5 ">Frequently contact</p>
               <div className=" px-5 flex w-full flex-col justify-start items-center">
-                {[...Array(2)].map((_, i) => (
+                {[...Array(1)].map((_, i) => (
                   <UserCard
                     avatar="/dog.png"
                     created_at={new Date().toLocaleTimeString()}
+                    useFor="chat"
                     key={i}
                     name="Kusal Perera"
                   />
                 ))}
               </div>
+              {/* all contact */}
+
               <p className="sub-header px-5 ">All contact</p>
+              <Spinner condition={isGettingFriends} />
               <div className="px-5 flex flex-col w-full justify-start items-center">
-                {[...Array(5)].map((_, i) => (
-                  <UserCard
-                    avatar="/dog.png"
-                    created_at={new Date().toLocaleTimeString()}
-                    key={i}
-                    name="Kusal Perera"
-                  />
-                ))}
+                {friends?.friends.length > 0 &&
+                  friends?.friends?.map((fr: AuthUser, i: number) => (
+                    <UserCard
+                      avatar={fr.dp}
+                      created_at={new Date().toLocaleTimeString()}
+                      key={fr.uid}
+                      name={fr.name}
+                      handleClick={() => handleOpenChat(fr)}
+                      useFor="chat"
+                    />
+                  ))}
               </div>
             </>
           ) : (
@@ -126,20 +166,26 @@ export const NewChat = React.memo(({ className }: { className?: string }) => {
   );
 });
 NewChat.displayName = "NewChat";
-
 export const AddNewFriend = React.memo(({ setSelection }: AddNewFriend) => {
-  const [param, setParam] = useState<string>("");
+  const [searchText, setSearchText] = useState<string>("");
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
 
-  const { data, isLoading, isPending } = useSearchFriend(
-    param,
-    authUser?.uid ?? ""
-  );
+  const {
+    data: searchData,
+    isLoading: isSearchLoading,
+    error: searchError,
+  } = useSearchFriend(searchText, authUser?.uid ?? "");
+
+  const {
+    mutate: sendReqMutate,
+    data: sendRequest,
+    error: sendReqError,
+  } = useSendFriendRequests();
+
   const handleSearch = useCallback(async (text: string) => {
-    setParam(text);
+    setSearchText(text);
   }, []);
 
-  console.log("data ", data?.users);
   return (
     <div>
       <div className="flex flex-col gap-2 px-5 justify-start items-center  sticky top-0 bg-[var(--pattern_2)]">
@@ -162,23 +208,30 @@ export const AddNewFriend = React.memo(({ setSelection }: AddNewFriend) => {
       </div>
       <div className="p-5 flex flex-col w-auto gap-2 ">
         <h1 className="text-start text-[var(--pattern_4)] text-xs">
-          {isPending ? "" : `${data.users?.length ?? "0"} result found`}
+          {isSearchLoading
+            ? ""
+            : `${searchData?.users?.length ?? "0"} result found`}
         </h1>
-        {isLoading ? (
-          <RxReload className="animate-spin mx-auto" size={30} />
-        ) : null}
+        <Spinner condition={isSearchLoading} />
 
-        {data && data?.users?.length > 0 ? (
-          data?.users.map((user: AuthUser, i: number) => (
+        {searchData && searchData?.users?.length > 0 ? (
+          searchData?.users.map((user: AuthUser, i: number) => (
             <UserCard
               avatar={user.dp}
               created_at={new Date().toLocaleTimeString()}
               key={i}
+              useFor="send-req"
               name={user.name}
+              handleClick={() => {
+                sendReqMutate({
+                  requestSender: authUser as AuthUser, // this is me
+                  requestReceiver: user as AuthUser, // this is friend
+                });
+              }}
             />
           ))
         ) : (
-          <h1 className="text-center">{data && data?.message}</h1>
+          <h1 className="text-center">{searchData && searchData?.message}</h1>
         )}
       </div>
     </div>
@@ -188,7 +241,6 @@ AddNewFriend.displayName = "AddNewFriend";
 
 export const UserDetails = React.memo(() => {
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
-  console.log(authUser);
   const router = useRouter();
 
   return (
@@ -221,9 +273,6 @@ export const UserDetails = React.memo(() => {
           Logout
         </Button>
       </div>
-
-      {/* <div className="flex-2 w-full p-5 bg-red-500"></div>
-      <div className="flex-2 w-full p-5 bg-blue-500"></div> */}
     </div>
   );
 });

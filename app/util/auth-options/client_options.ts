@@ -2,7 +2,6 @@
 
 import { signOut } from "firebase/auth";
 import { auth } from "@/app/lib/firebase/firebase";
-import { redirect } from "next/dist/server/api-utils";
 
 export async function logoutUser() {
   try {

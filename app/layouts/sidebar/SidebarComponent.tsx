@@ -6,16 +6,37 @@ import { PusherChatDispatch, PusherChatState } from "../../types";
 import { setCurrentTab } from "../../lib/redux/layoutSlicer";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { UserDetails } from "@/app/component/modal/modal";
+import React, { useState } from "react";
+import Presence from "@/app/component/Presence";
 
 // one hydration error occur in this component that needed be solve
-const SidebarComponent = () => {
+const SidebarComponent = React.memo(() => {
   const dispatch = useDispatch<PusherChatDispatch>();
   const currentTab = useSelector(
     (store: PusherChatState) => store.layout.currentTab
   );
+
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
   const router = useRouter();
+
+  const deletefunction = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/test-delete-route`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const result = await res.json();
+    if (result) {
+      // alert(result.message);
+    }
+  };
+
+  const [toggle, setToggle] = useState<boolean>(false);
 
   return (
     <div className="bg-[var(--pattern_1)] w-14 h-full flex flex-col justify-between py-2 px-1">
@@ -52,6 +73,18 @@ const SidebarComponent = () => {
           );
         })}
       </div>
+      <Button size="xs" onClick={deletefunction}>
+        X
+      </Button>
+      <Button size="xs" variant="danger" onClick={() => setToggle(!toggle)}>
+        Y
+      </Button>
+      {toggle && (
+        <div className="fixed left-1/2 top-1/2 ">
+          <Presence />
+        </div>
+      )}
+
       <div className="flex flex-col justify-center">
         {MiddleItems.map((item) => {
           const Icon = item.icon;
@@ -125,6 +158,7 @@ const SidebarComponent = () => {
       </div>
     </div>
   );
-};
+});
 
+SidebarComponent.displayName = "SidebarComponent";
 export default SidebarComponent;

@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 
 const Sidebar = dynamic(() => import("./SidebarComponent"), {
-    ssr: false,
+  ssr: true,
 });
 
 export default Sidebar;
