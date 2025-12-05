@@ -7,19 +7,19 @@ export async function DELETE() {
   try {
     console.log("Hit: api/test-delete-route");
 
-    const delStatus = await User.updateMany(
-      {},
-      { $set: { friends: [], sentRequests: [], receivedRequests: [] } }
-    );
+    // const delStatus = await User.updateMany(
+    //   {},
+    //   { $set: { friends: [], sentRequests: [], receivedRequests: [] } }
+    // );
 
     await Chat.deleteMany();
     await Message.deleteMany();
 
-    if (!delStatus) {
-      return NextResponse.json({
-        message: "failed to delete the data",
-      });
-    }
+    // if (!delStatus) {
+    //   return NextResponse.json({
+    //     message: "failed to delete the data",
+    //   });
+    // }
     return NextResponse.json({
       message: "Successfully deleted sendRequests, receivedRequests, friends",
     });

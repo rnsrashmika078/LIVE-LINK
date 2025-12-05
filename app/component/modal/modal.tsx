@@ -130,7 +130,7 @@ export const NewChat = React.memo(({ className }: { className?: string }) => {
                 {[...Array(1)].map((_, i) => (
                   <UserCard
                     avatar="/dog.png"
-                    created_at={new Date().toLocaleTimeString()}
+                    // createdAt={}
                     useFor="chat"
                     key={i}
                     name="Kusal Perera"
@@ -146,7 +146,7 @@ export const NewChat = React.memo(({ className }: { className?: string }) => {
                   friends?.friends?.map((fr: AuthUser, i: number) => (
                     <UserCard
                       avatar={fr.dp}
-                      created_at={new Date().toLocaleTimeString()}
+                      // createdAt={new Date().toLocaleTimeString()}
                       key={fr.uid}
                       name={fr.name}
                       handleClick={() => handleOpenChat(fr)}
@@ -218,7 +218,6 @@ export const AddNewFriend = React.memo(({ setSelection }: AddNewFriend) => {
           searchData?.users.map((user: AuthUser, i: number) => (
             <UserCard
               avatar={user.dp}
-              created_at={new Date().toLocaleTimeString()}
               key={i}
               useFor="send-req"
               name={user.name}

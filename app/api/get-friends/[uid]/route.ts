@@ -25,7 +25,6 @@ export async function GET(
         message: "error while receiving friend list!",
       });
     }
-    console.log("friends", friends);
 
     return Response.json({
       success: true,

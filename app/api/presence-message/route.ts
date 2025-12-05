@@ -18,46 +18,74 @@ const pusher = new Pusher({
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { chatId, content, senderId, receiverId } = await req.json();
+    const {
+      chatId,
+      content,
+      senderId,
+      receiverId,
+      dp,
+      name,
+      createdAt,
+      status,
+    } = await req.json();
     const existChat = await Chat.findOne({ chatId });
     if (existChat) {
-      await pusher.trigger(`presence-message-${chatId}`, "message", {
+      await pusher.trigger(`private-message-${chatId}`, "message", {
         chatId,
         senderId,
         receiverId,
         content,
+        createdAt,
+        status,
       });
-      await Chat.findOneAndUpdate({ chatId }, { lastMessage: content });
+      await Chat.findOneAndUpdate(
+        { chatId },
+        { lastMessage: content, status, senderId, createdAt }
+      );
       const latestMessage = new Message({
         chatId,
         content,
         receiverId,
-        // status: "delivered",
+        status,
         senderId,
       });
+
       await latestMessage.save();
-      return NextResponse.json({ status: "ok", message: content });
+      return NextResponse.json({
+        status: "ok",
+        message: content,
+        success: true,
+      });
     }
-    await pusher.trigger(`presence-message-${chatId}`, "message", {
+
+    await pusher.trigger(`private-message-${chatId}`, "message", {
       chatId,
       senderId,
       receiverId,
       content,
+      status,
     });
-    await pusher.trigger(`presence-init-chat-${receiverId}`, "init-chat", {
+    await pusher.trigger(`private-notify-${receiverId}`, "notify", {
       chatId,
       lastMessage: content,
       unreadCount: [],
       participants: [],
-      type: "other",
+      name,
+      senderId,
+      dp,
+      createdAt,
+      status,
+      type: "create_initial_chat",
       message: "You have New Message",
     });
 
-  
     const newChat = new Chat({
       chatId: chatId,
       participants: [senderId, receiverId],
       lastMessage: content,
+      status,
+      senderId,
+      createdAt,
       unreadCount: [
         { userId: senderId, count: 0 },
         { userId: receiverId, count: 0 },
@@ -67,14 +95,14 @@ export async function POST(req: Request) {
       chatId,
       content,
       receiverId,
-      status: "send",
+      status,
       senderId,
     });
 
     await newChat.save();
     await newMessage.save();
 
-    return NextResponse.json({ status: "ok", message: content });
+    return NextResponse.json({ status: "ok", message: content, success: true });
   } catch (error) {
     console.error("Error in /api/message:", error);
     return NextResponse.json(

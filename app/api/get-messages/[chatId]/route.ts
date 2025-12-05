@@ -10,6 +10,7 @@ export async function GET(
 
     const allMessages = await Message.find({ chatId });
 
+
     if (allMessages && allMessages.length > 0) {
       return NextResponse.json({
         history: allMessages,

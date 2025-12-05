@@ -15,24 +15,9 @@ const pusher = new Pusher({
 export async function POST(req: Request) {
     try {
         // await connectDB();
-        // let saved = true;
         const { id, chatId, content, senderId, receiverId } = await req.json();
 
-        // const saveContact = await Conversation.find({
-        //   conversationId,
-        //   userid: senderId,
-        // });
-        // if (saveContact.length === 0) {
-        //   saved = false;
-        // }
-        // const newMessage = new Message({
-        //   conversationId,
-        //   senderId,
-        //   recieverId,
-        //   message,
-        //   lastMessage,
-        //   status,
-        // });
+    
         await pusher.trigger(`private-user-${chatId}`, "chat", {
             id,
             chatId,

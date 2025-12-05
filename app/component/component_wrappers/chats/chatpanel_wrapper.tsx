@@ -2,12 +2,12 @@
 
 import ChatPanel from "@/app/layouts/left_panels/chatpanel";
 import { PusherChatState } from "@/app/types";
+import { formattedDate } from "@/app/util/util";
 import { useSelector } from "react-redux";
 const ChatsWrapper = () => {
   const activeChat = useSelector(
     (store: PusherChatState) => store.chat.activeChat
   );
-
   return (
     <div
       className={`${
@@ -22,6 +22,7 @@ const ChatsWrapper = () => {
         {/* make w-0 and remove parent w-full*/}
         <ChatPanel />
       </div>
+    
     </div>
   );
 };

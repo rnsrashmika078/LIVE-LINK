@@ -7,7 +7,6 @@ export async function GET() {
 
     const allUsers = await User.find();
 
-    console.log("All users", allUsers);
     return Response.json({
       message: "Successfully getting all ther users!",
       allUsers,

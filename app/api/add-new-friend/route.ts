@@ -40,7 +40,6 @@ export async function POST(req: Request) {
       }
     );
 
-    console.log("sen", sen_uid);
 
     // Remove from sender's sentRequests
     await User.updateOne(
@@ -54,7 +53,7 @@ export async function POST(req: Request) {
       { $pull: { receivedRequests: rec_uid } }
     );
 
-    await pusher.trigger(`presence-notify-${rec_uid}`, "notify", {
+    await pusher.trigger(`private-notify-${rec_uid}`, "notify", {
       // uid: sen_uid,
       // name: sen_name,
       // email: sen_email,
@@ -69,7 +68,6 @@ export async function POST(req: Request) {
       message: "You have added new friend to user list!",
     });
   } catch (error) {
-    console.log("from add friend route", error);
     return Response.json({ error: "Server error" + error }, { status: 500 });
   }
 }

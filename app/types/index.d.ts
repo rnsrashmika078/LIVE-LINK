@@ -11,6 +11,7 @@ export type AuthUser = {
   name: string;
   message?: string;
   type?: string;
+  createdAt?: string;
 };
 
 export type Message = {
@@ -19,7 +20,8 @@ export type Message = {
   senderId: string;
   receiverId: string;
   content: string;
-  status?: "sent";
+  status?: "sent" | "delivered" | "seen";
+  createdAt?: string;
 };
 // type Participants = {
 //     uid: string;
@@ -39,8 +41,12 @@ export type ChatsType = {
   dp: string;
   lastMessage: ch.lastMessage;
   type?: string;
+  senderId?: string;
   message?: string;
   unreadCount?: Unread[];
+  createdAt?: string;
+  updatedAt?: string;
+  status?: "sent" | "delivered" | "seen";
 };
 
 //this type is use to switch between the chat list layout and the chat info layout

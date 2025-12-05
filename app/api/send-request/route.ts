@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       { $addToSet: { receivedRequests: sen_uid } }
     );
 
-    await pusher.trigger(`presence-notify-${rec_uid}`, "notify", {
+    await pusher.trigger(`private-notify-${rec_uid}`, "notify", {
       uid: sen_uid,
       name: sen_name,
       email: sen_email,

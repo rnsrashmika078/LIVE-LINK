@@ -50,7 +50,6 @@ export async function POST(req: Request) {
             unreadCount,
         });
 
-        console.log(NewChat1);
         await NewChat1.save();
         await NewChat2.save();
 

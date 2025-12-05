@@ -1,13 +1,10 @@
-import { cookies } from "next/headers";
+export function formattedDate(createdAt: string) {
+  const now = new Date(createdAt);
+  const date = new Date();
 
-export async function setUserCookies(uid: string) {
-  (await cookies()).set("uid", uid, {
-    httpOnly: true, // cookies can access only within server: same as express . this is important
-    secure: true,
-    sameSite: "strict",
-    path: "/", // across the app
-  });
+  const difference = (now.getTime() - date.getTime()) / 1000;
+
+  const days = Math.floor(difference / 86400);
+
+  return days;
 }
-//npm install firebase-admin
-
-//currently not in use

@@ -7,6 +7,7 @@ import PusherListenerPresence from "./component/util_component/PusherListenerPre
 import MainLayout from "./layouts/MainLayout";
 import Common from "./component/util_component/Common";
 import { Toast } from "./component/ui/Toast";
+import GlobalPusherListener from "./component/util_component/GlobalPusherListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +38,6 @@ export default function RootLayout({
           <Toast />
           <Common />
           <ListenerForAuth />
-          <PusherListenerPresence />
           {/* <MainLayout>{children}</MainLayout> */}
           {children}
         </AppProvider>

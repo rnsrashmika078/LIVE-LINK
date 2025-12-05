@@ -1,5 +1,5 @@
 "use client";
-import MessageArea from "@/app/layouts/right-panels/message_area_panel";
+import { MessageArea } from "@/app/layouts/right-panels/message_panel";
 import { store } from "@/app/lib/redux/store";
 import { PusherChatState } from "@/app/types";
 import { useSelector } from "react-redux";

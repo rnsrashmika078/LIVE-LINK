@@ -20,7 +20,11 @@ export async function saveMessages(
   content: string,
   senderId: string,
   receiverId: string,
-  chatId: string
+  chatId: string,
+  name: string,
+  dp: string,
+  createdAt: string,
+  status: string
 ) {
   try {
     if (!chatId) return;
@@ -36,6 +40,10 @@ export async function saveMessages(
           senderId,
           receiverId,
           chatId,
+          name,
+          dp,
+          createdAt,
+          status,
         }),
         cache: "no-store",
       }

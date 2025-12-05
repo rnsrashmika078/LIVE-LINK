@@ -12,18 +12,19 @@ const ChatSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    // messages: [Message],
+    senderId: {
+      type: String,
+      required: true,
+    },
     unreadCount: [
       {
         userId: { type: String },
         count: { type: Number },
       },
     ],
-    // status: {
-    //     type: String,
-    //     enum: ["sent", "delivered", "seen"],
-    //     default: "sent",
-    // },
+    status: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

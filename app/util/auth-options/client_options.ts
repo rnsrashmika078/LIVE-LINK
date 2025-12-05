@@ -6,7 +6,6 @@ import { auth } from "@/app/lib/firebase/firebase";
 export async function logoutUser() {
   try {
     await signOut(auth);
-    console.log("User logged out successfully");
     return { success: true };
   } catch (error) {
     console.error("Logout failed:", error);

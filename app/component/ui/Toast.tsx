@@ -12,7 +12,6 @@ export function Toast() {
     if (!notification.notify) {
       return;
     }
-    console.log(notification.notify);
     toast.success(notification.notify);
   }, [notification]);
   return (

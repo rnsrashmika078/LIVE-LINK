@@ -5,7 +5,7 @@ const Spinner = React.memo(({ condition }: { condition: boolean }) => {
   return (
     <div>
       {condition ? (
-        <RxReload className="animate-spin mx-auto" size={30} />
+        <RxReload className="animate-spin mx-auto mt-3" size={30} />
       ) : null}
     </div>
   );

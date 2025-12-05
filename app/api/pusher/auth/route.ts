@@ -12,9 +12,6 @@ const pusher = new Pusher({
 export async function POST(req: Request) {
   try {
     const userId = req.headers.get("x-User-Id");
-    const name = req.headers.get("x-User-name");
-    const email = req.headers.get("x-User-email");
-    const dp = req.headers.get("x-User-dp");
     // Parse URL-encoded form data
     const formData = await req.formData();
     const socket_id = formData.get("socket_id")?.toString();
@@ -29,7 +26,7 @@ export async function POST(req: Request) {
 
     const auth = pusher.authorizeChannel(socket_id, channel_name, {
       user_id: userId!,
-      user_info: { userId, name, email, dp },
+      user_info: { userId },
     });
 
     return NextResponse.json(auth);

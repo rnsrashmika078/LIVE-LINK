@@ -67,7 +67,7 @@ export function useGetChats(uid: string) {
     queryKey: ["get-chats", uid],
     queryFn: () => getChats(uid),
     enabled: !!uid,
-    refetchOnWindowFocus: false,
+    // refetchOnWindowFocus: false,
   });
 }
 
@@ -84,17 +84,37 @@ interface SaveMessagePayload {
   senderId: string;
   receiverId: string;
   chatId: string;
+  name: string;
+  dp: string;
+  createdAt: string;
+  status: string;
 }
 
 //save -messages
-export function useSaveMessage() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useSaveMessage(onSuccess?: (result: any) => void) {
   return useMutation({
     mutationFn: ({
       content,
       senderId,
       receiverId,
       chatId,
+      name,
+      dp,
+      createdAt,
+      status,
     }: SaveMessagePayload) =>
-      saveMessages(content, senderId, receiverId, chatId),
+      saveMessages(
+        content,
+        senderId,
+        receiverId,
+        chatId,
+        name,
+        dp,
+        createdAt,
+        status
+      ),
+
+    onSuccess,
   });
 }

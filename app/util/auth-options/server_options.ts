@@ -23,7 +23,6 @@ export async function signInWithGoogle() {
 export async function loginAnonymously() {
   try {
     const result = await signInAnonymously(auth);
-    console.log("Anonymous user ID:", result.user.uid);
     return { user: result.user };
   } catch (error) {
     console.error("Anonymous login error:", error);
@@ -38,7 +37,6 @@ export async function signUpWithEmail(email: string, password: string) {
       email,
       password
     );
-    console.log("User signed up:", userCredential.user.uid);
     return {
       success: true,
       user: userCredential.user,

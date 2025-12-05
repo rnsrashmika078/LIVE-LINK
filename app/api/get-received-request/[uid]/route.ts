@@ -30,7 +30,6 @@ export async function GET(
       });
     }
 
-    console.log("received", requestUsers);
 
     return NextResponse.json({
       message: "Send Requests fetched successfully",

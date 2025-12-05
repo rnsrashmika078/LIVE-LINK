@@ -11,7 +11,6 @@ const ChatInfo = () => {
     const openSection = useSelector(
         (store: PusherChatState) => store.layout.OpenSection
     );
-    console.log(openSection);
 
     return (
         <div

@@ -10,21 +10,25 @@ import React from "react";
 import { setActiveChat, setChats } from "@/app/lib/redux/chatslicer";
 import { useGetChats } from "@/app/lib/tanstack/tanstackQuery";
 import Spinner from "@/app/component/spinner";
-import { useQueryClient } from "@tanstack/react-query";
+import { formattedDate } from "@/app/util/util";
 
 const ChatPanel = React.memo(() => {
   //use states
   const [openModal, setOpenModal] = useState<boolean>(false);
-
-  //tanstack query Client hook
-  const queryClient = useQueryClient();
+  const [chatState, setChatState] = useState<ChatsType[]>([]);
 
   //redux states
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
   const activeChat = useSelector(
     (store: PusherChatState) => store.chat.activeChat
   );
-  const chats = useSelector((store: PusherChatState) => store.chat.chats);
+
+  const chatsArray = useSelector(
+    (store: PusherChatState) => store.chat.chatArray
+  );
+  const messageSeen = useSelector(
+    (store: PusherChatState) => store.chat.messageSeen
+  );
   const liveMessagesArray = useSelector(
     (store: PusherChatState) => store.chat.messagesArray
   );
@@ -36,38 +40,66 @@ const ChatPanel = React.memo(() => {
   const dispatch = useDispatch<PusherChatDispatch>();
 
   // get Chats ( tanstack )
-  const { data, isPending } = useGetChats(authUser?.uid ?? "");
+  const { data, isPending, refetch } = useGetChats(authUser?.uid ?? "");
 
   //use Effect: add chats to the react state for global access ( initially )
   useEffect(() => {
-    if (Array.isArray(data?.chats)) {
-      dispatch(setChats(data.chats));
-    }
+    const fetcher = () => {
+      if (Array.isArray(data?.chats)) {
+        dispatch(setChats(data.chats));
+        setChatState(data?.chats);
+      }
+    };
+    fetcher();
   }, [data?.chats, dispatch]);
 
   //Use Effect: for revalidate the data ( refetch ) when chats change for the new Chats
   useEffect(() => {
-    if (chats) {
-      queryClient.invalidateQueries({
-        queryKey: ["get-chats", authUser?.uid],
-      });
-    }
-  }, [chats, authUser?.uid, queryClient]);
+    const fetcher = () => {
+      if (chatsArray?.length) {
+        setChatState(chatsArray);
+        const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
+        wait(1000);
+        refetch();
+      }
+    };
+    fetcher();
+  }, [chatsArray, chatsArray?.length, refetch]);
 
-  //Use Effect: add last Message to the chats cards
+  // Use Effect: add last Message to the chats cards
   useEffect(() => {
     if (!liveMessagesArray.length) return;
+   
     liveMessagesArray.forEach((msg) => {
-      dispatch(
-        setChats(
-          chats.map((c) =>
-            c.chatId === msg.chatId ? { ...c, lastMessage: msg.content } : c
-          )
+      setChatState((prev) => {
+        return prev.map((c) =>
+          
+          c.chatId === msg.chatId
+            ? {
+                ...c,
+                lastMessage: msg.content,
+                updatedAt: msg.createdAt,
+                status: msg.status,
+                senderId: msg.senderId,
+              }
+            : c
+        );
+      });
+    });
+  }, [liveMessagesArray]);
+
+  useEffect(() => {
+    const seenStat = () => {
+      setChatState((prev) =>
+        prev.map((c) =>
+          c.chatId === messageSeen?.chatId
+            ? { ...c, status: "seen" }
+            : c
         )
       );
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liveMessagesArray]);
+    };
+    seenStat();
+  }, [messageSeen]);
 
   return (
     <div
@@ -76,6 +108,8 @@ const ChatPanel = React.memo(() => {
       <BaseModal setOpenModal={setOpenModal} openModal={openModal}>
         <NewChat className="pointer-events-auto" />
       </BaseModal>
+      <div>{authUser?.createdAt}</div>
+      {/* <div> {formattedDate(authUser?.createdAt ?? "")}</div> */}
       <div className=" space-y-2 relative ">
         <div className=" p-5 justify-center items-center  sticky top-0 space-y-2  bg-[var(--pattern_2)]">
           <div className=" flex justify-between items-center ">
@@ -96,15 +130,19 @@ const ChatPanel = React.memo(() => {
         </div>
         <Spinner condition={isPending} />
         <div className="px-5 flex w-full flex-col justify-start items-center">
-          {chats &&
-            chats?.map((c: ChatsType, i: number) => (
+          {chatState &&
+            chatState?.map((c: ChatsType, i: number) => (
               <UserCard
                 version={3}
                 key={i}
                 avatar={c.dp}
-                created_at={new Date().toLocaleTimeString()}
+                createdAt={c.createdAt}
+                updatedAt={c.updatedAt}
+                senderId={c.senderId}
+                status={c.status}
                 chatId={c.chatId}
                 name={c.name}
+                authUserId={authUser?.uid}
                 className={
                   activeChat?.chatId === c.chatId ? "bg-[var(--pattern_5)]" : ""
                 }

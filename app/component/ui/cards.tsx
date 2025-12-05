@@ -1,17 +1,21 @@
 import React from "react";
 import Avatar from "./avatar";
 import { Button } from "../button";
-import { BiPlus } from "react-icons/bi";
+import { messageStatus } from "@/app/util/data";
 
 interface UserCardProps {
   avatar?: string;
+  createdAt?: string;
+  updatedAt?: string;
   name?: string;
-  created_at?: string;
   version?: number;
   lastMessage?: string;
   unreadCount?: number;
+  senderId?: string;
   chatId?: string;
+  authUserId?: string;
   email?: string;
+  status?: "sent" | "delivered" | "seen";
   className?: string;
   useFor?: "my-req" | "friend-req" | "chat-list" | "send-req" | "chat";
   handleClick?: () => void;
@@ -20,11 +24,14 @@ export const UserCard = React.memo(
   ({
     avatar,
     name,
-    created_at,
+    createdAt,
+    updatedAt,
     lastMessage,
+    authUserId,
     unreadCount,
+    senderId,
     className,
-    chatId,
+    status = "sent",
     email,
     useFor = "my-req",
     handleClick,
@@ -42,6 +49,8 @@ export const UserCard = React.memo(
       "send-req": "Send Request",
       chat: "Chat",
     };
+
+    const Icon = messageStatus[status];
     return (
       <div
         className={`${dynamicClass} hover:bg-[var(--pattern_5)] mt-1 ${className}  transition-all`}
@@ -51,9 +60,7 @@ export const UserCard = React.memo(
             <Avatar image={avatar || "/no_avatar2.png"} />
             <div className="">
               <h1 className="text-">{name || "My Status"}</h1>
-              <p className="text-xs text-[var(--pattern_4)]">
-                {created_at || "No updates"}
-              </p>
+              <p className="text-xs text-[var(--pattern_4)]">{createdAt}</p>
             </div>
           </div>
         )}
@@ -85,24 +92,36 @@ export const UserCard = React.memo(
         )}
         {version === 3 && (
           <div
-            className="flex justify-between w-full items-start gap-2 p-2"
+            className="flex justify-between w-full items-start  p-2"
             onClick={handleClick}
           >
-            <div className="max-w-72% flex shrink-0 items-center gap-3">
+            <div className="max-w-72% flex shrink-0 items-center gap-2">
               <Avatar image={avatar || "/no_avatar2.png"} />
               <div className="flex flex-col w-full">
-                <h1 className="font-bold w-42 sm:w-56 truncate">{name}</h1>
-                <p className="w-42 sm:w-56 truncate text-[var(--pattern_4)]">
+                <h1 className="font-bold text-sm w-42 sm:w-56 truncate">
+                  {name}
+                </h1>
+                <p className="w-42 text-xs sm:w-56 truncate text-[var(--pattern_4)]">
                   {lastMessage ||
                     "last message goes here last message goes here last message goes here"}
+                  {senderId === authUserId ? (
+                    <Icon
+                      color={`${status === "seen" ? "red" : ""}`}
+                      size={15}
+                      className="inline ml-1 text-white text-xs"
+                    />
+                  ) : null}
                 </p>
               </div>
             </div>
             <div className="flex w-full flex-col justify-end items-end">
-              <p className="text-sm text-[var(--pattern_4)]">
-                {created_at?.toString().split(":")[0] +
-                  ":" +
-                  created_at?.toString().split(":")[1] || "No updates"}
+              <p className="text-xs text-[var(--pattern_4)]">
+                {updatedAt
+                  ? new Date(updatedAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : ""}
               </p>
               <p>{unreadCount}</p>
             </div>

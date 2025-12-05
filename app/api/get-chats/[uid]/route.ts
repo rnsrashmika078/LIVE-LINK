@@ -1,7 +1,6 @@
 import connectDB from "@/app/backend/lib/connectDB";
 import Chat from "@/app/backend/models/Chat";
 import User from "@/app/backend/models/User";
-import { ChatsType } from "@/app/types";
 import { NextRequest } from "next/server";
 
 export async function GET(
@@ -10,22 +9,16 @@ export async function GET(
 ) {
   try {
     await connectDB();
-
     const { uid } = await params;
-
     const chats = await Chat.find({ participants: { $in: [uid] } }).select(
-      "participants lastMessage unreadCount chatId"
+      "participants lastMessage unreadCount chatId createdAt updatedAt status senderId"
     );
-
     const chatList = [];
-
     for (const ch of chats) {
       const otherUserId = ch.participants.find((p: string) => p !== uid);
-
       const otherUser = await User.findOne({ uid: otherUserId }).select(
         "uid name email dp"
       );
-
       chatList.push({
         uid: otherUser?.uid,
         name: otherUser?.name,
@@ -34,9 +27,12 @@ export async function GET(
         dp: otherUser?.dp,
         lastMessage: ch.lastMessage,
         unreadCount: ch.unreadCount,
+        createdAt: ch.createdAt,
+        updatedAt: ch.updatedAt,
+        status: ch.status,
+        senderId: ch.senderId,
       });
     }
-
     return Response.json({
       message: "Successfully getting chats!",
       chats: chatList,
