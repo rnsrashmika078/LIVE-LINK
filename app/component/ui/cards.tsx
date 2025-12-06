@@ -1,7 +1,9 @@
-import React from "react";
+
 import Avatar from "./avatar";
 import { Button } from "../button";
 import { messageStatus } from "@/app/util/data";
+import { Unread } from "@/app/types";
+import React from "react";
 
 interface UserCardProps {
   avatar?: string;
@@ -10,7 +12,7 @@ interface UserCardProps {
   name?: string;
   version?: number;
   lastMessage?: string;
-  unreadCount?: number;
+  unreadCount?: Unread[];
   senderId?: string;
   chatId?: string;
   authUserId?: string;
@@ -29,6 +31,7 @@ export const UserCard = React.memo(
     lastMessage,
     authUserId,
     unreadCount,
+    chatId,
     senderId,
     className,
     status = "sent",
@@ -41,7 +44,7 @@ export const UserCard = React.memo(
       version == 2 ? "justify-between" : "justify-start"
     } items-center hover:bg-[var(--pattern_5)]">
 `;
-
+   
     const buttonText = {
       "my-req": "Request Sent",
       "friend-req": "Accept",
@@ -51,6 +54,7 @@ export const UserCard = React.memo(
     };
 
     const Icon = messageStatus[status];
+
     return (
       <div
         className={`${dynamicClass} hover:bg-[var(--pattern_5)] mt-1 ${className}  transition-all`}
@@ -123,7 +127,19 @@ export const UserCard = React.memo(
                     })
                   : ""}
               </p>
-              <p>{unreadCount}</p>
+              <div className="flex justify-center items-center">
+                {unreadCount?.map((u) => {
+                  if (u.userId === authUserId && u.count > 0)
+                    return (
+                      <div
+                        className="w-5 h-5 text-sm bg-green-600 flex items-center justify-center rounded-full flex-shrink-0"
+                        key={u.userId}
+                      >
+                        {u.count}
+                      </div>
+                    );
+                })}
+              </div>
             </div>
           </div>
         )}

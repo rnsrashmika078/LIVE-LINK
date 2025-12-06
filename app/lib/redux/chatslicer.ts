@@ -13,6 +13,7 @@ type ReduxChatState = {
   messages: Message | null;
   messagesArray: Message[];
   messageSeen: SeenType;
+  unreads: number;
   chats: ChatsType[];
   chatArray: ChatsType[];
 };
@@ -21,6 +22,7 @@ const initialState: ReduxChatState = {
   authUser: null,
   messages: null,
   chats: [],
+  unreads: 0,
   chatArray: [],
   messageSeen: { state: "", chatId: "", receiverId: "", senderId: "" },
   messagesArray: [],
@@ -66,11 +68,15 @@ const chatSlicer = createSlice({
         state.chatArray = [...state.chatArray, action.payload];
       }
     },
+    setUnreads: (state, action: PayloadAction<number>) => {
+      state.unreads = action.payload;
+    },
   },
 });
 export const {
   setActiveChat,
   setAuthUser,
+  setUnreads,
   setChats,
   setMessageSeen,
   setMessages,

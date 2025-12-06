@@ -1,5 +1,5 @@
 "use client";
-import { Message, PusherChatState } from "@/app/types";
+import { Message, PusherChatDispatch, PusherChatState } from "@/app/types";
 import { Suspense, useEffect, useRef } from "react";
 import {
   IoCheckmark,
@@ -16,18 +16,19 @@ export const MessageViewArea = React.memo(({ messages }: ViewAreaProps) => {
   const activeChat = useSelector(
     (store: PusherChatState) => store.chat.activeChat
   );
-
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-
   const isInView = useInView(scrollRef);
-
   useEffect(() => {
+    const lastMessage = messages.at(-1);
+
+    if (!lastMessage) return;
+
     const asyncfunction = () => {
       if (
         isInView &&
-        messages[messages.length - 1]?.receiverId === authUser?.uid &&
-        messages[messages.length - 1]?.status
+        lastMessage?.receiverId === authUser?.uid &&
+        lastMessage?.status !== "seen"
       ) {
         const seenUpdate = async () => {
           const res = await fetch("/api/message-seen", {
@@ -43,15 +44,14 @@ export const MessageViewArea = React.memo(({ messages }: ViewAreaProps) => {
           });
           const result = await res.json();
 
-          if (result) {
-            // alert(result.message);
+          if (result && result.success) {
           }
         };
         seenUpdate();
       }
     };
     asyncfunction();
-  }, [activeChat?.chatId, activeChat?.uid, authUser?.uid, isInView, messages]);
+  }, [messages]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,7 +59,6 @@ export const MessageViewArea = React.memo(({ messages }: ViewAreaProps) => {
 
   return (
     <div className="p-5  overflow-y-auto custom-scrollbar-y">
-     
       {messages?.map((msg, index) => {
         if (msg.chatId !== activeChat?.chatId) {
           return;

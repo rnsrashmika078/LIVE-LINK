@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       name,
       createdAt,
       status,
+      unreads,
     } = await req.json();
     const existChat = await Chat.findOne({ chatId });
     if (existChat) {
@@ -40,7 +41,13 @@ export async function POST(req: Request) {
       });
       await Chat.findOneAndUpdate(
         { chatId },
-        { lastMessage: content, status, senderId, createdAt }
+        {
+          lastMessage: content,
+          status,
+          senderId,
+          createdAt,
+          unreadCount: unreads,
+        }
       );
       const latestMessage = new Message({
         chatId,
@@ -86,10 +93,7 @@ export async function POST(req: Request) {
       status,
       senderId,
       createdAt,
-      unreadCount: [
-        { userId: senderId, count: 0 },
-        { userId: receiverId, count: 0 },
-      ],
+      unreadCount: unreads,
     });
     const newMessage = new Message({
       chatId,

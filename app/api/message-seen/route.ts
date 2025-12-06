@@ -15,8 +15,6 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const { chatId, receiverId, senderId } = await req.json();
-    console.log("receiverId", receiverId);
-    console.log("senderId", senderId);
 
     if (!chatId) {
       return NextResponse.json({
@@ -35,16 +33,9 @@ export async function POST(req: Request) {
       { $set: { status: "seen" } }
     );
     await Chat.updateOne(
-      { chatId, status: { $ne: "seen" } },
-      { status: "seen" }
+      { chatId },
+      { status: "seen", unreadCount: [] }
     );
-
-    // if (!updateMessage) {
-    //   return NextResponse.json({
-    //     success: false,
-    //     message: "error while update many records!",
-    //   });
-    // }
 
     return NextResponse.json({
       success: true,

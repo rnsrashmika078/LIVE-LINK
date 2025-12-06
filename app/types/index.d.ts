@@ -30,7 +30,7 @@ export type Message = {
 // };
 type Unread = {
   userId: string;
-  count: string;
+  count: number;
 };
 export type ChatsType = {
   _id?: string;
@@ -39,7 +39,7 @@ export type ChatsType = {
   name: string;
   email: string;
   dp: string;
-  lastMessage: ch.lastMessage;
+  lastMessage: string;
   type?: string;
   senderId?: string;
   message?: string;

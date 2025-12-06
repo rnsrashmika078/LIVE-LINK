@@ -1,4 +1,4 @@
-import { AuthUser } from "../types";
+import { AuthUser, Unread } from "../types";
 
 //server_action.ts
 export async function getChats(uid: string) {
@@ -24,7 +24,8 @@ export async function saveMessages(
   name: string,
   dp: string,
   createdAt: string,
-  status: string
+  status: string,
+  unreads?: Unread[]
 ) {
   try {
     if (!chatId) return;
@@ -44,6 +45,7 @@ export async function saveMessages(
           dp,
           createdAt,
           status,
+          unreads,
         }),
         cache: "no-store",
       }

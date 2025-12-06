@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import Avatar from "@/app/component/ui/avatar";
 import { useOnlinePresence } from "@/app/hooks/useHooks";
@@ -5,39 +6,59 @@ import {
   useGetMessages,
   useSaveMessage,
 } from "@/app/lib/tanstack/tanstackQuery";
-import { Message, PusherChatState } from "@/app/types";
+import { Message, PusherChatDispatch, PusherChatState } from "@/app/types";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { BiPhoneCall, BiSearch, BiVideo } from "react-icons/bi";
 
-import { useSelector } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { MessageViewArea } from "./messageViewArea";
 import Spinner from "@/app/component/spinner";
+import { setActiveChat, setUnreads } from "@/app/lib/redux/chatslicer";
 
 export const MessageArea = () => {
   //use states
   const [messages, setMessages] = useState<Message[]>([]);
+  // const [count, setCount] = useState<number>(0);
+
+  //query client ( tanstack )
   const QueryClient = useQueryClient();
 
   //redux states
-  const activeChat = useSelector(
-    (store: PusherChatState) => store.chat.activeChat
+
+  const states = useSelector(
+    (store: PusherChatState) => ({
+      activeChat: store.chat.activeChat,
+      unreads: store.chat.unreads,
+      messageSeen: store.chat.messageSeen,
+      // liveMessages: store.chat.messages,
+      authUser: store.chat.authUser,
+    }),
+    shallowEqual
   );
-  const messageSeen = useSelector(
-    (store: PusherChatState) => store.chat.messageSeen
-  );
+  // const activeChat = useSelector(
+  //   (store: PusherChatState) => store.chat.activeChat
+  // );
+  // const unreads = useSelector((store: PusherChatState) => store.chat.unreads);
+  // const messageSeen = useSelector(
+  //   (store: PusherChatState) => store.chat.messageSeen
+  // );
   const liveMessages = useSelector(
     (store: PusherChatState) => store.chat.messages
   );
-  const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
+  // const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
 
   //generate chatId
-  const chatId = [authUser?.uid, activeChat?.uid].sort().join("-");
-
+  const chatId = useMemo(
+    () => [states.authUser?.uid, states.activeChat?.uid].sort().join("-"),
+    [states.authUser?.uid, states.activeChat?.uid]
+  );
   //get Messages ( tanstack )
   const { data, isPending, refetch } = useGetMessages(chatId);
 
-  const isOnline = useOnlinePresence(activeChat?.uid ?? "");
+  const isOnline = useOnlinePresence(states.activeChat?.uid ?? "");
+
+  const dispatch = useDispatch<PusherChatDispatch>();
 
   //save message  ( tanstack )
   const { mutate } = useSaveMessage((result) => {
@@ -45,7 +66,7 @@ export const MessageArea = () => {
       if (result.success) {
         refetch();
         QueryClient.invalidateQueries({
-          queryKey: ["get-chats", authUser?.uid ?? ""],
+          queryKey: ["get-chats", states.authUser?.uid ?? ""],
         });
       }
     }
@@ -54,55 +75,58 @@ export const MessageArea = () => {
     const date = new Date();
     mutate({
       content: message,
-      senderId: authUser?.uid ?? "",
-      receiverId: activeChat?.uid ?? "",
+      senderId: states.authUser?.uid ?? "",
+      receiverId: states.activeChat?.uid ?? "",
       chatId: chatId,
-      name: authUser?.name ?? "",
-      dp: authUser?.dp ?? "",
+      name: states.authUser?.name ?? "",
+      dp: states.authUser?.dp ?? "",
       createdAt: date.toISOString(),
       status: isOnline === "Online" ? "delivered" : "sent",
+      unreads: [
+        { userId: states.activeChat?.uid ?? "", count: states.unreads },
+      ], // find a way to increase this count in the future : currently it only save count as 1 in db
     });
+    dispatch(setUnreads(states.unreads + 1));
   };
 
   //use Effect: merge lives messages ( pusher ) with current Message
   useEffect(() => {
-    const addLiveMessage = () => {
-      if (!liveMessages) return;
-      setMessages((prev) => [...prev, liveMessages]);
-    };
-    addLiveMessage();
-  }, [authUser?.uid, liveMessages]);
+    if (!liveMessages) return;
+    setMessages((prev) => [...prev, liveMessages]);
+  }, [liveMessages]);
+  // }, [authUser?.uid, liveMessages]);
 
   //use Effect: add messages that fetch from backend to the messages state ( initially )
   useEffect(() => {
-    const AsyncMessages = () => {
-      if (data && data?.history) {
-        setMessages(data?.history);
-      }
-    };
-    AsyncMessages();
+    if (!data?.history) return;
+    setMessages(data?.history);
   }, [data]);
 
-  const presence = useOnlinePresence(activeChat?.uid ?? "");
+  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
+
+  //UseEffect: update message seen
   useEffect(() => {
-    const seenStat = () => {
-      setMessages((prev) =>
-        prev.map((c) =>
-          c.senderId === messageSeen?.senderId ? c : { ...c, status: "seen" }
-        )
-      );
-    };
-    seenStat();
-  }, [messageSeen]);
+    if (!states.messageSeen?.receiverId || !states.activeChat?.chatId) return;
+
+    setMessages((prev) =>
+      prev.map((c) =>
+        c.senderId === states.messageSeen?.receiverId &&
+        c.chatId === states.activeChat?.chatId
+          ? { ...c, status: "seen" }
+          : c
+      )
+    );
+  }, [states.activeChat?.chatId, states.messageSeen?.receiverId]);
+
   return (
     <div className="flex flex-col w-full overflow-x-auto h-full ">
-      {activeChat && (
+      {states.activeChat && (
         <>
           <div className="flex p-5 justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">
             <div className="flex items-center gap-3">
-              <Avatar image={activeChat?.dp || "/no_avatar2.png"} />
+              <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
-                <h1 className="">{activeChat?.name}</h1>
+                <h1 className="">{states.activeChat?.name}</h1>
                 <p className="text-xs text-[var(--pattern_4)]">{presence}</p>
               </div>
             </div>

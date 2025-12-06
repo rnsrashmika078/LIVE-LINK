@@ -10,9 +10,9 @@ export function usePathName() {
   }
 }
 export const useOnlinePresence = (uid: string): "Online" | "Offline" => {
-  const OnlineUsers = useSelector(
-    (store: PusherChatState) => store.friends.OnlineUsers
+  const onlineUser = useSelector((store: PusherChatState) =>
+    store.friends.OnlineUsers.some((u) => u === uid)
   );
 
-  return OnlineUsers.some((u) => u === uid) ? "Online" : "Offline";
+  return onlineUser ? "Online" : "Offline";
 };

@@ -7,9 +7,7 @@ export async function GET(
 ) {
   try {
     const { chatId } = await params;
-
     const allMessages = await Message.find({ chatId });
-
 
     if (allMessages && allMessages.length > 0) {
       return NextResponse.json({
@@ -18,7 +16,6 @@ export async function GET(
       });
     }
     return NextResponse.json({
-      history: [],
       message: "no messages",
     });
   } catch (error) {

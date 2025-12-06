@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Pusher from "pusher-js";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -29,66 +29,65 @@ export default function GlobalPusherListener() {
   const activeChat = useSelector(
     (store: PusherChatState) => store.chat.activeChat
   );
+  const pusherRef = useRef<Pusher | null>(null);
 
   useEffect(() => {
-    if (!activeChat?.uid) {
-      return;
+    if (!authUser?.uid) return;
+
+    if (!pusherRef.current) {
+      pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+        authEndpoint: "/api/pusher/auth",
+        auth: {
+          headers: { "X-User-Id": authUser.uid },
+        },
+      });
     }
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-      authEndpoint: "/api/pusher/auth",
-      // auth: {
-      //   headers: {
-      //     "X-User-Id": authUser?.uid,
-      //   },
-      // },
-    });
+  }, [authUser?.uid]);
+  useEffect(() => {
+    if (!activeChat?.uid || !pusherRef?.current) return;
 
-    const message_seen = pusher.subscribe(
-      `private-message-seen-${activeChat?.uid}`
-    );
+    const pusher = pusherRef.current;
+    const channelName = `private-message-seen-${activeChat.uid}`;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    message_seen.bind("message-seen", (data: any) => {
-      const id = new Date().getTime().toString();
-      // alert(id);
-      dispatch(
-        setMessageSeen({
-          chatId: data?.chatId,
-          receiverId: data?.receiverId,
-          senderId: data?.senderId,
-          state: id,
-        })
-      );
-      // dispatch(setNotification({ notify: "your message seen", id }));
-    });
+    if (!pusher.channel(channelName)) {
+      const channel = pusher.subscribe(channelName);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      channel.bind("message-seen", (data: any) => {
+        const id = Date.now().toString();
+        dispatch(
+          setMessageSeen({
+            chatId: data.chatId,
+            receiverId: data.receiverId,
+            senderId: data.senderId,
+            state: id,
+          })
+        );
+      });
+    }
 
     return () => {
-      pusher.unsubscribe(`private-message-seen-${activeChat?.uid}`);
-      pusher.disconnect();
+      if (pusher.channel(channelName)) {
+        pusher.unsubscribe(channelName);
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeChat?.uid]);
+  }, [activeChat?.uid, dispatch]);
 
   useEffect(() => {
-    if (!authUser?.uid) {
-      return;
-    }
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-      authEndpoint: "/api/pusher/auth",
-      auth: {
-        headers: {
-          "X-User-Id": authUser?.uid,
-        },
-      },
-    });
+    if (!authUser?.uid || !pusherRef.current) return;
 
-    const notify_channel = pusher.subscribe(`private-notify-${authUser?.uid}`);
-    const onlineUserPresence = pusher.subscribe(`presence-global`);
+    const pusher = pusherRef.current;
+
+    const notifyName = `private-notify-${authUser.uid}`;
+    const presenceName = `presence-global`;
+
+    const notify = pusher.channel(notifyName) || pusher.subscribe(notifyName);
+    const presence =
+      pusher.channel(presenceName) || pusher.subscribe(presenceName);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    notify_channel.bind("notify", (data: AuthUser | ChatsType) => {
+    notify.bind("notify", (data: AuthUser | ChatsType) => {
       const id = new Date().toLocaleTimeString();
       dispatch(setNotification({ notify: data.message || "", id }));
       if (data.type === "friend_request") {
@@ -104,7 +103,7 @@ export default function GlobalPusherListener() {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onlineUserPresence.bind("pusher:subscription_succeeded", (members: any) => {
+    presence.bind("pusher:subscription_succeeded", (members: any) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const onlineUsers: any[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,21 +114,19 @@ export default function GlobalPusherListener() {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onlineUserPresence.bind("pusher:member_added", (member: any) => {
+    presence.bind("pusher:member_added", (member: any) => {
       dispatch(setJoinedUser(member.info?.userId));
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onlineUserPresence.bind("pusher:member_removed", async (member: any) => {
+    presence.bind("pusher:member_removed", async (member: any) => {
       dispatch(setLeftUser(member.info?.userId));
     });
     return () => {
-      pusher.unsubscribe(`private-notify-${authUser?.uid}`);
-      pusher.unsubscribe("presence-global");
-      pusher.disconnect();
+      if (pusher.channel(notifyName)) pusher.unsubscribe(notifyName);
+      if (pusher.channel(presenceName)) pusher.unsubscribe(presenceName);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authUser?.uid]);
+  }, [authUser?.uid, dispatch]);
 
   return null;
 }

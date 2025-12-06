@@ -11,7 +11,7 @@ import {
   saveMessages,
   sendRequest,
 } from "@/app/actions/server_action";
-import { AuthUser } from "@/app/types";
+import { AuthUser, Unread } from "@/app/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export function useSearchFriend(searchParam: string, userId: string) {
@@ -88,6 +88,7 @@ interface SaveMessagePayload {
   dp: string;
   createdAt: string;
   status: string;
+  unreads?: Unread[];
 }
 
 //save -messages
@@ -103,6 +104,7 @@ export function useSaveMessage(onSuccess?: (result: any) => void) {
       dp,
       createdAt,
       status,
+      unreads,
     }: SaveMessagePayload) =>
       saveMessages(
         content,
@@ -112,7 +114,8 @@ export function useSaveMessage(onSuccess?: (result: any) => void) {
         name,
         dp,
         createdAt,
-        status
+        status,
+        unreads
       ),
 
     onSuccess,

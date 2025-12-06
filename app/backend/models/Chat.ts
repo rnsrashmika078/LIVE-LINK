@@ -22,6 +22,7 @@ const ChatSchema = new mongoose.Schema(
         count: { type: Number },
       },
     ],
+    lastMessageReadUsers: [{ type: String }],
     status: {
       type: String,
     },
