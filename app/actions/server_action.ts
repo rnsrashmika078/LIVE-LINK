@@ -3,7 +3,13 @@ import { AuthUser, Unread } from "../types";
 //server_action.ts
 export async function getChats(uid: string) {
   try {
-    if (!uid) return;
+    if (!uid) {
+      return Response.json({
+        message: "Successfully getting chats!",
+        chats: [],
+        status: 200,
+      });
+    }
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/get-chats/${uid}`,
       {
@@ -56,11 +62,49 @@ export async function saveMessages(
     console.log(err);
   }
 }
+export async function lastSeenUpdate(uid: string, lastSeen: string) {
+  try {
+    if (!uid) return;
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/update-last-seen`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uid,
+          lastSeen,
+        }),
+        cache: "no-store",
+      }
+    );
+
+    return res.json();
+  } catch (err) {
+    console.log(err);
+  }
+}
 export async function getMessages(chatId: string) {
   try {
     if (!chatId) return;
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/get-messages/${chatId}`,
+      {
+        cache: "no-store",
+      }
+    );
+
+    return res.json();
+  } catch (err) {
+    console.log(err);
+  }
+}
+export async function getLastSeenUpdate(uid: string) {
+  try {
+    if (!uid) return;
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/get-last-seen/${uid}`,
       {
         cache: "no-store",
       }

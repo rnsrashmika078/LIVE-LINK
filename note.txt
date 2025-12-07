@@ -1,0 +1,6 @@
+// when new chat being created... the first message not counted as unread ... ( needed to fix it )
+
+first message doesnt dispatch to the livemessage array for some reason
+
+
+need route to update the user when they comes online 

@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import Avatar from "@/app/component/ui/avatar";
-import { useOnlinePresence } from "@/app/hooks/useHooks";
+import { useDebounce, useOnlinePresence } from "@/app/hooks/useHooks";
 import {
+  useGetLastSeen,
   useGetMessages,
   useSaveMessage,
+  useUpdateLastSeen,
 } from "@/app/lib/tanstack/tanstackQuery";
 import { Message, PusherChatDispatch, PusherChatState } from "@/app/types";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,12 +17,15 @@ import { BiPhoneCall, BiSearch, BiVideo } from "react-icons/bi";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { MessageViewArea } from "./messageViewArea";
 import Spinner from "@/app/component/spinner";
-import { setActiveChat, setUnreads } from "@/app/lib/redux/chatslicer";
+import { setUnreads } from "@/app/lib/redux/chatslicer";
+import { usePusher } from "@/app/component/util_component/PusherProvider";
+import { TiMessageTyping } from "react-icons/ti";
 
 export const MessageArea = () => {
   //use states
   const [messages, setMessages] = useState<Message[]>([]);
-  // const [count, setCount] = useState<number>(0);
+  const [input, setInput] = useState<string>("");
+  const [lastSeen, setLastSeen] = useState<string | null>(null);
 
   //query client ( tanstack )
   const QueryClient = useQueryClient();
@@ -33,30 +39,28 @@ export const MessageArea = () => {
       messageSeen: store.chat.messageSeen,
       // liveMessages: store.chat.messages,
       authUser: store.chat.authUser,
+      typingUsers: store.chat.typingUsers,
     }),
     shallowEqual
   );
-  // const activeChat = useSelector(
-  //   (store: PusherChatState) => store.chat.activeChat
-  // );
-  // const unreads = useSelector((store: PusherChatState) => store.chat.unreads);
-  // const messageSeen = useSelector(
-  //   (store: PusherChatState) => store.chat.messageSeen
-  // );
+
   const liveMessages = useSelector(
     (store: PusherChatState) => store.chat.messages
   );
-  // const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
+
+  //use hooks
+  const debounce = useDebounce(input, 500);
+  const pusher = usePusher();
+  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
 
   //generate chatId
   const chatId = useMemo(
     () => [states.authUser?.uid, states.activeChat?.uid].sort().join("-"),
     [states.authUser?.uid, states.activeChat?.uid]
   );
+
   //get Messages ( tanstack )
   const { data, isPending, refetch } = useGetMessages(chatId);
-
-  const isOnline = useOnlinePresence(states.activeChat?.uid ?? "");
 
   const dispatch = useDispatch<PusherChatDispatch>();
 
@@ -81,7 +85,7 @@ export const MessageArea = () => {
       name: states.authUser?.name ?? "",
       dp: states.authUser?.dp ?? "",
       createdAt: date.toISOString(),
-      status: isOnline === "Online" ? "delivered" : "sent",
+      status: presence === "Online" ? "delivered" : "sent",
       unreads: [
         { userId: states.activeChat?.uid ?? "", count: states.unreads },
       ], // find a way to increase this count in the future : currently it only save count as 1 in db
@@ -89,20 +93,20 @@ export const MessageArea = () => {
     dispatch(setUnreads(states.unreads + 1));
   };
 
+  useEffect(() => {
+    setMessages([]);
+  }, [states.activeChat?.chatId]);
   //use Effect: merge lives messages ( pusher ) with current Message
   useEffect(() => {
     if (!liveMessages) return;
     setMessages((prev) => [...prev, liveMessages]);
   }, [liveMessages]);
-  // }, [authUser?.uid, liveMessages]);
 
   //use Effect: add messages that fetch from backend to the messages state ( initially )
   useEffect(() => {
     if (!data?.history) return;
     setMessages(data?.history);
   }, [data]);
-
-  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
 
   //UseEffect: update message seen
   useEffect(() => {
@@ -118,6 +122,43 @@ export const MessageArea = () => {
     );
   }, [states.activeChat?.chatId, states.messageSeen?.receiverId]);
 
+  //pusher typing state trigger
+  useEffect(() => {
+    if (!pusher || !states.activeChat?.chatId || !states.authUser?.uid) return;
+
+    const channelName = `private-message-${states.activeChat?.chatId}`;
+
+    const channel = pusher.channel(channelName);
+    channel?.trigger("client-message", {
+      type: "typing",
+      userId: states.authUser?.uid,
+      isTyping: !!debounce?.length,
+    });
+  }, [debounce, pusher, states.activeChat?.chatId, states.authUser?.uid]);
+
+  const isUserTyping = useMemo(
+    () =>
+      states.typingUsers.some(
+        (u) => u.userId === states.activeChat?.uid && u.isTyping
+      ),
+    [states.activeChat?.uid, states.typingUsers]
+  );
+
+  const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
+
+  const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {});
+
+  useEffect(() => {
+    const seenTime = new Date().toString();
+    lastSeenMutate({
+      uid: states.activeChat?.uid ?? "",
+      lastSeen: seenTime?.toString(),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presence]);
+
+
+  // const lastSeenTime: any = useMemo(() => {}, [presence]);
   return (
     <div className="flex flex-col w-full overflow-x-auto h-full ">
       {states.activeChat && (
@@ -127,7 +168,14 @@ export const MessageArea = () => {
               <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
                 <h1 className="">{states.activeChat?.name}</h1>
-                <p className="text-xs text-[var(--pattern_4)]">{presence}</p>
+                <p className="text-xs text-[var(--pattern_4)]">
+                  {presence !== "Online"
+                    ? lastSeenUpdate?.lastSeen
+                      ? "Last Seen: " +
+                        new Date(lastSeenUpdate?.lastSeen).toLocaleTimeString()
+                      : null
+                    : presence}
+                </p>
               </div>
             </div>
 
@@ -140,14 +188,24 @@ export const MessageArea = () => {
 
           <Spinner condition={isPending} />
           <MessageViewArea messages={messages} />
-          <div className="flex gap-5 mt-auto w-full p-2 place-items-center ">
+
+          <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
+            {isUserTyping ? (
+              <div className="animate-pulse px-5 ">
+                <TiMessageTyping size={40} color="green" />
+              </div>
+            ) : null}
             <textarea
+              onInput={(e) => {
+                setInput(e.currentTarget.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   if (messages.length === 0) {
                   }
                   request(e.currentTarget.value);
                   e.preventDefault();
+                  setInput("");
                   e.currentTarget.value = "";
                 }
               }}

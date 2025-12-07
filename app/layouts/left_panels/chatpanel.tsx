@@ -4,62 +4,53 @@ import SearchArea from "@/app/component/ui/searcharea";
 import { BaseModal, NewChat, UserDetails } from "@/app/component/modal/modal";
 import { useEffect, useMemo, useState } from "react";
 import { UserCard } from "@/app/component/ui/cards";
-import {
-  ChatsType,
-  PusherChatDispatch,
-  PusherChatState,
-  Unread,
-} from "@/app/types";
-import { useDispatch, useSelector } from "react-redux";
+import { ChatsType, PusherChatDispatch, PusherChatState } from "@/app/types";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import React from "react";
-import {
-  setActiveChat,
-  setChats,
-  setUnreads,
-} from "@/app/lib/redux/chatslicer";
+import { setActiveChat, setChats } from "@/app/lib/redux/chatslicer";
 import { useGetChats } from "@/app/lib/tanstack/tanstackQuery";
 import Spinner from "@/app/component/spinner";
-import { formattedDate } from "@/app/util/util";
+import { useOnlinePresence } from "@/app/hooks/useHooks";
 
 const ChatPanel = React.memo(() => {
   //use states
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [chatState, setChatState] = useState<ChatsType[]>([]);
-  const [unreadsState, setUnreadState] = useState<
-    { chatId: string; userId: string; count: number }[]
-  >([]);
 
   //redux states
-  const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
-  const activeChat = useSelector(
-    (store: PusherChatState) => store.chat.activeChat
-  );
-
-  const chatsArray = useSelector(
-    (store: PusherChatState) => store.chat.chatArray
-  );
-  const messageSeen = useSelector(
-    (store: PusherChatState) => store.chat.messageSeen
-  );
-  const liveMessagesArray = useSelector(
-    (store: PusherChatState) => store.chat.messagesArray
-  );
-  const currentTab = useSelector(
-    (store: PusherChatState) => store.layout.currentTab
+  const states = useSelector(
+    (store: PusherChatState) => ({
+      authUser: store.chat.authUser,
+      activeChat: store.chat.activeChat,
+      chatsArray: store.chat.chatArray,
+      messageSeen: store.chat.messageSeen,
+      liveMessagesArray: store.chat.messagesArray,
+      currentTab: store.layout.currentTab,
+      debounce: store.chat.debouncedText,
+    }),
+    shallowEqual
   );
 
   //redux dispatcher
   const dispatch = useDispatch<PusherChatDispatch>();
 
-  // get Chats ( tanstack )
-  const { data, isPending, refetch } = useGetChats(authUser?.uid ?? "");
-  const msg = useMemo(() => liveMessagesArray.at(-1), [liveMessagesArray]);
+  //use hooks
+  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
 
+  // get Chats ( tanstack )
+  const { data, isPending, refetch } = useGetChats(states.authUser?.uid ?? "");
+  const msg = useMemo(
+    () => states.liveMessagesArray.at(-1),
+    [states.liveMessagesArray]
+  );
+
+  console.log("live message", states.liveMessagesArray.at(-1));
   //use Effect: add chats to the react state for global access ( initially )
   useEffect(() => {
     if (data?.chats.length === 0) return;
     console.log("🤗");
     if (Array.isArray(data?.chats)) {
+      // alert("RUN HERE");
       dispatch(setChats(data.chats));
       setChatState(data?.chats);
     }
@@ -68,23 +59,24 @@ const ChatPanel = React.memo(() => {
   //Use Effect: for revalidate the data ( refetch ) when chats change for the new Chats
   //heavy test needed for this -> for now it keep there
   useEffect(() => {
-    if (chatsArray?.length) {
-      console.log("🟢");
-      setChatState(chatsArray);
+    if (states.chatsArray?.length) {
+      setChatState(states.chatsArray);
       const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
       wait(1000);
       refetch();
     }
-  }, [chatsArray, chatsArray?.length, refetch]);
+  }, [states.chatsArray?.length, refetch, states.chatsArray]);
 
   // Use Effect: stop update ( increase ) unread message if current chat is open
   useEffect(() => {
     if (!msg) return;
-    console.log("🟣");
 
     setChatState((prev) =>
       prev.map((chat) => {
-        if (activeChat?.chatId === chat?.chatId && chat.chatId === msg.chatId)
+        if (
+          states.activeChat?.chatId === chat?.chatId &&
+          chat.chatId === msg.chatId
+        )
           return {
             ...chat,
             lastMessage: msg.content,
@@ -96,7 +88,7 @@ const ChatPanel = React.memo(() => {
         return chat;
       })
     );
-  }, [activeChat?.chatId, msg]);
+  }, [states.activeChat?.chatId, msg]);
 
   // Use Effect: update the ( increase ) the unread message count
 
@@ -109,11 +101,11 @@ const ChatPanel = React.memo(() => {
           return chat;
         }
         //check if live message ( msg ) is for me
-        const isMsgToMe = msg.senderId === authUser?.uid;
+        const isMsgToMe = msg.senderId === states.authUser?.uid;
 
         const previous =
-          chat?.unreadCount?.find((u) => u.userId === authUser?.uid)?.count ||
-          0;
+          chat?.unreadCount?.find((u) => u.userId === states.authUser?.uid)
+            ?.count || 0;
 
         return {
           ...chat,
@@ -123,45 +115,45 @@ const ChatPanel = React.memo(() => {
           status: msg.status,
           unreadCount: isMsgToMe
             ? []
-            : activeChat?.chatId === chat?.chatId && chat.chatId === msg.chatId
+            : states.activeChat?.chatId === chat?.chatId &&
+              chat.chatId === msg.chatId
             ? []
-            : [{ userId: authUser?.uid ?? " ", count: previous + 1 }],
+            : [{ userId: states.authUser?.uid ?? " ", count: previous + 1 }],
         };
       })
     );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authUser?.uid, msg]);
+  }, [states.authUser?.uid, msg]);
 
   //use Effect: clear count
   useEffect(() => {
-    if (!activeChat?.chatId || !authUser?.uid) return;
+    if (!states.activeChat?.chatId || !states.authUser?.uid) return;
     console.log("🟢");
     setChatState((prev) =>
       prev.map((chat) => {
-        if (chat.chatId !== activeChat?.chatId) return chat;
+        if (chat.chatId !== states.activeChat?.chatId) return chat;
 
         return {
           ...chat,
           unreadCount: chat.unreadCount?.map((c) =>
-            c.userId === authUser?.uid ? { ...c, count: 0 } : c
+            c.userId === states.authUser?.uid ? { ...c, count: 0 } : c
           ),
         };
       })
     );
-  }, [activeChat?.chatId, authUser?.uid]);
+  }, [states.activeChat?.chatId, states.authUser?.uid]);
 
   //use Effect: update message seen status ( in this case last messagee status of chat)
   useEffect(() => {
-    if (!messageSeen.chatId) return;
-    console.log("🟡");
+    if (!states.messageSeen.chatId) return;
 
     setChatState((prev) =>
       prev.map((c) =>
-        c.chatId === messageSeen?.chatId ? { ...c, status: "seen" } : c
+        c.chatId === states.messageSeen?.chatId ? { ...c, status: "seen" } : c
       )
     );
-  }, [messageSeen.chatId]);
+  }, [states.messageSeen.chatId]);
 
   return (
     <div
@@ -170,7 +162,7 @@ const ChatPanel = React.memo(() => {
       <BaseModal setOpenModal={setOpenModal} openModal={openModal}>
         <NewChat className="pointer-events-auto" />
       </BaseModal>
-      <div>{authUser?.createdAt}</div>
+      <div>{states.authUser?.createdAt}</div>
       {/* <div> {formattedDate(authUser?.createdAt ?? "")}</div> */}
       <div className=" space-y-2 relative ">
         <div className=" p-5 justify-center items-center  sticky top-0 space-y-2  bg-[var(--pattern_2)]">
@@ -191,6 +183,7 @@ const ChatPanel = React.memo(() => {
           <SearchArea placeholder="Search or start a new chat" />
         </div>
         <Spinner condition={isPending} />
+
         <div className="px-5 flex w-full flex-col justify-start items-center">
           {chatState &&
             chatState?.map((c: ChatsType, i: number) => {
@@ -203,12 +196,13 @@ const ChatPanel = React.memo(() => {
                   updatedAt={c.updatedAt}
                   senderId={c.senderId}
                   status={c.status}
+                  receiverId={c.receiverId}
                   chatId={c.chatId}
                   unreadCount={c.unreadCount}
                   name={c.name}
-                  authUserId={authUser?.uid}
+                  authUserId={states.authUser?.uid}
                   className={
-                    activeChat?.chatId === c.chatId
+                    states.activeChat?.chatId === c.chatId
                       ? "bg-[var(--pattern_5)]"
                       : ""
                   }
@@ -221,7 +215,7 @@ const ChatPanel = React.memo(() => {
             })}
         </div>
       </div>
-      {currentTab === "users" && <UserDetails />}
+      {states.currentTab === "users" && <UserDetails />}
     </div>
   );
 });

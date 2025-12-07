@@ -10,8 +10,9 @@ export async function GET(
   try {
     await connectDB();
     const { uid } = await params;
+
     const chats = await Chat.find({ participants: { $in: [uid] } }).select(
-      "participants lastMessage unreadCount chatId createdAt updatedAt status senderId"
+      "participants lastMessage unreadCount chatId createdAt updatedAt status senderId receiverId"
     );
     const chatList = [];
     for (const ch of chats) {
@@ -31,11 +32,20 @@ export async function GET(
         updatedAt: ch.updatedAt,
         status: ch.status,
         senderId: ch.senderId,
+        receiverId: ch.receiverId,
       });
     }
+    if (chatList.length > 0) {
+      return Response.json({
+        message: "Successfully getting chats!",
+        chats: chatList,
+        status: 200,
+      });
+    }
+
     return Response.json({
       message: "Successfully getting chats!",
-      chats: chatList,
+      chats: [],
       status: 200,
     });
   } catch (error) {

@@ -1,17 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
   addFriend,
   findFriend,
   getChats,
+  getLastSeenUpdate,
   getMessages,
   getReceivedRequests,
   getSendRequests,
   getUserFriends,
+  lastSeenUpdate,
   saveMessages,
   sendRequest,
 } from "@/app/actions/server_action";
-import { AuthUser, Unread } from "@/app/types";
+import { AuthUser, SaveMessagePayload, Unread } from "@/app/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export function useSearchFriend(searchParam: string, userId: string) {
@@ -79,20 +82,7 @@ export function useGetMessages(chatId: string) {
     refetchOnWindowFocus: false,
   });
 }
-interface SaveMessagePayload {
-  content: string;
-  senderId: string;
-  receiverId: string;
-  chatId: string;
-  name: string;
-  dp: string;
-  createdAt: string;
-  status: string;
-  unreads?: Unread[];
-}
 
-//save -messages
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useSaveMessage(onSuccess?: (result: any) => void) {
   return useMutation({
     mutationFn: ({
@@ -117,7 +107,20 @@ export function useSaveMessage(onSuccess?: (result: any) => void) {
         status,
         unreads
       ),
-
     onSuccess,
+  });
+}
+export function useUpdateLastSeen(onSuccess?: (result: any) => void) {
+  return useMutation({
+    mutationFn: ({ uid, lastSeen }: { uid: string; lastSeen: string }) =>
+      lastSeenUpdate(uid, lastSeen),
+    onSuccess,
+  });
+}
+export function useGetLastSeen(uid: string) {
+  return useQuery({
+    queryKey: ["get-last-seen", uid],
+    queryFn: () => getLastSeenUpdate(uid),
+    enabled: !!uid,
   });
 }

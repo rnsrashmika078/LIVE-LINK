@@ -13,6 +13,17 @@ export type AuthUser = {
   type?: string;
   createdAt?: string;
 };
+export type SaveMessagePayload = {
+  content: string;
+  senderId: string;
+  receiverId: string;
+  chatId: string;
+  name: string;
+  dp: string;
+  createdAt: string;
+  status: string;
+  unreads?: Unread[];
+};
 
 export type Message = {
   _id?: string;
@@ -20,6 +31,9 @@ export type Message = {
   senderId: string;
   receiverId: string;
   content: string;
+  type?: string;
+  userId?: string;
+  isTyping?: boolean;
   status?: "sent" | "delivered" | "seen";
   createdAt?: string;
 };
@@ -42,6 +56,7 @@ export type ChatsType = {
   lastMessage: string;
   type?: string;
   senderId?: string;
+  receiverId?: string;
   message?: string;
   unreadCount?: Unread[];
   createdAt?: string;

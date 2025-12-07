@@ -5,15 +5,18 @@ import React, { ReactNode } from "react";
 import { Provider } from "react-redux";
 import GlobalPusherListener from "./GlobalPusherListener";
 import PusherListenerPresence from "./PusherListenerPresence";
+import { PusherProvider } from "./PusherProvider";
 
 const AppProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-      <GlobalPusherListener />
-      <PusherListenerPresence />
-        {children}
+        <PusherProvider>
+          <GlobalPusherListener />
+          <PusherListenerPresence />
+          {children}
+        </PusherProvider>
       </Provider>
     </QueryClientProvider>
   );

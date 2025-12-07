@@ -1,9 +1,9 @@
-
 import Avatar from "./avatar";
 import { Button } from "../button";
 import { messageStatus } from "@/app/util/data";
-import { Unread } from "@/app/types";
-import React from "react";
+import { PusherChatState, Unread } from "@/app/types";
+import React, { useMemo } from "react";
+import { shallowEqual, useSelector } from "react-redux";
 
 interface UserCardProps {
   avatar?: string;
@@ -14,6 +14,7 @@ interface UserCardProps {
   lastMessage?: string;
   unreadCount?: Unread[];
   senderId?: string;
+  receiverId?: string;
   chatId?: string;
   authUserId?: string;
   email?: string;
@@ -31,6 +32,7 @@ export const UserCard = React.memo(
     lastMessage,
     authUserId,
     unreadCount,
+    receiverId,
     chatId,
     senderId,
     className,
@@ -44,7 +46,7 @@ export const UserCard = React.memo(
       version == 2 ? "justify-between" : "justify-start"
     } items-center hover:bg-[var(--pattern_5)]">
 `;
-   
+
     const buttonText = {
       "my-req": "Request Sent",
       "friend-req": "Accept",
@@ -54,7 +56,22 @@ export const UserCard = React.memo(
     };
 
     const Icon = messageStatus[status];
+    const states = useSelector(
+      (store: PusherChatState) => ({
+        authUser: store.chat.authUser,
+        activeChat: store.chat.activeChat,
+        typingUsers: store.chat.typingUsers,
+      }),
+      shallowEqual
+    );
 
+    const isUserTyping = useMemo(
+      () =>
+        states.typingUsers.some((u) => u.userId === receiverId && u.isTyping),
+      [receiverId, states.typingUsers]
+    );
+
+    console.log("is typing", states.typingUsers);
     return (
       <div
         className={`${dynamicClass} hover:bg-[var(--pattern_5)] mt-1 ${className}  transition-all`}
@@ -105,17 +122,28 @@ export const UserCard = React.memo(
                 <h1 className="font-bold text-sm w-42 sm:w-56 truncate">
                   {name}
                 </h1>
-                <p className="w-42 text-xs sm:w-56 truncate text-[var(--pattern_4)]">
-                  {lastMessage ||
-                    "last message goes here last message goes here last message goes here"}
-                  {senderId === authUserId ? (
-                    <Icon
-                      color={`${status === "seen" ? "red" : ""}`}
-                      size={15}
-                      className="inline ml-1 text-white text-xs"
-                    />
-                  ) : null}
-                </p>
+                <div className="">
+                  {isUserTyping ? (
+                    <p className="font-bold text-xs text-green-600 animate-pulse">
+                      {"Typing..."}
+                    </p>
+                  ) : (
+                    <div className="flex items-center w-42 text-xs sm:w-50  ">
+                      <p className="w-42 text-xs sm:w-auto truncate text-[var(--pattern_4)]">
+                        {lastMessage || "last message goes here"}
+                      </p>
+                      <p>
+                        {senderId === authUserId ? (
+                          <Icon
+                            color={`${status === "seen" ? "red" : ""}`}
+                            size={15}
+                            className="inline ml-1 text-white text-xs"
+                          />
+                        ) : null}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex w-full flex-col justify-end items-end">

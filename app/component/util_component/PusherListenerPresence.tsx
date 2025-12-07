@@ -1,36 +1,30 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useRef } from "react";
-import Pusher from "pusher-js";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { PusherChatDispatch, PusherChatState } from "@/app/types";
 
-import { setMessages, setMessagesArray } from "@/app/lib/redux/chatslicer";
+import {
+  setMessages,
+  setMessagesArray,
+  setTypingUsers,
+} from "@/app/lib/redux/chatslicer";
 import { Message } from "@/app/types/index";
+import { usePusher } from "./PusherProvider";
 import { setNotification } from "@/app/lib/redux/notificationSlicer";
 
 export default function PusherListenerPresence() {
   const dispatch = useDispatch<PusherChatDispatch>();
   const chats = useSelector((store: PusherChatState) => store.chat.chats);
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
-  const pusherRef = useRef<Pusher | null>(null);
+  const pusher = usePusher();
 
   useEffect(() => {
+    if (!pusher) return;
     if (!authUser?.uid || !chats.length) {
       return;
     }
-    if (!pusherRef.current) {
-      pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-        authEndpoint: "/api/pusher/auth",
-        auth: {
-          headers: {
-            "X-User-Id": authUser.uid,
-          },
-        },
-      });
-    }
-    const pusher = pusherRef.current;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const chat_channels: Record<string, any> = {};
 
     chats.forEach((chat) => {
@@ -38,10 +32,22 @@ export default function PusherListenerPresence() {
         return;
       }
       const channelName = `private-message-${chat.chatId}`;
+
       const channel = pusher.subscribe(channelName);
-      channel.bind("message", (data: Message) => {
-        dispatch(setMessages(data));
-        dispatch(setMessagesArray(data));
+      channel.bind("client-message", (data: Message) => {
+        console.log(JSON.stringify(data));
+
+        if (data.type === "typing") {
+          if (data.senderId === authUser?.uid) return;
+          const typeData = {
+            userId: data.userId ?? "",
+            isTyping: data.isTyping ?? false,
+          };
+          dispatch(setTypingUsers(typeData));
+        } else {
+          dispatch(setMessages(data));
+          dispatch(setMessagesArray(data));
+        }
       });
       chat_channels[chat.chatId] = channel;
     });
@@ -52,7 +58,7 @@ export default function PusherListenerPresence() {
         pusher.unsubscribe(channel.name);
       });
     };
-  }, [authUser?.uid, chats, dispatch]);
+  }, [authUser?.uid, chats, dispatch, pusher]);
 
   return null;
 }

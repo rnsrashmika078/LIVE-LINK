@@ -8,3 +8,4 @@ export function formattedDate(createdAt: string) {
 
   return days;
 }
+

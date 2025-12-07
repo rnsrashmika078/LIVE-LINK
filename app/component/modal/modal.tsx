@@ -9,10 +9,9 @@ import SearchArea from "../../component/ui/searcharea";
 import Avatar from "../ui/avatar";
 import { UserCard } from "../ui/cards";
 import { IoIosArrowRoundBack } from "react-icons/io";
-import { RxCross1, RxReload } from "react-icons/rx";
+import { RxCross1, } from "react-icons/rx";
 import {
   AuthUser,
-  ChatsType,
   PusherChatDispatch,
   PusherChatState,
 } from "@/app/types";
@@ -46,44 +45,44 @@ export const useBaseModal = () => {
   return context;
 };
 
-export const BaseModal = ({
-  children,
-  setOpenModal,
-  openModal,
-}: ModalProps) => {
-  return (
-    <BaseModalContext.Provider value={{ children, setOpenModal, openModal }}>
-      <div className="">{openModal && children}</div>
-    </BaseModalContext.Provider>
-  );
-};
+export const BaseModal = React.memo(
+  ({ children, setOpenModal, openModal }: ModalProps) => {
+    return (
+      <BaseModalContext.Provider value={{ children, setOpenModal, openModal }}>
+        <div className="">{openModal && children}</div>
+      </BaseModalContext.Provider>
+    );
+  }
+);
+BaseModal.displayName = "BaseModal";
+
 export const NewChat = React.memo(({ className }: { className?: string }) => {
   const [selection, setSelection] = useState<string>("");
   const { openModal, setOpenModal } = useBaseModal();
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
-  const activeChat = useSelector(
-    (store: PusherChatState) => store.chat.activeChat
-  );
+
   const { data: friends, isPending: isGettingFriends } = useGetFriends(
     authUser?.uid ?? ""
   );
-
   const dispatch = useDispatch<PusherChatDispatch>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleOpenChat(fr: any) {
-    //generate chatId
-    const chatId = [authUser?.uid, fr?.uid].sort().join("-");
-    const newActiveChat = {
-      chatId: chatId,
-      lastMessage: "",
-      uid: fr?.uid ?? "",
-      name: fr?.name ?? "",
-      email: fr?.email ?? "",
-      dp: fr?.dp ?? "",
-    };
-    setOpenModal(false);
-    dispatch(setActiveChat(newActiveChat));
-  }
+
+  const handleOpenChat = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (fr: any) => {
+      const chatId = [authUser?.uid, fr?.uid].sort().join("-");
+      const newActiveChat = {
+        chatId: chatId,
+        lastMessage: "",
+        uid: fr?.uid ?? "",
+        name: fr?.name ?? "",
+        email: fr?.email ?? "",
+        dp: fr?.dp ?? "",
+      };
+      setOpenModal(false);
+      dispatch(setActiveChat(newActiveChat));
+    },
+    [authUser?.uid, dispatch, setOpenModal]
+  );
   return (
     <>
       <div className="fixed inset-0 bg-black/80 z-40 "></div>

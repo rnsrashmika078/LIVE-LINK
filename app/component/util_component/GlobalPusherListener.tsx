@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useRef } from "react";
-import Pusher from "pusher-js";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   AuthUser,
@@ -21,6 +21,7 @@ import {
   setChatsArray,
   setMessageSeen,
 } from "@/app/lib/redux/chatslicer";
+import { usePusher } from "./PusherProvider";
 
 export default function GlobalPusherListener() {
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -29,31 +30,16 @@ export default function GlobalPusherListener() {
   const activeChat = useSelector(
     (store: PusherChatState) => store.chat.activeChat
   );
-  const pusherRef = useRef<Pusher | null>(null);
+  const pusher = usePusher();
 
   useEffect(() => {
-    if (!authUser?.uid) return;
+    if (!activeChat?.uid || !pusher) return;
 
-    if (!pusherRef.current) {
-      pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-        authEndpoint: "/api/pusher/auth",
-        auth: {
-          headers: { "X-User-Id": authUser.uid },
-        },
-      });
-    }
-  }, [authUser?.uid]);
-  useEffect(() => {
-    if (!activeChat?.uid || !pusherRef?.current) return;
-
-    const pusher = pusherRef.current;
     const channelName = `private-message-seen-${activeChat.uid}`;
 
     if (!pusher.channel(channelName)) {
       const channel = pusher.subscribe(channelName);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       channel.bind("message-seen", (data: any) => {
         const id = Date.now().toString();
         dispatch(
@@ -72,12 +58,10 @@ export default function GlobalPusherListener() {
         pusher.unsubscribe(channelName);
       }
     };
-  }, [activeChat?.uid, dispatch]);
+  }, [activeChat?.uid, dispatch, pusher]);
 
   useEffect(() => {
-    if (!authUser?.uid || !pusherRef.current) return;
-
-    const pusher = pusherRef.current;
+    if (!authUser?.uid || !pusher) return;
 
     const notifyName = `private-notify-${authUser.uid}`;
     const presenceName = `presence-global`;
@@ -86,7 +70,6 @@ export default function GlobalPusherListener() {
     const presence =
       pusher.channel(presenceName) || pusher.subscribe(presenceName);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     notify.bind("notify", (data: AuthUser | ChatsType) => {
       const id = new Date().toLocaleTimeString();
       dispatch(setNotification({ notify: data.message || "", id }));
@@ -102,23 +85,18 @@ export default function GlobalPusherListener() {
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     presence.bind("pusher:subscription_succeeded", (members: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const onlineUsers: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       members.each((m: any) => {
         onlineUsers.push(m.info?.userId);
       });
       dispatch(setOnlineUsers(onlineUsers));
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     presence.bind("pusher:member_added", (member: any) => {
       dispatch(setJoinedUser(member.info?.userId));
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     presence.bind("pusher:member_removed", async (member: any) => {
       dispatch(setLeftUser(member.info?.userId));
     });
@@ -126,7 +104,7 @@ export default function GlobalPusherListener() {
       if (pusher.channel(notifyName)) pusher.unsubscribe(notifyName);
       if (pusher.channel(presenceName)) pusher.unsubscribe(presenceName);
     };
-  }, [authUser?.uid, dispatch]);
+  }, [authUser?.uid, dispatch, pusher]);
 
   return null;
 }

@@ -3,11 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppProvider from "./component/util_component/AppProvider";
 import ListenerForAuth from "./component/util_component/ListenerForAuth";
-import PusherListenerPresence from "./component/util_component/PusherListenerPresence";
-import MainLayout from "./layouts/MainLayout";
 import Common from "./component/util_component/Common";
 import { Toast } from "./component/ui/Toast";
-import GlobalPusherListener from "./component/util_component/GlobalPusherListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

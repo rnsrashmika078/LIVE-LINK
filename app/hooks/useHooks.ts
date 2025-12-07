@@ -1,6 +1,7 @@
 "use client";
 import { useSelector } from "react-redux";
 import { PusherChatState } from "../types";
+import { useEffect, useState } from "react";
 
 export function usePathName() {
   if (typeof window !== "undefined") {
@@ -16,3 +17,18 @@ export const useOnlinePresence = (uid: string): "Online" | "Offline" => {
 
   return onlineUser ? "Online" : "Offline";
 };
+
+export function useDebounce(input: string, delay: number) {
+  const [debounceInput, setDebounceInput] = useState<string>("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebounceInput(input);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [delay, input]);
+
+  return debounceInput;
+}

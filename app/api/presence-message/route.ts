@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     } = await req.json();
     const existChat = await Chat.findOne({ chatId });
     if (existChat) {
-      await pusher.trigger(`private-message-${chatId}`, "message", {
+      await pusher.trigger(`private-message-${chatId}`, "client-message", {
         chatId,
         senderId,
         receiverId,
@@ -92,6 +92,7 @@ export async function POST(req: Request) {
       lastMessage: content,
       status,
       senderId,
+      receiverId,
       createdAt,
       unreadCount: unreads,
     });

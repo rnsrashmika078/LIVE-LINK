@@ -7,6 +7,10 @@ type SeenType = {
   senderId: string;
   chatId: string;
 };
+type TypingUser = {
+  userId: string;
+  isTyping: boolean;
+};
 type ReduxChatState = {
   activeChat: ChatsType | null;
   authUser: AuthUser | null;
@@ -15,7 +19,9 @@ type ReduxChatState = {
   messageSeen: SeenType;
   unreads: number;
   chats: ChatsType[];
+  typingUsers: TypingUser[];
   chatArray: ChatsType[];
+  debouncedText: string;
 };
 const initialState: ReduxChatState = {
   activeChat: null,
@@ -24,8 +30,10 @@ const initialState: ReduxChatState = {
   chats: [],
   unreads: 0,
   chatArray: [],
+  typingUsers: [],
   messageSeen: { state: "", chatId: "", receiverId: "", senderId: "" },
   messagesArray: [],
+  debouncedText: "",
 };
 const chatSlicer = createSlice({
   name: "chatslicer",
@@ -44,12 +52,7 @@ const chatSlicer = createSlice({
       state.messagesArray.push(action.payload);
     },
     setChats: (state, action: PayloadAction<ChatsType[]>) => {
-      // const exist = state.chats.some((c) =>
-      //   action.payload.some((a) => a.chatId === c.chatId)
-      // );
-      // if (!exist) {
       state.chats = [...state.chats, ...action.payload];
-      // }
     },
     setMessageSeen: (state, action: PayloadAction<SeenType>) => {
       state.messageSeen = {
@@ -71,6 +74,23 @@ const chatSlicer = createSlice({
     setUnreads: (state, action: PayloadAction<number>) => {
       state.unreads = action.payload;
     },
+    setTypingUsers: (state, action: PayloadAction<TypingUser>) => {
+      const exist = state.typingUsers.some(
+        (u) => u.userId === action.payload.userId
+      );
+      if (exist) {
+        state.typingUsers = state.typingUsers.map((u) =>
+          u.userId === action.payload.userId
+            ? { ...u, isTyping: action.payload.isTyping }
+            : u
+        );
+        return;
+      }
+      state.typingUsers.push(action.payload);
+    },
+    setDebouncedText: (state, action: PayloadAction<string>) => {
+      state.debouncedText = action.payload;
+    },
   },
 });
 export const {
@@ -82,5 +102,7 @@ export const {
   setMessages,
   setMessagesArray,
   setChatsArray,
+  setTypingUsers,
+  setDebouncedText,
 } = chatSlicer.actions;
 export default chatSlicer.reducer;

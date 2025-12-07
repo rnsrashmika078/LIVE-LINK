@@ -16,6 +16,10 @@ const ChatSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    receiverId: {
+      type: String,
+      required: true,
+    },
     unreadCount: [
       {
         userId: { type: String },
