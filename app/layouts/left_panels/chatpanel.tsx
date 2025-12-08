@@ -9,7 +9,7 @@ import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import React from "react";
 import { setActiveChat, setChats } from "@/app/lib/redux/chatslicer";
 import { useGetChats } from "@/app/lib/tanstack/tanstackQuery";
-import Spinner from "@/app/component/spinner";
+import Spinner from "@/app/component/ui/spinner";
 import { useOnlinePresence } from "@/app/hooks/useHooks";
 
 const ChatPanel = React.memo(() => {
@@ -34,9 +34,6 @@ const ChatPanel = React.memo(() => {
   //redux dispatcher
   const dispatch = useDispatch<PusherChatDispatch>();
 
-  //use hooks
-  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
-
   // get Chats ( tanstack )
   const { data, isPending, refetch } = useGetChats(states.authUser?.uid ?? "");
   const msg = useMemo(
@@ -44,13 +41,10 @@ const ChatPanel = React.memo(() => {
     [states.liveMessagesArray]
   );
 
-  console.log("live message", states.liveMessagesArray.at(-1));
   //use Effect: add chats to the react state for global access ( initially )
   useEffect(() => {
     if (data?.chats.length === 0) return;
-    console.log("🤗");
     if (Array.isArray(data?.chats)) {
-      // alert("RUN HERE");
       dispatch(setChats(data.chats));
       setChatState(data?.chats);
     }
@@ -94,7 +88,6 @@ const ChatPanel = React.memo(() => {
 
   useEffect(() => {
     if (!msg) return;
-    console.log("🟠");
     setChatState((prev) =>
       prev.map((chat) => {
         if (chat.chatId !== msg.chatId) {
@@ -129,7 +122,6 @@ const ChatPanel = React.memo(() => {
   //use Effect: clear count
   useEffect(() => {
     if (!states.activeChat?.chatId || !states.authUser?.uid) return;
-    console.log("🟢");
     setChatState((prev) =>
       prev.map((chat) => {
         if (chat.chatId !== states.activeChat?.chatId) return chat;
@@ -157,7 +149,7 @@ const ChatPanel = React.memo(() => {
 
   return (
     <div
-      className={`z-50 transition-all bg-[var(--pattern_2)] h-full w-full sm:w-96  overflow-y-auto  custom-scrollbar-y `}
+      className={`z-50 transition-all bg-[var(--pattern_2)] h-full w-full sm:w-90  custom-scrollbar-y `}
     >
       <BaseModal setOpenModal={setOpenModal} openModal={openModal}>
         <NewChat className="pointer-events-auto" />

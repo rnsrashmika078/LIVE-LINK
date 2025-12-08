@@ -1,9 +1,11 @@
 import Avatar from "./avatar";
-import { Button } from "../button";
+import { Button } from "./button";
 import { messageStatus } from "@/app/util/data";
 import { PusherChatState, Unread } from "@/app/types";
 import React, { useMemo } from "react";
 import { shallowEqual, useSelector } from "react-redux";
+import { IoCheckmarkDone } from "react-icons/io5";
+import { modifiedMessage } from "@/app/util/helper";
 
 interface UserCardProps {
   avatar?: string;
@@ -67,11 +69,20 @@ export const UserCard = React.memo(
 
     const isUserTyping = useMemo(
       () =>
-        states.typingUsers.some((u) => u.userId === receiverId && u.isTyping),
-      [receiverId, states.typingUsers]
+        states.typingUsers.some(
+          (u) =>
+            u.chatId === chatId &&
+            (u.userId === receiverId || u.userId === senderId) &&
+            u.isTyping
+        ),
+      [chatId, receiverId, senderId, states.typingUsers]
     );
 
-    console.log("is typing", states.typingUsers);
+    //grab unread count
+    const unreads = unreadCount?.find(
+      (u) => u.userId === authUserId && u.count > 0
+    );
+
     return (
       <div
         className={`${dynamicClass} hover:bg-[var(--pattern_5)] mt-1 ${className}  transition-all`}
@@ -113,60 +124,53 @@ export const UserCard = React.memo(
         )}
         {version === 3 && (
           <div
-            className="flex justify-between w-full items-start  p-2"
+            className="w-full flex items-center gap-2 p-2"
             onClick={handleClick}
           >
-            <div className="max-w-72% flex shrink-0 items-center gap-2">
-              <Avatar image={avatar || "/no_avatar2.png"} />
-              <div className="flex flex-col w-full">
-                <h1 className="font-bold text-sm w-42 sm:w-56 truncate">
+            <Avatar image={avatar || "/no_avatar2.png"} />
+            <div className="flex flex-col w-full  items-center space-y-1 min-w-5">
+              <div className="flex justify-between w-full  items-center">
+                <h1 className="w-60 sm:w-50 truncate font-bold flex-shrink ">
                   {name}
                 </h1>
-                <div className="">
-                  {isUserTyping ? (
-                    <p className="font-bold text-xs text-green-600 animate-pulse">
-                      {"Typing..."}
+                <p className="text-xs">
+                  {" "}
+                  {updatedAt
+                    ? new Date(updatedAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : ""}
+                </p>
+              </div>
+              <div className="flex justify-between w-full items-center ">
+                <div className="flex  min-w-0 ">
+                  <p className="flex w-72 text-[var(--pattern_4)] sm:w-56 truncate flex-shrink items-center text-xs">
+                    {isUserTyping ? (
+                      <span className="flex font-bold  text-xs text-green-400 animate-pulse">
+                        {"Typing..."}
+                      </span>
+                    ) : (
+                      modifiedMessage(lastMessage ?? "")
+                    )}
+                  </p>
+                  {!isUserTyping && (
+                    <p className="flex items-center">
+                      {senderId === authUserId ? (
+                        <Icon
+                          color={`${status === "seen" ? "red" : ""}`}
+                          size={15}
+                          className="inline ml-1 text-white text-xs"
+                        />
+                      ) : null}
                     </p>
-                  ) : (
-                    <div className="flex items-center w-42 text-xs sm:w-50  ">
-                      <p className="w-42 text-xs sm:w-auto truncate text-[var(--pattern_4)]">
-                        {lastMessage || "last message goes here"}
-                      </p>
-                      <p>
-                        {senderId === authUserId ? (
-                          <Icon
-                            color={`${status === "seen" ? "red" : ""}`}
-                            size={15}
-                            className="inline ml-1 text-white text-xs"
-                          />
-                        ) : null}
-                      </p>
-                    </div>
                   )}
                 </div>
-              </div>
-            </div>
-            <div className="flex w-full flex-col justify-end items-end">
-              <p className="text-xs text-[var(--pattern_4)]">
-                {updatedAt
-                  ? new Date(updatedAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : ""}
-              </p>
-              <div className="flex justify-center items-center">
-                {unreadCount?.map((u) => {
-                  if (u.userId === authUserId && u.count > 0)
-                    return (
-                      <div
-                        className="w-5 h-5 text-sm bg-green-600 flex items-center justify-center rounded-full flex-shrink-0"
-                        key={u.userId}
-                      >
-                        {u.count}
-                      </div>
-                    );
-                })}
+                {unreads ? (
+                  <p className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
+                    {unreads?.count}
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>

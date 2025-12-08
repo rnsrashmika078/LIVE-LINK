@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { Button } from "../component/button";
+import { Button } from "../component/ui/button";
 import { BsGoogle } from "react-icons/bs";
 import { signInWithGoogle } from "../util/auth-options/server_options";
 import { useSelector } from "react-redux";

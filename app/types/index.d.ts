@@ -1,7 +1,12 @@
 import { store } from "../lib/redux/store";
 
 //app types
-
+export type FileType = {
+  format: string;
+  url: string;
+  name: string;
+  asset_id: string;
+};
 export type AuthUser = {
   // or user
   _id?: string;
@@ -22,6 +27,7 @@ export type SaveMessagePayload = {
   dp: string;
   createdAt: string;
   status: string;
+  files?: FileType;
   unreads?: Unread[];
 };
 
@@ -37,11 +43,7 @@ export type Message = {
   status?: "sent" | "delivered" | "seen";
   createdAt?: string;
 };
-// type Participants = {
-//     uid: string;
-//     email
-//     name: string;
-// };
+
 type Unread = {
   userId: string;
   count: number;
@@ -56,6 +58,7 @@ export type ChatsType = {
   lastMessage: string;
   type?: string;
   senderId?: string;
+  files?: FileType;
   receiverId?: string;
   message?: string;
   unreadCount?: Unread[];

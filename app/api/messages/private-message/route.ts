@@ -3,9 +3,6 @@ import Chat from "@/app/backend/models/Chat";
 import Message from "@/app/backend/models/Message";
 import { NextResponse } from "next/server";
 import Pusher from "pusher";
-// import Message from "@/src/server_side/backend/models/Message";
-// import Conversation from "@/src/server_side/backend/models/Conversation";
-// import connectDB from "@/src/server_side/backend/lib/connectDB";
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -27,6 +24,7 @@ export async function POST(req: Request) {
       name,
       createdAt,
       status,
+      files,
       unreads,
     } = await req.json();
     const existChat = await Chat.findOne({ chatId });
@@ -47,8 +45,12 @@ export async function POST(req: Request) {
           senderId,
           createdAt,
           unreadCount: unreads,
+          $push: {
+            files,
+          },
         }
       );
+
       const latestMessage = new Message({
         chatId,
         content,
@@ -91,6 +93,7 @@ export async function POST(req: Request) {
       participants: [senderId, receiverId],
       lastMessage: content,
       status,
+      files,
       senderId,
       receiverId,
       createdAt,

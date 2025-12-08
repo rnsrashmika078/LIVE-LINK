@@ -27,7 +27,7 @@ export default function ListenerForAuth() {
         //   body: JSON.stringify(user.uid),
         // });
         const addAuthUser = async () => {
-          const response = await fetch("/api/add-auth-user", {
+          const response = await fetch("/api/auth/add-auth-user", {
             method: "POST",
             headers: {
               "Content-type": "application/json",

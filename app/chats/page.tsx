@@ -1,8 +1,6 @@
 import React from "react";
 import SidebarComponent from "../layouts/sidebar/SidebarComponent";
 import ChatsWrapper from "../component/component_wrappers/chats/chatpanel_wrapper";
-import { getChats } from "../actions/server_action";
-import { cookies } from "next/headers";
 import MainLayout from "../layouts/MainLayout";
 import MessageAreaWrapper from "../component/component_wrappers/chats/message_area_wrapper";
 

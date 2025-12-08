@@ -35,12 +35,11 @@ export default function PusherListenerPresence() {
 
       const channel = pusher.subscribe(channelName);
       channel.bind("client-message", (data: Message) => {
-        console.log(JSON.stringify(data));
-
         if (data.type === "typing") {
           if (data.senderId === authUser?.uid) return;
           const typeData = {
             userId: data.userId ?? "",
+            chatId: data.chatId ?? "",
             isTyping: data.isTyping ?? false,
           };
           dispatch(setTypingUsers(typeData));

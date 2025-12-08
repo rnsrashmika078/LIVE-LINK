@@ -94,6 +94,7 @@ export function useSaveMessage(onSuccess?: (result: any) => void) {
       dp,
       createdAt,
       status,
+      files,
       unreads,
     }: SaveMessagePayload) =>
       saveMessages(
@@ -105,6 +106,7 @@ export function useSaveMessage(onSuccess?: (result: any) => void) {
         dp,
         createdAt,
         status,
+        files,
         unreads
       ),
     onSuccess,

@@ -9,6 +9,7 @@ type SeenType = {
 };
 type TypingUser = {
   userId: string;
+  chatId: string;
   isTyping: boolean;
 };
 type ReduxChatState = {
@@ -42,7 +43,7 @@ const chatSlicer = createSlice({
     setAuthUser: (state, action: PayloadAction<AuthUser | null>) => {
       state.authUser = action.payload;
     },
-    setActiveChat: (state, action: PayloadAction<ChatsType>) => {
+    setActiveChat: (state, action: PayloadAction<ChatsType | null>) => {
       state.activeChat = action.payload;
     },
     setMessages: (state, action: PayloadAction<Message>) => {

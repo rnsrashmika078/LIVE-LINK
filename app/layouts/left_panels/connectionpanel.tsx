@@ -1,5 +1,5 @@
 "use client";
-import Spinner from "@/app/component/spinner";
+import Spinner from "@/app/component/ui/spinner";
 import { UserCard } from "@/app/component/ui/cards";
 import {
   useAddFriend,

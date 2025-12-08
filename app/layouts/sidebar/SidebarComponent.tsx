@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "../../component/button";
+import { Button } from "../../component/ui/button";
 import { EndItems, MiddleItems, StartItems } from "../../util/data";
 import { useDispatch, useSelector } from "react-redux";
 import { PusherChatDispatch, PusherChatState } from "../../types";
@@ -7,6 +7,7 @@ import { setCurrentTab } from "../../lib/redux/layoutSlicer";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import React, { useState } from "react";
+import { setActiveChat } from "@/app/lib/redux/chatslicer";
 
 // one hydration error occur in this component that needed be solve
 const SidebarComponent = React.memo(() => {
@@ -34,7 +35,6 @@ const SidebarComponent = React.memo(() => {
     }
   };
 
-
   return (
     <div className="bg-[var(--pattern_1)] w-14 h-full flex flex-col justify-between py-2 px-1">
       <div className="flex flex-col justify-center">
@@ -52,6 +52,7 @@ const SidebarComponent = React.memo(() => {
                 }`}
                 onClick={() => {
                   dispatch(setCurrentTab(item.name));
+                  dispatch(setActiveChat(null));
                   router.push(`/${item.name}`);
                 }}
               >
@@ -73,7 +74,6 @@ const SidebarComponent = React.memo(() => {
       <Button size="xs" onClick={deletefunction}>
         X
       </Button>
-     
 
       <div className="flex flex-col justify-center">
         {MiddleItems.map((item) => {

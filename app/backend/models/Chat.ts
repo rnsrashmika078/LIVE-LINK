@@ -20,6 +20,26 @@ const ChatSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    files: [
+      {
+        asset_id: {
+          type: String,
+          required: false,
+        },
+        format: {
+          type: String,
+          required: false,
+        },
+        url: {
+          type: String,
+          required: false,
+        },
+        name: {
+          type: String,
+          required: false,
+        },
+      },
+    ],
     unreadCount: [
       {
         userId: { type: String },

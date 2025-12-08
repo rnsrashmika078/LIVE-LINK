@@ -7,11 +7,18 @@ export async function GET(
 ) {
   try {
     const { chatId } = await params;
+    if (!chatId) {
+      return NextResponse.json({
+        status: 404,
+        message: "chat id not found!",
+      });
+    }
     const allMessages = await Message.find({ chatId });
 
     if (allMessages && allMessages.length > 0) {
       return NextResponse.json({
         history: allMessages,
+        status: 200,
         message: "getting messages succeed!",
       });
     }
@@ -20,6 +27,7 @@ export async function GET(
     });
   } catch (error) {
     return NextResponse.json({
+      status: 500,
       message: error,
     });
   }
