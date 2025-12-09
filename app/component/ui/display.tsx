@@ -3,106 +3,78 @@ import { FaFilePdf } from "react-icons/fa6";
 import { Button } from "./button";
 import { PreviewDataType } from "@/app/types";
 import React from "react";
-export const Display = React.memo(({ msg }: { msg: string }) => {
-  const { format, url } = JSON.parse(msg);
-
-  const openPDF = () => {
-    window.open(url, "_blank");
-  };
-  const openImage = () => {
-    window.open(url, "_blank");
-  };
-  if (url) {
-    if (
-      String(format).includes("png") ||
-      String(format).includes("jpeg") ||
-      String(format).includes("jpg")
-    ) {
-      return (
-        <Image
-          onClick={openImage}
-          src={url ?? "/12.png"}
-          alt="upload Image"
-          width={150}
-          height={150}
-          className="object-contain w-[150px] h-[150px]"
-        ></Image>
-      );
-    } else if (String(format).includes("pdf")) {
-      return (
-        <div>
-          <FaFilePdf
-            size={50}
-            onClick={openPDF}
-            className="transition-all hover:scale-110 cursor-pointer"
-          />
-        </div>
-      );
-    }
-  }
-});
-
-Display.displayName = "Display";
+import Spinner from "./spinner";
 
 interface FileShareProp {
-  handleDrop: (e: React.DragEvent) => void;
-  handleDragOver: (e: React.DragEvent) => void;
-  onDragLeave: (e: React.DragEvent) => void;
   isDragging: boolean;
+  isUploading: boolean;
   preview: PreviewDataType | null;
   setPreview: React.Dispatch<React.SetStateAction<PreviewDataType | null>>;
 }
 export const FileShare = React.memo(
-  ({
-    handleDrop,
-    handleDragOver,
-    onDragLeave,
-    isDragging,
-    preview,
-    setPreview,
-  }: FileShareProp) => {
+  ({ isDragging, preview, isUploading, setPreview }: FileShareProp) => {
     return (
       <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={onDragLeave}
-        className={`   h-[150px] w-[calc(100%-1rem)] bottom-0 ${
+        className={` ${
           isDragging
-            ? " block border-gray-300 border-dashed "
-            : "absolute border-none "
-        }  flex justify-center rounded-lg border px-6 py-1`}
+            ? "absolute flex-col  top-0 left-0 pointer-events-none flex items-center justify-center w-full h-full border-gray-300 border-dashed backdrop-blur-2xl  "
+            : "absolute flex-col top-0 left-0 pointer-events-none flex items-center justify-center w-full h-full  "
+        }  `}
       >
-        {/* this whole thing replace with a functional component or a single function */}
-        {preview?.type.startsWith("image/") && (
+        {preview?.url && (
           <>
-            <Image
-              src={preview.url ?? "/12.png"}
-              alt="upload Image"
-              width={500}
-              height={500}
-              className="object-contain"
-            ></Image>
+            <div
+              className={`absolute flex-col  top-0 left-0 pointer-events-auto flex items-center justify-center w-full h-full border-gray-300 border-dashed backdrop-blur-2xl ${
+                isUploading ? "animate-pulse " : " "
+              }`}
+            >
+              {preview?.type.startsWith("image/") && (
+                <>
+                  <Image
+                    src={preview.url ?? "/12.png"}
+                    alt="upload Image"
+                    width={500}
+                    height={500}
+                    className="object-contain"
+                  ></Image>
+                </>
+              )}
+              {preview?.type === "application/pdf" && (
+                <>
+                  <div className="flex flex-col justify-center items-center">
+                    <p className="text-red-600 font-semibold">
+                      <FaFilePdf size={200} /> PDF
+                    </p>
+                    <span>{preview.name}</span>
+                    {/* <iframe src={preview.url!} className="w-full h-full border" /> */}
+                  </div>
+                </>
+              )}
+
+              <div className="absolute right-8 top-3">
+                <Button onClick={() => setPreview(null)}>X</Button>
+              </div>
+              <Spinner
+                condition={isUploading}
+                heading="Uploading...Please Wait"
+              />
+            </div>
             <div className="absolute right-8 top-3">
               <Button onClick={() => setPreview(null)}>X</Button>
             </div>
           </>
         )}
-        {preview?.type === "application/pdf" && (
+
+        {isDragging && (
           <>
-            <div className="flex flex-col w-full h-full items-center gap-2 p-2 border rounded-lg">
-              <p className="text-red-600 font-semibold">
-                <FaFilePdf size={50} /> PDF
-              </p>
-              <span>{preview.name}</span>
-              {/* <iframe src={preview.url!} className="w-full h-full border" /> */}
-            </div>
-            <div className="absolute right-8 top-3">
-              <Button onClick={() => setPreview(null)}>X</Button>
-            </div>
+            <div className="text-6xl">📁</div>
+            <p className="text-xl font-semibold">Drop your file here</p>
+            <p className="text-sm mt-2 opacity-80">Release to upload</p>
           </>
         )}
       </div>
     );
   }
 );
+
 FileShare.displayName = "FileShare";

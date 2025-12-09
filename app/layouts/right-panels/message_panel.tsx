@@ -42,6 +42,9 @@ import {
   useUpdateMessageSeen,
 } from "@/app/hooks/useEffectHooks";
 import { FileShare } from "@/app/component/ui/display";
+import { UserCard } from "@/app/component/ui/cards";
+import { TypingIndicator } from "@/app/component/ui/typingIndicator";
+import { DropDown, MenuItem } from "@/app/component/ui/dropdown";
 
 export const MessageArea = () => {
   //use states
@@ -87,6 +90,7 @@ export const MessageArea = () => {
   );
 
   // user Typing : memoized
+
   const isUserTyping = useMemo(
     () =>
       states.typingUsers.some(
@@ -229,11 +233,22 @@ export const MessageArea = () => {
         break;
     }
   };
+  useEffect(() => {
+    const handleLeave = (e: DragEvent) => {
+      if (e.clientX === 0 && e.clientY === 0) {
+        setIsDragging(false);
+      }
+    };
+
+    window.addEventListener("dragleave", handleLeave);
+    return () => window.removeEventListener("dragleave", handleLeave);
+  }, []);
+
   return (
-    <div className="flex flex-col w-full h-full ">
+    <div className="flex flex-col w-full h-full relative ">
       {states.activeChat && (
         <>
-          <div className="flex p-5 justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">
+          <div className="flex p-5  justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">
             <div className="flex items-center gap-3">
               <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
@@ -248,7 +263,6 @@ export const MessageArea = () => {
                 </p>
               </div>
             </div>
-
             <div className="flex gap-5">
               <BiPhoneCall size={20} />
               <BiVideo size={20} />
@@ -256,21 +270,27 @@ export const MessageArea = () => {
             </div>
           </div>
 
-          <Spinner condition={isPending} heading="Uploading" />
-          <MessageViewArea messages={messages} state={isUploading} />
-          <div className="flex relative flex-col gap-5 mt-auto w-full p-2 place-items-start ">
-            <div className="fixed bottom-20">
-              {isUserTyping ? (
-                <div className="animate-pulse italic px-2 flex gap-1 items-center">
-                  <TiMessageTyping size={30} color="green" />
-                  {states.authUser?.name.split(" ")[0] + " is typing..."}
-                </div>
-              ) : null}
-            </div>
+          {/* drop down menu goes here */}
+          <DropDown onSelect={(value) => alert(value)}>
+            <MenuItem value="Apple" />
+            <MenuItem value="Orange" />
+          </DropDown>
+
+          <MessageViewArea
+            messages={messages}
+            state={isUploading}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={onDragLeave}
+          />
+          <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
+            <TypingIndicator
+              isUserTyping={isUserTyping}
+              version="2"
+              username={states.authUser?.name ?? ""}
+            />
             <FileShare
-              handleDragOver={handleDragOver}
-              handleDrop={handleDrop}
-              onDragLeave={onDragLeave}
+              isUploading={isUploading}
               isDragging={isDragging}
               preview={preview}
               setPreview={setPreview}
@@ -289,10 +309,7 @@ export const MessageArea = () => {
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    if (messages.length === 0) {
-                    }
                     e.preventDefault();
-
                     handleClick("enter");
                   }
                 }}

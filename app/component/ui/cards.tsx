@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Avatar from "./avatar";
 import { Button } from "./button";
 import { messageStatus } from "@/app/util/data";
 import { PusherChatState, Unread } from "@/app/types";
 import React, { useMemo } from "react";
 import { shallowEqual, useSelector } from "react-redux";
-import { modifiedMessage } from "@/app/util/helper";
+import { modifiedMessage } from "@/app/helper/helper";
+import { OnMessageSeen } from "@/app/helper/jsxhelper";
+import { TypingIndicator } from "./typingIndicator";
 
 interface UserCardProps {
   avatar?: string;
@@ -19,12 +22,14 @@ interface UserCardProps {
   chatId?: string;
   authUserId?: string;
   email?: string;
+  lastSeen?: any;
+  presence?: any;
   status?: "sent" | "delivered" | "seen";
   className?: string;
   useFor?: "my-req" | "friend-req" | "chat-list" | "send-req" | "chat";
   handleClick?: () => void;
 }
-export const UserCard = React.memo(
+export const UserCard = 
   ({
     avatar,
     name,
@@ -36,6 +41,8 @@ export const UserCard = React.memo(
     receiverId,
     chatId,
     senderId,
+    presence,
+    lastSeen,
     className,
     status = "sent",
     email,
@@ -56,7 +63,6 @@ export const UserCard = React.memo(
       chat: "Chat",
     };
 
-    const Icon = messageStatus[status];
     const states = useSelector(
       (store: PusherChatState) => ({
         authUser: store.chat.authUser,
@@ -121,6 +127,21 @@ export const UserCard = React.memo(
             </div>
           </div>
         )}
+        {version == 4 && (
+          <div className="flex items-center gap-3">
+            <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
+            <div className="w-full">
+              <h1 className="">{states.activeChat?.name}</h1>
+              <p className="text-xs text-[var(--pattern_4)]">
+                {presence !== "Online"
+                  ? lastSeen
+                    ? "Last Seen: " + new Date(lastSeen).toLocaleTimeString()
+                    : null
+                  : presence}
+              </p>
+            </div>
+          </div>
+        )}
         {version === 3 && (
           <div
             className="w-full flex items-center gap-2 p-2"
@@ -144,31 +165,17 @@ export const UserCard = React.memo(
               </div>
               <div className="flex justify-between w-full items-center ">
                 <div className="flex  min-w-0 ">
-                  <p className="flex w-72 text-[var(--pattern_4)] sm:w-56 truncate flex-shrink items-center text-xs">
-                    {isUserTyping ? (
-                      <span className="flex font-bold  text-xs text-green-400 animate-pulse">
-                        {"Typing..."}
-                      </span>
-                    ) : (
-                      modifiedMessage(lastMessage ?? "")
-                    )}
-                  </p>
-                  {!isUserTyping && (
-                    <p className="flex items-center">
-                      {senderId === authUserId ? (
-                        <Icon
-                          color={`${status === "seen" ? "red" : ""}`}
-                          size={15}
-                          className="inline ml-1 text-white text-xs"
-                        />
-                      ) : null}
-                    </p>
-                  )}
+                  <div className="flex w-72 text-[var(--pattern_4)] sm:w-56 truncate flex-shrink items-center text-xs">
+                    <TypingIndicator isUserTyping={isUserTyping} version="2" />
+                    {modifiedMessage(lastMessage ?? "")}
+                  </div>
+                  {!isUserTyping &&
+                    OnMessageSeen(senderId === authUserId, status)}
                 </div>
                 {unreads ? (
-                  <p className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
+                  <div className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
                     {unreads?.count}
-                  </p>
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -177,6 +184,3 @@ export const UserCard = React.memo(
       </div>
     );
   }
-);
-
-UserCard.displayName = "UserCard";

@@ -1,7 +1,7 @@
 "use server";
 import { NextResponse } from "next/server";
 import { AuthUser, FileType, Unread } from "../types";
-import { apiFetch } from "../util/helper";
+import { apiFetch } from "../helper/helper";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({

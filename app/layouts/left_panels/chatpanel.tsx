@@ -83,13 +83,6 @@ const ChatPanel = React.memo(() => {
   //update message seen status ( in this case last messagee status of chat)
   useUpdateMessageSeenInChat(setChatState, states.messageSeen!);
 
-  if (chatState[0]?.updatedAt) {
-    console.log("time creates", new Date(chatState[0]?.updatedAt).getTime());
-  }
-  if (msg?.createdAt) {
-    console.log("message", new Date(msg?.createdAt).getTime());
-  }
-
   //here get the shallow copy from the chatState -> object are same but the array is change ( new array )
   //new array = new memory address -> but the object inside the array referencing to the same memory address of previous
 

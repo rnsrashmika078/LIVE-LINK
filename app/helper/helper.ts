@@ -51,5 +51,5 @@ export function modifiedMessageOnMessageArea(
   if (to === "message" && message) {
     return message;
   }
-  return null
+  return null;
 }

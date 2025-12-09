@@ -1,26 +1,22 @@
 "use client";
 import { Message, PusherChatState } from "@/app/types";
-import { useEffect, useRef } from "react";
-import {
-  IoCheckmark,
-  IoCheckmarkDone,
-  IoCheckmarkDoneSharp,
-} from "react-icons/io5";
-
+import { useEffect, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { useInView } from "framer-motion";
 import React from "react";
-import { modifiedMessageOnMessageArea } from "@/app/util/helper";
 import Spinner from "@/app/component/ui/spinner";
-import { Display } from "@/app/component/ui/display";
 import { useMessageSeenAPI } from "@/app/hooks/useEffectHooks";
+import { OnMessageSeen } from "@/app/helper/jsxhelper";
+import { MessageUI } from "@/app/component/ui/message";
 
-interface ViewAreaProps {
+interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: Message[];
   state: boolean;
 }
 export const MessageViewArea = React.memo(
-  ({ messages, state }: ViewAreaProps) => {
+  ({ messages, state, ...props }: ViewAreaProps) => {
+    //states
+    const [isClickedMessage, setIsClickedMessage] = useState<boolean>(false);
 
     const states = useSelector(
       (store: PusherChatState) => ({
@@ -44,67 +40,51 @@ export const MessageViewArea = React.memo(
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-
-
     return (
-      <div className="p-5 relative custom-scrollbar-y">
+      <div className="p-5 relative custom-scrollbar-y" {...props}>
         <Spinner condition={state} />
-        {messages
-          .sort((a, b) =>
-            a.createdAt
-              ? new Date(a.createdAt).getTime()
-              : new Date().getTime() -
-                (b.createdAt
-                  ? new Date(b.createdAt).getTime()
-                  : new Date().getTime())
-          )
-          .map((msg, index) => {
-            if (msg.chatId !== states.activeChat?.chatId) {
-              return;
-            }
-            return (
+        {messages.map((msg, index) => {
+          //only display relevant messages to the chats
+          if (msg.chatId !== states.activeChat?.chatId) {
+            return;
+          }
+          return (
+            <div
+              key={index}
+              className={`flex w-full mt-2 ${
+                msg.senderId === states.authUser?.uid
+                  ? "justify-end"
+                  : "justify-start"
+              }`}
+            >
               <div
-                key={index}
-                className={`flex w-full mt-2 ${
+                onClick={() => setIsClickedMessage((prev) => !prev)}
+                className={`flex flex-col w-fit px-3 py-1  ${
                   msg.senderId === states.authUser?.uid
-                    ? "justify-end"
-                    : "justify-start"
+                    ? "justify-end bg-[var(--pattern_7)] rounded-tr-2xl"
+                    : "justify-start bg-[var(--pattern_2)] rounded-tl-2xl"
                 }`}
               >
-                <div
-                  className={`flex flex-col w-fit px-3 py-1  ${
-                    msg.senderId === states.authUser?.uid
-                      ? "justify-end bg-gradient-to-r rounded-tl-xl from-purple-800  to-purple-400"
-                      : "justify-start bg-gradient-to-r rounded-br-xl from-green-800  to-green-700"
-                  }`}
-                >
-                  <Display msg={msg.content} />
-                  <p className={`flex w-fit font-bold mt-1`}>
-                    {modifiedMessageOnMessageArea(msg.content, "message")}
+                {/* message display ui goes here */}
+                <MessageUI msg={msg.content} />
+                <div className="flex items-end gap-2">
+                  <p className="text-[10px] text-[var(--pattern_4)]">
+                    {msg.createdAt
+                      ? new Date(msg.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : ""}
                   </p>
-                  <div className="flex items-end gap-2">
-                    <p className="text-[10px] text-[var(--pattern_4)]">
-                      {msg.createdAt
-                        ? new Date(msg.createdAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : ""}
-                    </p>
-                    {msg.senderId === states.authUser?.uid && (
-                      <div>
-                        {msg.status === "seen" && (
-                          <IoCheckmarkDoneSharp color="blue" />
-                        )}
-                        {msg.status === "delivered" && <IoCheckmarkDone />}
-                        {msg.status === "sent" && <IoCheckmark />}
-                      </div>
-                    )}
-                  </div>
+                  {OnMessageSeen(
+                    msg.senderId === states.authUser?.uid,
+                    msg.status!
+                  )}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
         <div ref={scrollRef}></div>
       </div>
     );
