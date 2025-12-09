@@ -4,7 +4,6 @@ import { messageStatus } from "@/app/util/data";
 import { PusherChatState, Unread } from "@/app/types";
 import React, { useMemo } from "react";
 import { shallowEqual, useSelector } from "react-redux";
-import { IoCheckmarkDone } from "react-icons/io5";
 import { modifiedMessage } from "@/app/util/helper";
 
 interface UserCardProps {

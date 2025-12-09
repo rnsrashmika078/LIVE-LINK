@@ -28,6 +28,7 @@ export async function POST(req: Request) {
       unreads,
     } = await req.json();
 
+    console.log("Created", createdAt);
     await pusher.trigger(`private-message-${chatId}`, "client-message", {
       chatId,
       senderId,
@@ -35,19 +36,6 @@ export async function POST(req: Request) {
       content,
       createdAt,
       status,
-    });
-    await pusher.trigger(`private-notify-${receiverId}`, "notify", {
-      chatId,
-      lastMessage: content,
-      unreadCount: [],
-      participants: [],
-      name,
-      senderId,
-      dp,
-      createdAt,
-      status,
-      type: "create_initial_chat",
-      message: "You have New Message",
     });
 
     const existChat = await Chat.findOne({ chatId });
@@ -81,6 +69,19 @@ export async function POST(req: Request) {
         success: true,
       });
     }
+    await pusher.trigger(`private-notify-${receiverId}`, "notify", {
+      chatId,
+      lastMessage: content,
+      unreadCount: [],
+      participants: [],
+      name,
+      senderId,
+      dp,
+      createdAt,
+      status,
+      type: "create_initial_chat",
+      message: "You have New Message",
+    });
 
     const newChat = new Chat({
       chatId: chatId,

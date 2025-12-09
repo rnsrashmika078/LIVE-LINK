@@ -1,16 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 import { usePusher } from "../component/util_component/PusherProvider";
-import { useSelector } from "react-redux";
-import {
-  AuthUser,
-  ChatsType,
-  Message,
-  PusherChatState,
-  SeenType,
-} from "../types";
+import { AuthUser, ChatsType, Message, SeenType } from "../types";
 
-//-----------------------------------------------------------message panel--------------------------------------------------------------//
+//-----------------------------------------------------------message panel effects start here--------------------------------------------------------------//
 //👍 pusher subscribe for typing state ( whether the user typing or not state)
 export function usePusherSubscribe(
   debounce: string,
@@ -52,8 +45,9 @@ export function useUpdateMessageSeen(
     );
   }, [messageSeen.state]);
 }
+//-----------------------------------------------------------message panel effects ends here-------------------------------------------------------------//
 
-//-----------------------------------------------------------chat panel--------------------------------------------------------------//
+//-----------------------------------------------------------chat panel effects start here--------------------------------------------------------------//
 
 //👍 update the ( increase ) the unread message count
 export function useUnreadCountIncrease(
@@ -158,3 +152,46 @@ export function useUpdateMessageSeenInChat(
     );
   }, [messageSeen.state]);
 }
+
+//-----------------------------------------------------------chat panel effects ends here--------------------------------------------------------------//
+
+//---------------------------------------------------------message view area effects start here--------------------------------------------------------------//
+
+//👍 update message seen
+export function useMessageSeenAPI(
+  isInView: boolean,
+  lastMessage: Message,
+  authUser: AuthUser,
+  activeChat: ChatsType
+) {
+  //
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    if (lastMessage.senderId === authUser?.uid) {
+      return;
+    }
+
+    if (isInView && lastMessage?.status !== "seen") {
+      const seenUpdate = async () => {
+        const res = await fetch("/api/messages/message-seen", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chatId: activeChat?.chatId,
+            receiverId: authUser?.uid,
+            senderId: lastMessage.senderId,
+          }),
+        });
+        const result = await res.json();
+
+        if (result && result.success) {
+        }
+      };
+      seenUpdate();
+    }
+  }, [lastMessage, authUser?.uid]);
+}
+//---------------------------------------------------------message view area effects ends here--------------------------------------------------------------//

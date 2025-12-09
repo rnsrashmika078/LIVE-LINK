@@ -7,12 +7,13 @@ import {
   IoCheckmarkDoneSharp,
 } from "react-icons/io5";
 
-import { useSelector } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 import { useInView } from "framer-motion";
 import React from "react";
 import { modifiedMessageOnMessageArea } from "@/app/util/helper";
 import Spinner from "@/app/component/ui/spinner";
 import { Display } from "@/app/component/ui/display";
+import { useMessageSeenAPI } from "@/app/hooks/useEffectHooks";
 
 interface ViewAreaProps {
   messages: Message[];
@@ -20,52 +21,30 @@ interface ViewAreaProps {
 }
 export const MessageViewArea = React.memo(
   ({ messages, state }: ViewAreaProps) => {
-    const activeChat = useSelector(
-      (store: PusherChatState) => store.chat.activeChat
-    );
-    const authUser = useSelector(
-      (store: PusherChatState) => store.chat.authUser
+
+    const states = useSelector(
+      (store: PusherChatState) => ({
+        activeChat: store.chat.activeChat,
+        authUser: store.chat.authUser,
+      }),
+      shallowEqual
     );
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const isInView = useInView(scrollRef);
     const lastMessage = messages.at(-1);
-    useEffect(() => {
-      if (!lastMessage) return;
 
-      if (lastMessage.senderId === authUser?.uid) {
-        return;
-      }
-
-      if (
-        isInView &&
-        // lastMessage?.receiverId === authUser?.uid &&
-        lastMessage?.status !== "seen"
-      ) {
-        const seenUpdate = async () => {
-          const res = await fetch("/api/messages/message-seen", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              chatId: activeChat?.chatId,
-              receiverId: authUser?.uid,
-              senderId: lastMessage.senderId,
-            }),
-          });
-          const result = await res.json();
-
-          if (result && result.success) {
-          }
-        };
-        seenUpdate();
-      }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [lastMessage, authUser?.uid]);
+    useMessageSeenAPI(
+      isInView,
+      lastMessage!,
+      states.authUser!,
+      states.activeChat!
+    );
 
     useEffect(() => {
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
+
+
 
     return (
       <div className="p-5 relative custom-scrollbar-y">
@@ -80,21 +59,21 @@ export const MessageViewArea = React.memo(
                   : new Date().getTime())
           )
           .map((msg, index) => {
-            if (msg.chatId !== activeChat?.chatId) {
+            if (msg.chatId !== states.activeChat?.chatId) {
               return;
             }
             return (
               <div
                 key={index}
                 className={`flex w-full mt-2 ${
-                  msg.senderId === authUser?.uid
+                  msg.senderId === states.authUser?.uid
                     ? "justify-end"
                     : "justify-start"
                 }`}
               >
                 <div
                   className={`flex flex-col w-fit px-3 py-1  ${
-                    msg.senderId === authUser?.uid
+                    msg.senderId === states.authUser?.uid
                       ? "justify-end bg-gradient-to-r rounded-tl-xl from-purple-800  to-purple-400"
                       : "justify-start bg-gradient-to-r rounded-br-xl from-green-800  to-green-700"
                   }`}
@@ -112,7 +91,7 @@ export const MessageViewArea = React.memo(
                           })
                         : ""}
                     </p>
-                    {msg.senderId === authUser?.uid && (
+                    {msg.senderId === states.authUser?.uid && (
                       <div>
                         {msg.status === "seen" && (
                           <IoCheckmarkDoneSharp color="blue" />

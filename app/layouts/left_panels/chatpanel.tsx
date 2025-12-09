@@ -83,6 +83,28 @@ const ChatPanel = React.memo(() => {
   //update message seen status ( in this case last messagee status of chat)
   useUpdateMessageSeenInChat(setChatState, states.messageSeen!);
 
+  if (chatState[0]?.updatedAt) {
+    console.log("time creates", new Date(chatState[0]?.updatedAt).getTime());
+  }
+  if (msg?.createdAt) {
+    console.log("message", new Date(msg?.createdAt).getTime());
+  }
+
+  //here get the shallow copy from the chatState -> object are same but the array is change ( new array )
+  //new array = new memory address -> but the object inside the array referencing to the same memory address of previous
+
+  const chats = useMemo(
+    () =>
+      [...chatState].sort((a, b) => {
+        const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+
+        return bTime - aTime;
+      }),
+
+    [chatState]
+  );
+
   return (
     <div
       className={`z-50 transition-all bg-[var(--pattern_2)] h-full w-full sm:w-90  custom-scrollbar-y `}
@@ -113,8 +135,8 @@ const ChatPanel = React.memo(() => {
         <Spinner condition={isPending} />
 
         <div className="px-5 flex w-full flex-col justify-start items-center">
-          {chatState &&
-            chatState?.map((c: ChatsType, i: number) => {
+          {chats &&
+            chats.map((c: ChatsType, i: number) => {
               return (
                 <UserCard
                   version={3}

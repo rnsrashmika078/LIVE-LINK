@@ -25,7 +25,7 @@ export const Display = React.memo(({ msg }: { msg: string }) => {
           alt="upload Image"
           width={150}
           height={150}
-          className="object-contain"
+          className="object-contain w-[150px] h-[150px]"
         ></Image>
       );
     } else if (String(format).includes("pdf")) {
