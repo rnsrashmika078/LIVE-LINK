@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import { BiEdit, BiFilter } from "react-icons/bi";
 import SearchArea from "@/app/component/ui/searcharea";
@@ -10,7 +11,12 @@ import React from "react";
 import { setActiveChat, setChats } from "@/app/lib/redux/chatslicer";
 import { useGetChats } from "@/app/lib/tanstack/tanstackQuery";
 import Spinner from "@/app/component/ui/spinner";
-import { useOnlinePresence } from "@/app/hooks/useHooks";
+import {
+  useUnreadCountClear,
+  useUnreadCountIncrease,
+  useUnreadCountStop,
+  useUpdateMessageSeenInChat,
+} from "@/app/hooks/useEffectHooks";
 
 const ChatPanel = React.memo(() => {
   //use states
@@ -51,9 +57,8 @@ const ChatPanel = React.memo(() => {
   }, [data?.chats, dispatch]);
 
   //Use Effect: for revalidate the data ( refetch ) when chats change for the new Chats
-  //heavy test needed for this -> for now it keep there
   useEffect(() => {
-    if (states.chatsArray?.length) {
+    if (!!states.chatsArray?.length) {
       setChatState(states.chatsArray);
       const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
       wait(1000);
@@ -61,91 +66,22 @@ const ChatPanel = React.memo(() => {
     }
   }, [states.chatsArray?.length, refetch, states.chatsArray]);
 
-  // Use Effect: stop update ( increase ) unread message if current chat is open
-  useEffect(() => {
-    if (!msg) return;
+  // update the ( increase ) the unread message count
+  useUnreadCountIncrease(
+    msg!,
+    setChatState,
+    states.activeChat!,
+    states.authUser!
+  );
 
-    setChatState((prev) =>
-      prev.map((chat) => {
-        if (
-          states.activeChat?.chatId === chat?.chatId &&
-          chat.chatId === msg.chatId
-        )
-          return {
-            ...chat,
-            lastMessage: msg.content,
-            updatedAt: msg.createdAt,
-            senderId: msg.senderId,
-            status: msg.status,
-            unreadCount: [],
-          };
-        return chat;
-      })
-    );
-  }, [states.activeChat?.chatId, msg]);
+  //clear count
+  useUnreadCountClear(setChatState, states.activeChat!, states.authUser!);
 
-  // Use Effect: update the ( increase ) the unread message count
+  //stop update ( increase ) unread message if current chat is open
+  useUnreadCountStop(msg!, setChatState, states.activeChat!);
 
-  useEffect(() => {
-    if (!msg) return;
-    setChatState((prev) =>
-      prev.map((chat) => {
-        if (chat.chatId !== msg.chatId) {
-          return chat;
-        }
-        //check if live message ( msg ) is for me
-        const isMsgToMe = msg.senderId === states.authUser?.uid;
-
-        const previous =
-          chat?.unreadCount?.find((u) => u.userId === states.authUser?.uid)
-            ?.count || 0;
-
-        return {
-          ...chat,
-          lastMessage: msg.content,
-          updatedAt: msg.createdAt,
-          senderId: msg.senderId,
-          status: msg.status,
-          unreadCount: isMsgToMe
-            ? []
-            : states.activeChat?.chatId === chat?.chatId &&
-              chat.chatId === msg.chatId
-            ? []
-            : [{ userId: states.authUser?.uid ?? " ", count: previous + 1 }],
-        };
-      })
-    );
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [states.authUser?.uid, msg]);
-
-  //use Effect: clear count
-  useEffect(() => {
-    if (!states.activeChat?.chatId || !states.authUser?.uid) return;
-    setChatState((prev) =>
-      prev.map((chat) => {
-        if (chat.chatId !== states.activeChat?.chatId) return chat;
-
-        return {
-          ...chat,
-          unreadCount: chat.unreadCount?.map((c) =>
-            c.userId === states.authUser?.uid ? { ...c, count: 0 } : c
-          ),
-        };
-      })
-    );
-  }, [states.activeChat?.chatId, states.authUser?.uid]);
-
-  //use Effect: update message seen status ( in this case last messagee status of chat)
-  useEffect(() => {
-    if (!states.messageSeen.chatId) return;
-
-    setChatState((prev) =>
-      prev.map((c) =>
-        c.chatId === states.messageSeen?.chatId ? { ...c, status: "seen" } : c
-      )
-    );
-  }, [states.messageSeen.chatId]);
+  //update message seen status ( in this case last messagee status of chat)
+  useUpdateMessageSeenInChat(setChatState, states.messageSeen!);
 
   return (
     <div

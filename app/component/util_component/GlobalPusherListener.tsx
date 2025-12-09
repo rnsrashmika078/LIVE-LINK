@@ -33,20 +33,22 @@ export default function GlobalPusherListener() {
   const pusher = usePusher();
 
   useEffect(() => {
-    if (!activeChat?.uid || !pusher) return;
+    if (!activeChat?.chatId || !pusher) return;
 
-    const channelName = `private-message-seen-${activeChat.uid}`;
+    const channelName = `private-message-seen-${activeChat?.chatId}`;
 
     if (!pusher.channel(channelName)) {
       const channel = pusher.subscribe(channelName);
 
       channel.bind("message-seen", (data: any) => {
-        const id = Date.now().toString();
+        if (data.receiverId === authUser?.uid) return;
+        const id = new Date().getTime().toString();
+
         dispatch(
           setMessageSeen({
             chatId: data.chatId,
-            receiverId: data.receiverId,
-            senderId: data.senderId,
+            receiverId: data.receiverId, // message seen by
+            senderId: data.senderId, // message send by
             state: id,
           })
         );
@@ -58,7 +60,7 @@ export default function GlobalPusherListener() {
         pusher.unsubscribe(channelName);
       }
     };
-  }, [activeChat?.uid, dispatch, pusher]);
+  }, [activeChat?.chatId, authUser?.uid, dispatch, pusher]);
 
   useEffect(() => {
     if (!authUser?.uid || !pusher) return;

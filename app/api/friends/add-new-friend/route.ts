@@ -23,6 +23,10 @@ export async function POST(req: Request) {
       uid: sen_uid,
     } = friend;
 
+    await pusher.trigger(`private-notify-${rec_uid}`, "notify", {
+      type: "friend_accept",
+      message: `Your Friend request accepted by ${sen_name}`,
+    });
     await User.findOneAndUpdate(
       { uid: sen_uid },
       {
@@ -40,7 +44,6 @@ export async function POST(req: Request) {
       }
     );
 
-
     // Remove from sender's sentRequests
     await User.updateOne(
       { uid: rec_uid },
@@ -52,15 +55,6 @@ export async function POST(req: Request) {
       { uid: sen_uid },
       { $pull: { receivedRequests: rec_uid } }
     );
-
-    await pusher.trigger(`private-notify-${rec_uid}`, "notify", {
-      // uid: sen_uid,
-      // name: sen_name,
-      // email: sen_email,
-      // dp: sen_dp,
-      type: "friend_accept",
-      message: `Your Friend request accepted by ${sen_name}`,
-    });
 
     return Response.json({
       status: 200,

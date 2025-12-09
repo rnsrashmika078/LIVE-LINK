@@ -27,16 +27,31 @@ export async function POST(req: Request) {
       files,
       unreads,
     } = await req.json();
+
+    await pusher.trigger(`private-message-${chatId}`, "client-message", {
+      chatId,
+      senderId,
+      receiverId,
+      content,
+      createdAt,
+      status,
+    });
+    await pusher.trigger(`private-notify-${receiverId}`, "notify", {
+      chatId,
+      lastMessage: content,
+      unreadCount: [],
+      participants: [],
+      name,
+      senderId,
+      dp,
+      createdAt,
+      status,
+      type: "create_initial_chat",
+      message: "You have New Message",
+    });
+
     const existChat = await Chat.findOne({ chatId });
     if (existChat) {
-      await pusher.trigger(`private-message-${chatId}`, "client-message", {
-        chatId,
-        senderId,
-        receiverId,
-        content,
-        createdAt,
-        status,
-      });
       await Chat.findOneAndUpdate(
         { chatId },
         {
@@ -66,27 +81,6 @@ export async function POST(req: Request) {
         success: true,
       });
     }
-
-    await pusher.trigger(`private-message-${chatId}`, "message", {
-      chatId,
-      senderId,
-      receiverId,
-      content,
-      status,
-    });
-    await pusher.trigger(`private-notify-${receiverId}`, "notify", {
-      chatId,
-      lastMessage: content,
-      unreadCount: [],
-      participants: [],
-      name,
-      senderId,
-      dp,
-      createdAt,
-      status,
-      type: "create_initial_chat",
-      message: "You have New Message",
-    });
 
     const newChat = new Chat({
       chatId: chatId,

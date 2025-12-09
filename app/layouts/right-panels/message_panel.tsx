@@ -12,11 +12,18 @@ import {
 import {
   FileType,
   Message,
+  PreviewDataType,
   PusherChatDispatch,
   PusherChatState,
 } from "@/app/types";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { BiPhoneCall, BiSearch, BiVideo } from "react-icons/bi";
 
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
@@ -30,6 +37,11 @@ import { Button } from "@/app/component/ui/button";
 import { FaFilePdf } from "react-icons/fa6";
 import { TextArea } from "@/app/component/ui/textarea";
 import { handleImageUpload } from "@/app/util/util";
+import {
+  usePusherSubscribe,
+  useUpdateMessageSeen,
+} from "@/app/hooks/useEffectHooks";
+import { FileShare } from "@/app/component/ui/display";
 
 export const MessageArea = () => {
   //use states
@@ -38,11 +50,7 @@ export const MessageArea = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [preview, setPreview] = useState<{
-    url: string;
-    type: string;
-    name: string;
-  } | null>(null);
+  const [preview, setPreview] = useState<PreviewDataType | null>(null);
 
   //query client ( tanstack )
   const QueryClient = useQueryClient();
@@ -156,34 +164,11 @@ export const MessageArea = () => {
     setMessages(data?.history);
   }, [data]);
 
-  //UseEffect: update message seen
-  useEffect(() => {
-    if (!states.messageSeen?.receiverId || !states.activeChat?.chatId) return;
+  //update message seen
+  useUpdateMessageSeen(setMessages, states.activeChat!, states.messageSeen!);
 
-    setMessages((prev) =>
-      prev.map((c) =>
-        c.senderId === states.messageSeen?.receiverId &&
-        c.chatId === states.activeChat?.chatId
-          ? { ...c, status: "seen" }
-          : c
-      )
-    );
-  }, [states.activeChat?.chatId, states.messageSeen?.receiverId]);
-
-  //use Effect: pusher typing state trigger
-  useEffect(() => {
-    if (!pusher || !states.activeChat?.chatId || !states.authUser?.uid) return;
-
-    const channelName = `private-message-${states.activeChat?.chatId}`;
-
-    const channel = pusher.channel(channelName);
-    channel?.trigger("client-message", {
-      type: "typing",
-      userId: states.authUser?.uid,
-      chatId: states.activeChat.chatId,
-      isTyping: !!debounce?.length,
-    });
-  }, [debounce, pusher, states.activeChat?.chatId, states.authUser?.uid]);
+  // pusher typing state trigger
+  usePusherSubscribe(debounce, states.activeChat!, states.authUser!);
 
   // use Effect:  update the user last seen when presence changes ( listening to the presence changes )
   useEffect(() => {
@@ -195,7 +180,7 @@ export const MessageArea = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presence]);
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     setFile(file);
@@ -204,17 +189,17 @@ export const MessageArea = () => {
     const name = file.name;
     setPreview({ url, type, name });
     setIsDragging(false);
-  };
+  }, []);
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
-  };
+  }, []);
 
-  const onDragLeave = (e: React.DragEvent) => {
+  const onDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-  };
+  }, []);
 
   const handleSendMessageBasedOnFile = async () => {
     if (preview?.url && file) {
@@ -282,6 +267,14 @@ export const MessageArea = () => {
                 </div>
               ) : null}
             </div>
+            <FileShare
+              handleDragOver={handleDragOver}
+              handleDrop={handleDrop}
+              onDragLeave={onDragLeave}
+              isDragging={isDragging}
+              preview={preview}
+              setPreview={setPreview}
+            />
             <div className="flex w-full gap-2 place-items-center">
               <TextArea
                 ref={textAreaRef}
@@ -298,55 +291,13 @@ export const MessageArea = () => {
                   if (e.key === "Enter") {
                     if (messages.length === 0) {
                     }
-                    handleClick("enter");
-                    // request(e.currentTarget.value);
                     e.preventDefault();
-                    setInput("");
-                    e.currentTarget.value = "";
+
+                    handleClick("enter");
                   }
                 }}
                 onClickButton={(e) => handleClick(e)}
               />
-            </div>
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={onDragLeave}
-              className={` absolute  h-[150px] w-[calc(100%-1rem)] bottom-15  ${
-                isDragging
-                  ? "pointer-events-auto border-gray-300 border-dashed "
-                  : "pointer-events-none border-none "
-              }  flex justify-center rounded-lg border px-6 py-1`}
-            >
-              {/* this whole thing replace with a functional component or a single function */}
-              {preview?.type.startsWith("image/") && (
-                <>
-                  <Image
-                    src={preview.url ?? "/12.png"}
-                    alt="upload Image"
-                    width={500}
-                    height={500}
-                    className="object-contain"
-                  ></Image>
-                  <div className="absolute right-8 top-3">
-                    <Button onClick={() => setPreview(null)}>X</Button>
-                  </div>
-                </>
-              )}
-              {preview?.type === "application/pdf" && (
-                <>
-                  <div className="flex flex-col w-full h-full items-center gap-2 p-2 border rounded-lg">
-                    <p className="text-red-600 font-semibold">
-                      <FaFilePdf size={50} /> PDF
-                    </p>
-                    <span>{preview.name}</span>
-                    {/* <iframe src={preview.url!} className="w-full h-full border" /> */}
-                  </div>
-                  <div className="absolute right-8 top-3">
-                    <Button onClick={() => setPreview(null)}>X</Button>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </>

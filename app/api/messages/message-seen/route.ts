@@ -16,26 +16,23 @@ export async function POST(req: Request) {
     await connectDB();
     const { chatId, receiverId, senderId } = await req.json();
 
+    await pusher.trigger(`private-message-seen-${chatId}`, "message-seen", {
+      chatId,
+      receiverId,
+      senderId,
+    });
     if (!chatId) {
       return NextResponse.json({
         success: false,
         message: "chatId is undefined!",
       });
     }
-    await pusher.trigger(`private-message-seen-${senderId}`, "message-seen", {
-      chatId,
-      receiverId: receiverId,
-      senderId: senderId,
-    });
 
     await Message.updateMany(
-      { chatId, receiverId: senderId, status: { $ne: "seen" } },
+      { chatId, receiverId: receiverId, status: { $ne: "seen" } },
       { $set: { status: "seen" } }
     );
-    await Chat.updateOne(
-      { chatId },
-      { status: "seen", unreadCount: [] }
-    );
+    await Chat.updateOne({ chatId }, { status: "seen", unreadCount: [] });
 
     return NextResponse.json({
       success: true,

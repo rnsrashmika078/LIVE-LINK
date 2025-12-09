@@ -1,19 +1,19 @@
 "use client";
-import { Message, PusherChatDispatch, PusherChatState } from "@/app/types";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Message, PusherChatState } from "@/app/types";
+import { useEffect, useRef } from "react";
 import {
   IoCheckmark,
   IoCheckmarkDone,
   IoCheckmarkDoneSharp,
 } from "react-icons/io5";
-import Image from "next/image";
 
 import { useSelector } from "react-redux";
 import { useInView } from "framer-motion";
 import React from "react";
 import { modifiedMessageOnMessageArea } from "@/app/util/helper";
 import Spinner from "@/app/component/ui/spinner";
-import Display from "@/app/component/ui/display";
+import { Display } from "@/app/component/ui/display";
+
 interface ViewAreaProps {
   messages: Message[];
   state: boolean;
@@ -28,38 +28,40 @@ export const MessageViewArea = React.memo(
     );
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const isInView = useInView(scrollRef);
+    const lastMessage = messages.at(-1);
     useEffect(() => {
-      const lastMessage = messages.at(-1);
       if (!lastMessage) return;
 
-      const asyncfunction = () => {
-        if (
-          isInView &&
-          lastMessage?.receiverId === authUser?.uid &&
-          lastMessage?.status !== "seen"
-        ) {
-          const seenUpdate = async () => {
-            const res = await fetch("/api/messages/message-seen", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                chatId: activeChat?.chatId,
-                receiverId: activeChat?.uid,
-                senderId: authUser?.uid,
-              }),
-            });
-            const result = await res.json();
+      if (lastMessage.senderId === authUser?.uid) {
+        return;
+      }
 
-            if (result && result.success) {
-            }
-          };
-          seenUpdate();
-        }
-      };
-      asyncfunction();
-    }, [messages]);
+      if (
+        isInView &&
+        // lastMessage?.receiverId === authUser?.uid &&
+        lastMessage?.status !== "seen"
+      ) {
+        const seenUpdate = async () => {
+          const res = await fetch("/api/messages/message-seen", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              chatId: activeChat?.chatId,
+              receiverId: authUser?.uid,
+              senderId: lastMessage.senderId,
+            }),
+          });
+          const result = await res.json();
+
+          if (result && result.success) {
+          }
+        };
+        seenUpdate();
+      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lastMessage, authUser?.uid]);
 
     useEffect(() => {
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,16 +100,6 @@ export const MessageViewArea = React.memo(
                   }`}
                 >
                   <Display msg={msg.content} />
-                  {/* <Image
-                    src={JSON.parse(msg.content)?.url ?? "/12.png"}
-                    alt="upload Image"
-                    width={150}
-                    height={150}
-                    className="object-contain"
-                  ></Image> */}
-                  {/* <p className={`flex w-fit font-bold mt-1`}>
-                    {JSON.parse(msg.content)?.message}
-                  </p> */}
                   <p className={`flex w-fit font-bold mt-1`}>
                     {modifiedMessageOnMessageArea(msg.content, "message")}
                   </p>

@@ -7,6 +7,22 @@ export type FileType = {
   name: string;
   asset_id: string;
 };
+export type PreviewDataType = {
+  url: string;
+  type: string;
+  name: string;
+};
+export type SeenType = {
+  state?: string;
+  receiverId: string;
+  senderId: string;
+  chatId: string;
+};
+export type TypingUser = {
+  userId: string;
+  chatId: string;
+  isTyping: boolean;
+};
 export type AuthUser = {
   // or user
   _id?: string;

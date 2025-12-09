@@ -1,17 +1,7 @@
 "use client";
-import { AuthUser, ChatsType, Message } from "@/app/types";
+import { AuthUser, ChatsType, Message, SeenType, TypingUser } from "@/app/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-type SeenType = {
-  state?: string;
-  receiverId: string;
-  senderId: string;
-  chatId: string;
-};
-type TypingUser = {
-  userId: string;
-  chatId: string;
-  isTyping: boolean;
-};
+
 type ReduxChatState = {
   activeChat: ChatsType | null;
   authUser: AuthUser | null;

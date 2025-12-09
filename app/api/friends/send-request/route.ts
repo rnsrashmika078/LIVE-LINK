@@ -29,6 +29,15 @@ export async function POST(req: Request) {
       uid: sen_uid,
     } = requestSender;
 
+    await pusher.trigger(`private-notify-${rec_uid}`, "notify", {
+      uid: sen_uid,
+      name: sen_name,
+      email: sen_email,
+      dp: sen_dp,
+      type: "friend_request",
+      message: "You have friend request from " + sen_name,
+    });
+
     //check if the already sent requests
     const update = await User.findOne({
       uid: sen_uid,
@@ -59,14 +68,6 @@ export async function POST(req: Request) {
       { $addToSet: { receivedRequests: sen_uid } }
     );
 
-    await pusher.trigger(`private-notify-${rec_uid}`, "notify", {
-      uid: sen_uid,
-      name: sen_name,
-      email: sen_email,
-      dp: sen_dp,
-      type: "friend_request",
-      message: "You have friend request from " + sen_name,
-    });
     // const alreadySent
     return NextResponse.json({
       message: "Request sent successfully!",

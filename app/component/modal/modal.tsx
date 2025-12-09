@@ -257,6 +257,7 @@ export const UserDetails = React.memo(() => {
         <div className="mt-2 mb-5">
           <p className="text-sm font-bold">{authUser?.name}</p>
           <p className="text-xs">{authUser?.email}</p>
+          <p className="text-xs">{authUser?.uid}</p>
         </div>
         <div className="border-b w-full border-[var(--pattern_5)]"></div>
         <Button
