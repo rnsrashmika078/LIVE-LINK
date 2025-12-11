@@ -9,12 +9,8 @@ import SearchArea from "../../component/ui/searcharea";
 import Avatar from "../ui/avatar";
 import { UserCard } from "../ui/cards";
 import { IoIosArrowRoundBack } from "react-icons/io";
-import { RxCross1, } from "react-icons/rx";
-import {
-  AuthUser,
-  PusherChatDispatch,
-  PusherChatState,
-} from "@/app/types";
+import { RxCross1 } from "react-icons/rx";
+import { AuthUser, PusherChatDispatch, PusherChatState } from "@/app/types";
 
 import { CgProfile } from "react-icons/cg";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,7 +19,12 @@ import { logoutUser } from "@/app/util/auth-options/client_options";
 import { useRouter } from "next/navigation";
 import Spinner from "../ui/spinner";
 import { setActiveChat } from "@/app/lib/redux/chatslicer";
-import { useGetFriends, useSearchFriend, useSendFriendRequests } from "@/app/lib/tanstack/friendsQuery";
+import {
+  useGetFriends,
+  useSearchFriend,
+  useSendFriendRequests,
+} from "@/app/lib/tanstack/friendsQuery";
+import { useLiveLink } from "@/app/context/LiveLinkContext";
 
 export type ModalProps = {
   children: ReactNode;
@@ -34,13 +35,13 @@ interface AddNewFriend {
   setSelection: React.Dispatch<React.SetStateAction<string>>;
 }
 export const BaseModalContext = createContext<ModalProps | null>(null);
-export const useBaseModal = () => {
-  const context = useContext(BaseModalContext);
-  if (!context) {
-    throw new Error("useLayout must be used within a <Layout>");
-  }
-  return context;
-};
+// export const useBaseModal = () => {
+//   const context = useContext(BaseModalContext);
+//   if (!context) {
+//     throw new Error("useLayout must be used within a <Layout>");
+//   }
+//   return context;
+// };
 
 export const BaseModal = React.memo(
   ({ children, setOpenModal, openModal }: ModalProps) => {
@@ -54,8 +55,9 @@ export const BaseModal = React.memo(
 BaseModal.displayName = "BaseModal";
 
 export const NewChat = React.memo(({ className }: { className?: string }) => {
+  const { openModal, setOpenModal } = useLiveLink();
+
   const [selection, setSelection] = useState<string>("");
-  const { openModal, setOpenModal } = useBaseModal();
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
 
   const { data: friends, isPending: isGettingFriends } = useGetFriends(
@@ -80,6 +82,9 @@ export const NewChat = React.memo(({ className }: { className?: string }) => {
     },
     [authUser?.uid, dispatch, setOpenModal]
   );
+
+  if (!openModal) return;
+
   return (
     <>
       <div className="fixed inset-0 bg-black/80 z-40 "></div>

@@ -17,11 +17,12 @@ import {
   useUpdateMessageSeenInChat,
 } from "@/app/hooks/useEffectHooks";
 import { useGetChats } from "@/app/lib/tanstack/chatsQuery";
+import { useLiveLink } from "@/app/context/LiveLinkContext";
 
 const ChatPanel = React.memo(
   ({ initialChats }: { initialChats: ChatsType[] }) => {
     //use states
-    const [openModal, setOpenModal] = useState<boolean>(false);
+    // const [openModal, setOpenModal] = useState<boolean>(false);
     const [chatState, setChatState] = useState<ChatsType[]>(initialChats);
     // const [isPending, setIsPending] = useState(
     //   initialChats.length === 0  ? f
@@ -106,13 +107,16 @@ const ChatPanel = React.memo(
       [chatState]
     );
 
+    //use hooks
+    const { openModal, setOpenModal } = useLiveLink();
+
     return (
       <div
         className={`z-50 transition-all bg-[var(--pattern_2)] h-full w-full sm:w-90  custom-scrollbar-y `}
       >
-        <BaseModal setOpenModal={setOpenModal} openModal={openModal}>
+        {/* <BaseModal setOpenModal={setOpenModal} openModal={openModal}>
           <NewChat className="pointer-events-auto" />
-        </BaseModal>
+        </BaseModal> */}
         <div>{states.authUser?.createdAt}</div>
         {/* <div> {formattedDate(authUser?.createdAt ?? "")}</div> */}
         <div className=" space-y-2 relative ">

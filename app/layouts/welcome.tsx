@@ -16,12 +16,12 @@ const Welcome = () => {
   const authenticated = !!authUser?.uid;
   const handleAuth = async () => {
     if (authenticated) {
-      router.push("/chats");
+      router.push("/livelink");
     } else {
       setIsLoading(true);
       await signInWithGoogle();
       setTimeout(() => {
-        router.push("/chats");
+        router.push("/livelink");
       }, 1000);
     }
   };

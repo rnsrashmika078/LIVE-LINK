@@ -14,6 +14,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import React, {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -42,6 +43,7 @@ import {
 } from "@/app/lib/tanstack/friendsQuery";
 import { v4 as uuidv4 } from "uuid";
 import { useDragDropHook } from "@/app/hooks/useDragDropHook";
+import { LiveLinkContext, useLiveLink } from "@/app/context/LiveLinkContext";
 export const MessagePanel = () => {
   //use states
   const [messages, setMessages] = useState<Message[]>([]);
@@ -92,6 +94,7 @@ export const MessagePanel = () => {
 
   //get last seen time ( tanstack )
   const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
+
 
   //use hooks
   let debounce = useDebounce(input, 500);
@@ -227,7 +230,7 @@ export const MessagePanel = () => {
   };
 
   return (
-    <div className="flex flex-col w-full h-full relative ">
+    <div className="flex flex-col w-full h-full relative overflow-hidden">
       {states.activeChat && (
         <>
           <div className=" flex p-5  justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">

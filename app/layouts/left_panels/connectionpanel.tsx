@@ -6,7 +6,7 @@ import {
   useGetFriends,
   useGetSendRequests,
   useReceivedRequest,
-} from "@/app/lib/tanstack/tanstackQuery";
+} from "@/app/lib/tanstack/friendsQuery";
 import { AuthUser, PusherChatState } from "@/app/types";
 import { set } from "mongoose";
 import { useCallback, useEffect, useState } from "react";

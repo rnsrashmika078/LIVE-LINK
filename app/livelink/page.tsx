@@ -1,9 +1,6 @@
 import { redirect } from "next/navigation";
-import Welcome from "./layouts/welcome";
-
 const page = () => {
-
-  return <Welcome />;
+  redirect("/livelink/chats");
 };
 
 export default page;
