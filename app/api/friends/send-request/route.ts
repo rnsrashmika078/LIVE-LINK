@@ -12,9 +12,7 @@ const pusher = new Pusher({
 export async function POST(req: Request) {
   try {
     await connectDB();
-    console.log("hit: api/send-request");
-    //userId is who the request sent
-    //uid from user is who receive the request
+
     const { requestReceiver, requestSender } = await req.json();
     const {
       dp: rec_dp,

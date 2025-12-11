@@ -3,12 +3,7 @@
 "use client";
 import Avatar from "@/app/component/ui/avatar";
 import { useDebounce, useOnlinePresence } from "@/app/hooks/useHooks";
-import {
-  useGetLastSeen,
-  useGetMessages,
-  useSaveMessage,
-  useUpdateLastSeen,
-} from "@/app/lib/tanstack/tanstackQuery";
+
 import {
   FileType,
   Message,
@@ -25,35 +20,33 @@ import React, {
   useState,
 } from "react";
 import { BiPhoneCall, BiSearch, BiVideo } from "react-icons/bi";
-
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { MessageViewArea } from "./messageViewArea";
-import Spinner from "@/app/component/ui/spinner";
+import { MessageViewArea } from "../../../layouts/right-panels/messageViewArea";
 import { setUnreads } from "@/app/lib/redux/chatslicer";
 import { usePusher } from "@/app/component/util_component/PusherProvider";
-import { TiMessageTyping } from "react-icons/ti";
-import Image from "next/image";
-import { Button } from "@/app/component/ui/button";
-import { FaFilePdf } from "react-icons/fa6";
 import { TextArea } from "@/app/component/ui/textarea";
 import { handleImageUpload } from "@/app/util/util";
 import {
   usePusherSubscribe,
   useUpdateMessageSeen,
 } from "@/app/hooks/useEffectHooks";
-import { FileShare } from "@/app/component/ui/display";
-import { UserCard } from "@/app/component/ui/cards";
+import { FileShare } from "@/app/component/ui/preview";
 import { TypingIndicator } from "@/app/component/ui/typingIndicator";
-import { DropDown, MenuItem } from "@/app/component/ui/dropdown";
-
-export const MessageArea = () => {
+import {
+  useGetMessages,
+  useSaveMessage,
+} from "@/app/lib/tanstack/messageQuery";
+import {
+  useGetLastSeen,
+  useUpdateLastSeen,
+} from "@/app/lib/tanstack/friendsQuery";
+import { v4 as uuidv4 } from "uuid";
+import { useDragDropHook } from "@/app/hooks/useDragDropHook";
+export const MessagePanel = () => {
   //use states
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [preview, setPreview] = useState<PreviewDataType | null>(null);
 
   //query client ( tanstack )
   const QueryClient = useQueryClient();
@@ -78,11 +71,6 @@ export const MessageArea = () => {
     (store: PusherChatState) => store.chat.messages
   );
 
-  //use hooks
-  let debounce = useDebounce(input, 500);
-  const pusher = usePusher();
-  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
-
   //generate chatId : memoized
   const chatId = useMemo(
     () => [states.authUser?.uid, states.activeChat?.uid].sort().join("-"),
@@ -105,6 +93,12 @@ export const MessageArea = () => {
   //get last seen time ( tanstack )
   const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
 
+  //use hooks
+  let debounce = useDebounce(input, 500);
+  const presence = useOnlinePresence(
+    states.activeChat?.uid ?? "",
+    lastSeenUpdate?.lastSeen
+  );
   //update last seen time ( tanstack )
   const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {});
 
@@ -126,10 +120,11 @@ export const MessageArea = () => {
   //save message calling actually happen here
   const request = async (message: string) => {
     const date = new Date();
-    const { url, name, format, asset_id } = await JSON.parse(message);
-    const filePayload: FileType = { url, name, format, asset_id };
-
+    const { url, name, format, public_id } = await JSON.parse(message);
+    const filePayload: FileType = { url, name, format, public_id };
+    const customId = uuidv4();
     mutate({
+      customId,
       content: message,
       files: filePayload,
       senderId: states.authUser?.uid ?? "",
@@ -140,7 +135,10 @@ export const MessageArea = () => {
       createdAt: date.toISOString(),
       status: presence === "Online" ? "delivered" : "sent",
       unreads: [
-        { userId: states.activeChat?.uid ?? "", count: states.unreads },
+        {
+          userId: states.activeChat?.uid ?? "",
+          count: states.unreads === 0 ? 1 : states.unreads,
+        },
       ], // find a way to increase this count in the future : currently it only save count as 1 in db
     });
     dispatch(setUnreads(states.unreads + 1));
@@ -184,48 +182,42 @@ export const MessageArea = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presence]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    setFile(file);
-    const url = URL.createObjectURL(file);
-    const type = file.type;
-    const name = file.name;
-    setPreview({ url, type, name });
-    setIsDragging(false);
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const onDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
+  //D&D hook
+  const {
+    isDragging,
+    file,
+    setFile,
+    preview,
+    setPreview,
+    handleDragOver,
+    onDragLeave,
+    handleDrop,
+  } = useDragDropHook();
 
   const handleSendMessageBasedOnFile = async () => {
     if (preview?.url && file) {
       setIsUploading(true);
       const content = await handleImageUpload(file);
       if (content) {
-        const { url, name, format } = content;
+        const { url, name, format, public_id } = content;
         setIsUploading(false);
         request(
-          `{"url": "${url}", "message" : "${input}" ,"name" : "${name}" , "format" : "${format}"}`
+          `{"url": "${url}", "message" : "${input}" ,"name" : "${name}" , "format" : "${format}", "public_id" : "${public_id}"}`
         );
-        setPreview(null);
-        setInput("");
+      } else {
+        setIsUploading(false);
         return;
       }
+    } else {
+      request(
+        `{"url": "", "message" : "${input}" ,"name" : "" , "format" : "", "public_id" : ""}`
+      );
     }
     setPreview(null);
-    request(`{"url": "", "message" : "${input}" ,"name" : "" , "format" : ""}`);
     setInput("");
     return;
   };
-  const handleClick = (item: string) => {
+  const handleMessageSend = (item: string) => {
     switch (item) {
       case "send":
       case "enter":
@@ -233,34 +225,17 @@ export const MessageArea = () => {
         break;
     }
   };
-  useEffect(() => {
-    const handleLeave = (e: DragEvent) => {
-      if (e.clientX === 0 && e.clientY === 0) {
-        setIsDragging(false);
-      }
-    };
-
-    window.addEventListener("dragleave", handleLeave);
-    return () => window.removeEventListener("dragleave", handleLeave);
-  }, []);
 
   return (
     <div className="flex flex-col w-full h-full relative ">
       {states.activeChat && (
         <>
-          <div className="flex p-5  justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">
-            <div className="flex items-center gap-3">
+          <div className=" flex p-5  justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">
+            <div className=" flex items-center gap-3">
               <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
                 <h1 className="">{states.activeChat?.name}</h1>
-                <p className="text-xs text-[var(--pattern_4)]">
-                  {presence !== "Online"
-                    ? lastSeenUpdate?.lastSeen
-                      ? "Last Seen: " +
-                        new Date(lastSeenUpdate?.lastSeen).toLocaleTimeString()
-                      : null
-                    : presence}
-                </p>
+                <p className="text-xs text-[var(--pattern_4)]">{presence}</p>
               </div>
             </div>
             <div className="flex gap-5">
@@ -269,12 +244,6 @@ export const MessageArea = () => {
               <BiSearch size={20} />
             </div>
           </div>
-
-          {/* drop down menu goes here */}
-          <DropDown onSelect={(value) => alert(value)}>
-            <MenuItem value="Apple" />
-            <MenuItem value="Orange" />
-          </DropDown>
 
           <MessageViewArea
             messages={messages}
@@ -286,7 +255,7 @@ export const MessageArea = () => {
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
             <TypingIndicator
               isUserTyping={isUserTyping}
-              version="2"
+              version="1"
               username={states.authUser?.name ?? ""}
             />
             <FileShare
@@ -294,6 +263,7 @@ export const MessageArea = () => {
               isDragging={isDragging}
               preview={preview}
               setPreview={setPreview}
+              setFile={setFile}
             />
             <div className="flex w-full gap-2 place-items-center">
               <TextArea
@@ -310,10 +280,10 @@ export const MessageArea = () => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    handleClick("enter");
+                    handleMessageSend("enter");
                   }
                 }}
-                onClickButton={(e) => handleClick(e)}
+                onClickButton={(input) => handleMessageSend(input)}
               />
             </div>
           </div>

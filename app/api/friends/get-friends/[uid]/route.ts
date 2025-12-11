@@ -8,7 +8,6 @@ export async function GET(
 ) {
   try {
     await connectDB();
-    console.log("hit: api/get-friends");
 
     const { uid } = await params;
     const friendsArray = await User.findOne({ uid }).select("friends");

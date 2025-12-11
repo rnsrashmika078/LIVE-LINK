@@ -6,6 +6,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 export async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
+
     return {
       success: true,
       user: result.user,

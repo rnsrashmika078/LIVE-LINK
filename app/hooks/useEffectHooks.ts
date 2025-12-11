@@ -1,7 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 import { usePusher } from "../component/util_component/PusherProvider";
-import { AuthUser, ChatsType, Message, SeenType } from "../types";
+import {
+  AuthUser,
+  ChatsType,
+  Message,
+  PusherChatDispatch,
+  PusherChatState,
+  SeenType,
+} from "../types";
+import { useDispatch, useSelector } from "react-redux";
+import { setUnreads } from "../lib/redux/chatslicer";
 
 //-----------------------------------------------------------message panel effects start here--------------------------------------------------------------//
 //👍 pusher subscribe for typing state ( whether the user typing or not state)
@@ -33,8 +42,11 @@ export function useUpdateMessageSeen(
   activeChat: ChatsType,
   messageSeen: SeenType
 ) {
+  const dispatch = useDispatch<PusherChatDispatch>();
+
   useEffect(() => {
     if (!messageSeen?.receiverId || !activeChat?.chatId) return;
+    dispatch(setUnreads(0));
 
     setMessages((prev) =>
       prev.map((c) =>
@@ -58,6 +70,7 @@ export function useUnreadCountIncrease(
 ) {
   useEffect(() => {
     if (!msg) return;
+
     setChatState((prev) =>
       prev.map((chat) => {
         if (chat.chatId !== msg.chatId) {
@@ -78,7 +91,8 @@ export function useUnreadCountIncrease(
           status: msg.status,
           unreadCount: isMsgToMe
             ? []
-            : activeChat?.chatId === chat?.chatId && chat.chatId === msg.chatId
+            : activeChat?.chatId === chat?.chatId &&
+              activeChat?.chatId === msg.chatId
             ? []
             : [{ userId: authUser?.uid ?? " ", count: previous + 1 }],
         };
@@ -90,11 +104,13 @@ export function useUnreadCountIncrease(
 //👍 clear count
 export function useUnreadCountClear(
   setChatState: React.Dispatch<React.SetStateAction<ChatsType[]>>,
-  activeChat: ChatsType,
-  authUser: AuthUser
+  activeChat:ChatsType,
+  authUser:AuthUser
 ) {
+  
   useEffect(() => {
     if (!activeChat?.chatId || !authUser?.uid) return;
+
     setChatState((prev) =>
       prev.map((chat) => {
         if (chat.chatId !== activeChat?.chatId) return chat;
@@ -164,15 +180,17 @@ export function useMessageSeenAPI(
   authUser: AuthUser,
   activeChat: ChatsType
 ) {
-  //
+  const dispatch = useDispatch<PusherChatDispatch>();
+
   useEffect(() => {
     if (!lastMessage) return;
-
     if (lastMessage.senderId === authUser?.uid) {
       return;
     }
 
     if (isInView && lastMessage?.status !== "seen") {
+      dispatch(setUnreads(0));
+
       const seenUpdate = async () => {
         const res = await fetch("/api/messages/message-seen", {
           method: "POST",

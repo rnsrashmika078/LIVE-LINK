@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import MessageAreaWrapper from "../component/component_wrappers/chats/message_area_wrapper";
+import MessageAreaWrapper from "../component/client_component/message/MessageClient";
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
   return (

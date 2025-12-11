@@ -1,10 +1,9 @@
 "use client";
-import { MessageArea } from "@/app/layouts/right-panels/message_panel";
-import { store } from "@/app/lib/redux/store";
 import { PusherChatState } from "@/app/types";
 import { useSelector } from "react-redux";
+import { MessagePanel } from "./MessagePanel";
 
-const MessageAreaWrapper = () => {
+const MessageClient = () => {
   const activeChat = useSelector(
     (store: PusherChatState) => store.chat.activeChat
   );
@@ -13,9 +12,9 @@ const MessageAreaWrapper = () => {
       className={`${activeChat?.chatId ? "block" : "hidden"} w-full  sm:block`}
     >
       {/* remove hidden */}
-      <MessageArea />
+      <MessagePanel />
     </div>
   );
 };
 
-export default MessageAreaWrapper;
+export default MessageClient;

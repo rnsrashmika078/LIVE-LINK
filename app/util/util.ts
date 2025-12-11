@@ -12,7 +12,7 @@ export async function handleImageUpload(file: File): Promise<FileType | null> {
   data.append("folder", "LiveLink/uploads");
 
   const res = await apiFetch(
-    "https://api.cloudinary.com/v1_1/dwcjokd3s/image/upload",
+    "https://api.cloudinary.com/v1_1/dwcjokd3s/auto/upload",
     "POST",
     data,
     "EXTERNAL"
@@ -22,7 +22,7 @@ export async function handleImageUpload(file: File): Promise<FileType | null> {
 
   if (result) {
     const payload = {
-      asset_id: result.asset_id,
+      public_id: result.public_id,
       name: result.display_name,
       url: result.secure_url,
       format: result.format,

@@ -15,11 +15,7 @@ import {
   PusherChatDispatch,
   PusherChatState,
 } from "@/app/types";
-import {
-  useGetFriends,
-  useSearchFriend,
-  useSendFriendRequests,
-} from "@/app/lib/tanstack/tanstackQuery";
+
 import { CgProfile } from "react-icons/cg";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "../ui/button";
@@ -27,6 +23,7 @@ import { logoutUser } from "@/app/util/auth-options/client_options";
 import { useRouter } from "next/navigation";
 import Spinner from "../ui/spinner";
 import { setActiveChat } from "@/app/lib/redux/chatslicer";
+import { useGetFriends, useSearchFriend, useSendFriendRequests } from "@/app/lib/tanstack/friendsQuery";
 
 export type ModalProps = {
   children: ReactNode;

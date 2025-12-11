@@ -5,7 +5,7 @@ export type FileType = {
   format: string;
   url: string;
   name: string;
-  asset_id: string;
+  public_id: string;
 };
 export type PreviewDataType = {
   url: string;
@@ -37,6 +37,7 @@ export type AuthUser = {
 export type SaveMessagePayload = {
   content: string;
   senderId: string;
+  customId: string;
   receiverId: string;
   chatId: string;
   name: string;
@@ -48,7 +49,7 @@ export type SaveMessagePayload = {
 };
 
 export type Message = {
-  _id?: string;
+  customId: string;
   chatId: string;
   senderId: string;
   receiverId: string;
@@ -83,6 +84,10 @@ export type ChatsType = {
   status?: "sent" | "delivered" | "seen";
 };
 
+type ClickedMessageType = {
+  id: string;
+  message: Message | null;
+};
 //this type is use to switch between the chat list layout and the chat info layout
 export type SectionType = {
   section: string;

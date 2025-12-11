@@ -6,8 +6,10 @@ import { useInView } from "framer-motion";
 import React from "react";
 import Spinner from "@/app/component/ui/spinner";
 import { useMessageSeenAPI } from "@/app/hooks/useEffectHooks";
-import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import { MessageUI } from "@/app/component/ui/message";
+import { DropDown, MenuItem } from "@/app/component/ui/dropdown";
+import { MdArrowDropDown } from "react-icons/md";
+import { useMessageDelete } from "@/app/lib/tanstack/messageQuery";
 
 interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: Message[];
@@ -16,7 +18,6 @@ interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
 export const MessageViewArea = React.memo(
   ({ messages, state, ...props }: ViewAreaProps) => {
     //states
-    const [isClickedMessage, setIsClickedMessage] = useState<boolean>(false);
 
     const states = useSelector(
       (store: PusherChatState) => ({
@@ -37,51 +38,75 @@ export const MessageViewArea = React.memo(
     );
 
     useEffect(() => {
-      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+      if (messages) {
+        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
     }, [messages]);
 
+    const [id, setId] = useState<string>("");
+
+    const { mutate: deleteMessage } = useMessageDelete((result) => {
+      if (result) {
+      }
+    });
+
+    const handleOperation = (
+      value: string,
+      messageId: string,
+      chatId: string,
+      public_id: string
+    ) => {
+      switch (value) {
+        case "Delete":
+          deleteMessage({
+            messageId,
+            public_id,
+            chatId,
+          });
+      }
+    };
     return (
-      <div className="p-5 relative custom-scrollbar-y" {...props}>
+      <div className="p-5 relative custom-scrollbar-y h-full w-full" {...props}>
         <Spinner condition={state} />
+        {/* drop down menu goes here */}
+
         {messages.map((msg, index) => {
           //only display relevant messages to the chats
           if (msg.chatId !== states.activeChat?.chatId) {
             return;
           }
           return (
-            <div
-              key={index}
-              className={`flex w-full mt-2 ${
-                msg.senderId === states.authUser?.uid
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
-              <div
-                onClick={() => setIsClickedMessage((prev) => !prev)}
-                className={`flex flex-col w-fit px-3 py-1  ${
-                  msg.senderId === states.authUser?.uid
-                    ? "justify-end bg-[var(--pattern_7)] rounded-tr-2xl"
-                    : "justify-start bg-[var(--pattern_2)] rounded-tl-2xl"
-                }`}
-              >
-                {/* message display ui goes here */}
-                <MessageUI msg={msg.content} />
-                <div className="flex items-end gap-2">
-                  <p className="text-[10px] text-[var(--pattern_4)]">
-                    {msg.createdAt
-                      ? new Date(msg.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : ""}
-                  </p>
-                  {OnMessageSeen(
-                    msg.senderId === states.authUser?.uid,
-                    msg.status!
-                  )}
-                </div>
-              </div>
+            <div key={index} className=" ">
+              <MessageUI msg={msg} authUser={states.authUser!} selectId={id}>
+                <MdArrowDropDown
+                  size={25}
+                  onClick={() => {
+                    setId(msg.customId ?? "");
+                  }}
+                  className="absolute top-0 right-0 flex justify-center "
+                />
+                {id === msg.customId && (
+                  <DropDown
+                    authUser={states.authUser!}
+                    message={msg}
+                    onSelect={(value) => {
+                      const { public_id } = JSON.parse(msg.content ?? "");
+                      handleOperation(
+                        value,
+                        msg.customId ?? "",
+                        msg.chatId ?? "",
+                        public_id ?? ""
+                      );
+                    }}
+                  >
+                    <MenuItem value="Reply" />
+                    <MenuItem value="Copy" />
+                    <MenuItem value="Forward" />
+                    <MenuItem value="Delete" />
+                    <MenuItem value="Report" />
+                  </DropDown>
+                )}
+              </MessageUI>
             </div>
           );
         })}

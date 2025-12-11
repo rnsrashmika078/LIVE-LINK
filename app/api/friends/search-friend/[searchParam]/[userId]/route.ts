@@ -8,7 +8,6 @@ export async function GET(
 ) {
   try {
     await connectDB();
-    console.log("hit: api/search-friend");
     const { searchParam, userId } = await params;
 
     if (!searchParam)

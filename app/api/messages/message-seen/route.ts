@@ -27,12 +27,12 @@ export async function POST(req: Request) {
         message: "chatId is undefined!",
       });
     }
+    await Chat.updateOne({ chatId }, { status: "seen", unreadCount: [] });
 
     await Message.updateMany(
       { chatId, receiverId: receiverId, status: { $ne: "seen" } },
       { $set: { status: "seen" } }
     );
-    await Chat.updateOne({ chatId }, { status: "seen", unreadCount: [] });
 
     return NextResponse.json({
       success: true,

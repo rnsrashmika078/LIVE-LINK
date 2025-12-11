@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 // Message schema
 const MessageSchema = new mongoose.Schema(
   {
+    customId: { type: String, required: true },
     chatId: {
       type: String,
       required: true,
@@ -19,7 +20,6 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
     status: {
       type: String,
     },

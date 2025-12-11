@@ -12,9 +12,9 @@ export const TypingIndicator = ({
 }: TypingIndicatorProps) => {
   if (isUserTyping) {
     return (
-      <div className="fixed bottom-20">
+      <div className="">
         {version === "1" && (
-          <p className="animate-pulse italic px-2 flex gap-1 items-center">
+          <p className="fixed bottom-15 animate-pulse italic p-2 flex gap-1 items-center bg-[var(--pattern_3)]  rounded-2xl">
             <TiMessageTyping size={30} color="green" />
             {username?.split(" ")[0] + " is typing..."}
           </p>

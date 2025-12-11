@@ -16,6 +16,7 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const {
+      customId,
       chatId,
       content,
       senderId,
@@ -28,15 +29,17 @@ export async function POST(req: Request) {
       unreads,
     } = await req.json();
 
-    console.log("Created", createdAt);
     await pusher.trigger(`private-message-${chatId}`, "client-message", {
       chatId,
+      customId,
       senderId,
       receiverId,
       content,
       createdAt,
       status,
     });
+
+    console.log("chatId", chatId);
 
     const existChat = await Chat.findOne({ chatId });
     if (existChat) {
@@ -55,6 +58,7 @@ export async function POST(req: Request) {
       );
 
       const latestMessage = new Message({
+        customId,
         chatId,
         content,
         receiverId,
@@ -95,6 +99,7 @@ export async function POST(req: Request) {
       unreadCount: unreads,
     });
     const newMessage = new Message({
+      customId,
       chatId,
       content,
       receiverId,

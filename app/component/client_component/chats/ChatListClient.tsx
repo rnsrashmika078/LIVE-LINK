@@ -1,12 +1,15 @@
 "use client";
 
-import ChatPanel from "@/app/layouts/left_panels/chatpanel";
-import { PusherChatState } from "@/app/types";
+import { ChatsType, PusherChatState } from "@/app/types";
 import { useSelector } from "react-redux";
-const ChatsWrapper = () => {
+import ChatListPanel from "./ChatListPanel";
+
+const ChatListClient = ({ chats }: { chats: ChatsType[] }) => {
   const activeChat = useSelector(
     (store: PusherChatState) => store.chat.activeChat
   );
+
+
   return (
     <div
       className={` ${
@@ -19,10 +22,10 @@ const ChatsWrapper = () => {
         } z-20  h-full relative`}
       >
         {/* make w-0 and remove parent w-full*/}
-        <ChatPanel />
+        <ChatListPanel initialChats={chats} />
       </div>
     </div>
   );
 };
 
-export default ChatsWrapper;
+export default ChatListClient;

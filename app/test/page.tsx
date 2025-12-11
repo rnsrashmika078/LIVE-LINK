@@ -1,6 +1,6 @@
 import MainLayout from "../layouts/MainLayout";
 import SideNavBar from "../layouts/sidebar/SidebarComponent";
-import ChatList from "../layouts/left_panels/chatpanel";
+import ChatList from "../component/client_component/chats/ChatListPanel";
 import ChatArea from "../layouts/ChatArea";
 import ChatInfo from "../layouts/ChatInfo";
 

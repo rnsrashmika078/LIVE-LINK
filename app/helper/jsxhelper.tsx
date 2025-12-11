@@ -3,12 +3,14 @@ import {
   IoCheckmarkDone,
   IoCheckmarkDoneSharp,
 } from "react-icons/io5";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
+
 export function OnMessageSeen(condition: boolean, status: string) {
   if (condition) {
     return (
       <div>
-        {status === "seen" && <IoCheckmarkDoneSharp color="lightgreen" />}
-        {status === "delivered" && <IoCheckmarkDone />}
+        {status === "seen" && <IoMdEye color="lightgreen" />}
+        {status === "delivered" && <IoMdEyeOff />}
         {status === "sent" && <IoCheckmark />}
       </div>
     );

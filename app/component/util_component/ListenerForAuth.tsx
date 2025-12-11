@@ -18,14 +18,8 @@ export default function ListenerForAuth() {
           email: user.email,
           dp: user.photoURL,
         };
-        //set cookies with authenticated user uid ( firebase id ) to give the user id access to the server component.
-        // await fetch("/api/auth/set-cookies", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-type": "application/json",
-        //   },
-        //   body: JSON.stringify(user.uid),
-        // });
+        // set cookies with authenticated user uid ( firebase id ) to give the user id access to the server component.
+       
         const addAuthUser = async () => {
           const response = await fetch("/api/auth/add-auth-user", {
             method: "POST",

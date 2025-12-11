@@ -1,22 +1,25 @@
 import React from "react";
 import SidebarComponent from "../layouts/sidebar/SidebarComponent";
-import ChatsWrapper from "../component/component_wrappers/chats/chatpanel_wrapper";
+import ChatListClient from "../component/client_component/chats/ChatListClient";
 import MainLayout from "../layouts/MainLayout";
-import MessageAreaWrapper from "../component/component_wrappers/chats/message_area_wrapper";
+import MessageAreaWrapper from "../component/client_component/message/MessageClient";
+import { cookies } from "next/headers";
+import { getChats } from "../actions/chats_server_actions";
+import { redirect } from "next/navigation";
 
-const page = async () => {
-  // const cookieStore = cookies();
-  // const uid = (await cookieStore).get("uid")?.value;
-  // const data = await getChats(uid ?? "");
+const ChatPage = async () => {
+  const cookieStore = cookies();
+  const uid = (await cookieStore).get("uid")?.value;
+  if (!uid) return redirect("/");
+  const data = await getChats(uid ?? "");
 
   return (
     <MainLayout>
       <SidebarComponent />
-      {/* <ChatsWrapper chats={data?.chats} /> */}
-      <ChatsWrapper/>
+      <ChatListClient chats={data.chats} />
       <MessageAreaWrapper />
     </MainLayout>
   );
 };
 
-export default page;
+export default ChatPage;

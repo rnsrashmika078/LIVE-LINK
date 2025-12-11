@@ -35,7 +35,6 @@ export default function RootLayout({
           <Toast />
           <Common />
           <ListenerForAuth />
-          {/* <MainLayout>{children}</MainLayout> */}
           {children}
         </AppProvider>
       </body>

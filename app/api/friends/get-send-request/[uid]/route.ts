@@ -10,9 +10,7 @@ export async function GET(
     await connectDB();
     const { uid } = await params;
 
-    console.log("hit: api/get-send-request");
-    //userId is who the request sent
-    //uid from user is who receive the request
+
 
     const sendRequestsArray = await User.findOne({ uid }).select(
       "sentRequests"

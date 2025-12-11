@@ -22,7 +22,7 @@ const ChatSchema = new mongoose.Schema(
     },
     files: [
       {
-        asset_id: {
+        public_id: {
           type: String,
           required: false,
         },

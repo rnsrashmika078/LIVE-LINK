@@ -12,7 +12,6 @@ const pusher = new Pusher({
 export async function POST(req: Request) {
   try {
     await connectDB();
-    console.log("hit: api/add-new-friend");
 
     const { user, friend } = await req.json();
     const { dp: rec_dp, email: rec_email, name: rec_name, uid: rec_uid } = user;

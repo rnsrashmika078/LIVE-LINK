@@ -46,7 +46,6 @@ const ImageUpload: React.FC<param> = ({
     data.append("folder", "Listing");
     const response = await imageUpload(data);
     const uploadedImageURL = await response.data;
-    console.log(uploadedImageURL);
     if (uploadedImageURL) {
       {
         !editing && localStorage.setItem("url", uploadedImageURL.url);

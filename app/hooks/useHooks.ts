@@ -10,12 +10,16 @@ export function usePathName() {
     return "";
   }
 }
-export const useOnlinePresence = (uid: string): "Online" | "Offline" => {
+export const useOnlinePresence = (uid: string, lastSeen: string): string => {
   const onlineUser = useSelector((store: PusherChatState) =>
     store.friends.OnlineUsers.some((u) => u === uid)
   );
 
-  return onlineUser ? "Online" : "Offline";
+  return onlineUser
+    ? "Online"
+    : lastSeen
+    ? new Date(lastSeen).toLocaleTimeString()
+    : "Offline";
 };
 
 export function useDebounce(input: string, delay: number) {

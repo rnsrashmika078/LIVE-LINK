@@ -1,18 +1,23 @@
 import Image from "next/image";
-import { FaFilePdf } from "react-icons/fa6";
 import { Button } from "./button";
 import { PreviewDataType } from "@/app/types";
 import React from "react";
-import Spinner from "./spinner";
 
 interface FileShareProp {
   isDragging: boolean;
   isUploading: boolean;
   preview: PreviewDataType | null;
+  setFile: React.Dispatch<React.SetStateAction<File | null>>;
   setPreview: React.Dispatch<React.SetStateAction<PreviewDataType | null>>;
 }
 export const FileShare = React.memo(
-  ({ isDragging, preview, isUploading, setPreview }: FileShareProp) => {
+  ({
+    isDragging,
+    preview,
+    isUploading,
+    setPreview,
+    setFile,
+  }: FileShareProp) => {
     return (
       <div
         className={` ${
@@ -33,34 +38,46 @@ export const FileShare = React.memo(
                   <Image
                     src={preview.url ?? "/12.png"}
                     alt="upload Image"
-                    width={500}
-                    height={500}
-                    className="object-contain"
+                    width={450}
+                    height={450}
+                    className="object-contain w-[450px] h-[450px]"
                   ></Image>
                 </>
               )}
               {preview?.type === "application/pdf" && (
                 <>
-                  <div className="flex flex-col justify-center items-center">
-                    <p className="text-red-600 font-semibold">
-                      <FaFilePdf size={200} /> PDF
-                    </p>
-                    <span>{preview.name}</span>
-                    {/* <iframe src={preview.url!} className="w-full h-full border" /> */}
+                  <div className="flex flex-col justify-center items-center w-[calc(100%-2rem)] h-[calc(100%-8rem)]">
+                    <iframe
+                      src={preview.url!}
+                      className="w-full h-full border"
+                    />
+                    {/* <span>{preview.name}</span> */}
+                  </div>
+                </>
+              )}
+              {preview?.type?.startsWith("video") && (
+                <>
+                  <div className="flex flex-col justify-center items-center w-[calc(100%-2rem)] h-[calc(100%-8rem)]">
+                    <iframe
+                      src={preview.url!}
+                      className="w-full h-full border"
+                    />
                   </div>
                 </>
               )}
 
-              <div className="absolute right-8 top-3">
-                <Button onClick={() => setPreview(null)}>X</Button>
-              </div>
-              <Spinner
-                condition={isUploading}
-                heading="Uploading...Please Wait"
-              />
             </div>
-            <div className="absolute right-8 top-3">
-              <Button onClick={() => setPreview(null)}>X</Button>
+            <div className="absolute pointer-events-auto right-8 top-18">
+              <Button
+                variant="danger"
+                radius="md"
+                onClick={() => {
+                  setPreview(null);
+                  setFile(null);
+                }}
+              >
+                X
+              </Button>
             </div>
           </>
         )}
