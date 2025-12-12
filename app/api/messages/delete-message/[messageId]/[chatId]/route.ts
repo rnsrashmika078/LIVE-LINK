@@ -19,9 +19,6 @@ export async function DELETE(
       public_id = undefined;
     }
 
-    console.log("asset Id", public_id);
-    console.log("messageId Id", messageId);
-    console.log("chatId Id", chatId);
     //delete message
     await Message.deleteOne({ customId: messageId });
 

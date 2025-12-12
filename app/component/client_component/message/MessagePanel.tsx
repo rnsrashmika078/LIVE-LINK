@@ -4,27 +4,19 @@
 import Avatar from "@/app/component/ui/avatar";
 import { useDebounce, useOnlinePresence } from "@/app/hooks/useHooks";
 
-import {
-  FileType,
-  Message,
-  PreviewDataType,
-  PusherChatDispatch,
-  PusherChatState,
-} from "@/app/types";
+import { Message, PusherChatDispatch, PusherChatState } from "@/app/types";
 import { useQueryClient } from "@tanstack/react-query";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { BiPhoneCall, BiSearch, BiVideo } from "react-icons/bi";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { MessageViewArea } from "../../../layouts/right-panels/messageViewArea";
+
+// lazy components import
+
+const MessageViewArea = React.lazy(
+  () => import("../../../layouts/right-panels/messageViewArea")
+);
+
 import { setUnreads } from "@/app/lib/redux/chatslicer";
-import { usePusher } from "@/app/component/util_component/PusherProvider";
 import { TextArea } from "@/app/component/ui/textarea";
 import { handleImageUpload } from "@/app/util/util";
 import {
@@ -43,8 +35,9 @@ import {
 } from "@/app/lib/tanstack/friendsQuery";
 import { v4 as uuidv4 } from "uuid";
 import { useDragDropHook } from "@/app/hooks/useDragDropHook";
-import { LiveLinkContext, useLiveLink } from "@/app/context/LiveLinkContext";
-export const MessagePanel = () => {
+import Spinner from "../../ui/spinner";
+
+const MessagePanel = () => {
   //use states
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
@@ -80,7 +73,6 @@ export const MessagePanel = () => {
   );
 
   // user Typing : memoized
-
   const isUserTyping = useMemo(
     () =>
       states.typingUsers.some(
@@ -90,20 +82,30 @@ export const MessagePanel = () => {
   );
 
   //get Messages ( tanstack )
-  const { data, isPending, refetch } = useGetMessages(chatId);
+  const { data, isPending, refetch } = useGetMessages(
+    chatId,
+    states.activeChat?.chatId ?? ""
+  );
 
-  //get last seen time ( tanstack )
+  //get last seen time ( tanstack ) and store in state
   const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
+  const [lastSeen, setLastSeen] = useState<string>(lastSeenUpdate?.lastSeen);
 
+  useEffect(() => {
+    if (!lastSeenUpdate?.lastSeen) return;
+    setLastSeen(lastSeenUpdate?.lastSeen);
+  }, [lastSeenUpdate]);
 
   //use hooks
   let debounce = useDebounce(input, 500);
-  const presence = useOnlinePresence(
-    states.activeChat?.uid ?? "",
-    lastSeenUpdate?.lastSeen
-  );
+  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
+
   //update last seen time ( tanstack )
-  const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {});
+  const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {
+    if (result.success) {
+      setLastSeen(result.lastSeen);
+    }
+  });
 
   //redux dispatcher
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -123,27 +125,41 @@ export const MessagePanel = () => {
   //save message calling actually happen here
   const request = async (message: string) => {
     const date = new Date();
-    const { url, name, format, public_id } = await JSON.parse(message);
-    const filePayload: FileType = { url, name, format, public_id };
-    const customId = uuidv4();
-    mutate({
-      customId,
-      content: message,
-      files: filePayload,
-      senderId: states.authUser?.uid ?? "",
-      receiverId: states.activeChat?.uid ?? "",
-      chatId: chatId,
-      name: states.authUser?.name ?? "",
-      dp: states.authUser?.dp ?? "",
-      createdAt: date.toISOString(),
-      status: presence === "Online" ? "delivered" : "sent",
-      unreads: [
-        {
-          userId: states.activeChat?.uid ?? "",
-          count: states.unreads === 0 ? 1 : states.unreads,
-        },
-      ], // find a way to increase this count in the future : currently it only save count as 1 in db
-    });
+
+    try {
+      const parsedMessage =
+        typeof message === "string" ? JSON?.parse(message) : message;
+      const { url, name, format, public_id } = parsedMessage;
+
+      let filePayload;
+      if (!url) {
+        filePayload = null;
+      }
+      filePayload = { url, name, format, public_id };
+
+      const customId = uuidv4();
+      mutate({
+        customId,
+        content: message,
+        files: filePayload,
+        senderId: states.authUser?.uid ?? "",
+        receiverId: states.activeChat?.uid ?? "",
+        chatId: chatId,
+        name: states.authUser?.name ?? "",
+        dp: states.authUser?.dp ?? "",
+        createdAt: date.toISOString(),
+        status: presence === "Online" ? "delivered" : "sent",
+        unreads: [
+          {
+            userId: states.activeChat?.uid ?? "",
+            count: states.unreads === 0 ? 1 : states.unreads,
+          },
+        ],
+      });
+    } catch (err) {
+      console.error("Invalid JSON:", message, err);
+    }
+
     dispatch(setUnreads(states.unreads + 1));
   };
 
@@ -238,7 +254,13 @@ export const MessagePanel = () => {
               <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
                 <h1 className="">{states.activeChat?.name}</h1>
-                <p className="text-xs text-[var(--pattern_4)]">{presence}</p>
+                <p className="text-xs text-[var(--pattern_4)]">
+                  {presence === "Online"
+                    ? "Online"
+                    : lastSeen
+                    ? new Date(lastSeen).toLocaleTimeString()
+                    : "Offline"}
+                </p>
               </div>
             </div>
             <div className="flex gap-5">
@@ -248,13 +270,16 @@ export const MessagePanel = () => {
             </div>
           </div>
 
-          <MessageViewArea
-            messages={messages}
-            state={isUploading}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={onDragLeave}
-          />
+          <Suspense fallback={<Spinner />}>
+            <MessageViewArea
+              messages={messages}
+              state={isUploading}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={onDragLeave}
+            />
+          </Suspense>
+
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
             <TypingIndicator
               isUserTyping={isUserTyping}
@@ -295,3 +320,4 @@ export const MessagePanel = () => {
     </div>
   );
 };
+export default MessagePanel;

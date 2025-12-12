@@ -10,16 +10,14 @@ export function usePathName() {
     return "";
   }
 }
-export const useOnlinePresence = (uid: string, lastSeen: string): string => {
+export const useOnlinePresence = (uid: string): "Online" | "Offline" => {
   const onlineUser = useSelector((store: PusherChatState) =>
     store.friends.OnlineUsers.some((u) => u === uid)
   );
 
-  return onlineUser
-    ? "Online"
-    : lastSeen
-    ? new Date(lastSeen).toLocaleTimeString()
-    : "Offline";
+  return onlineUser ? "Online" : "Offline";
+  // ? new Date(lastSeen).toLocaleTimeString()
+  // : "Offline";
 };
 
 export function useDebounce(input: string, delay: number) {
@@ -35,4 +33,24 @@ export function useDebounce(input: string, delay: number) {
   }, [delay, input]);
 
   return debounceInput;
+}
+
+export function useClickFocus(
+  ref: React.RefObject<HTMLDivElement | null>
+): string {
+  const [clickArea, setClickArea] = useState<string | null>(null);
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref && ref.current && !ref.current.contains(e.target as Node)) {
+        setClickArea("OutSide");
+      } else {
+        setClickArea("Inside");
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return clickArea ?? "Outside";
 }

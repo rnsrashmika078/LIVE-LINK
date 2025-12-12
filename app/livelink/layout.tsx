@@ -1,9 +1,11 @@
 "use client";
 import Sidebar from "../layouts/sidebar/Sidebar";
-import { MessagePanel } from "../component/client_component/message/MessagePanel";
 import LiveLink from "../context/LiveLinkContext";
 import { ReactNode } from "react";
 import { NewChat } from "../component/modal/modal";
+import React from "react";
+
+const MessagePanel = React.lazy(() => import("../component/client_component/message/MessagePanel"))
 
 export default function LiveLinkLayout({ children }: { children: ReactNode }) {
   return (

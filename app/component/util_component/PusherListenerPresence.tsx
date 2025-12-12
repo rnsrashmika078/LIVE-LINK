@@ -11,7 +11,6 @@ import {
 } from "@/app/lib/redux/chatslicer";
 import { Message } from "@/app/types/index";
 import { usePusher } from "./PusherProvider";
-import { setNotification } from "@/app/lib/redux/notificationSlicer";
 
 export default function PusherListenerPresence() {
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -24,6 +23,7 @@ export default function PusherListenerPresence() {
     if (!authUser?.uid || !chats.length) {
       return;
     }
+
 
     const chat_channels: Record<string, any> = {};
 

@@ -8,6 +8,6 @@ export function useGetChats(uid: string, fetch: boolean) {
     queryKey: ["get-chats", uid],
     queryFn: () => getChats(uid),
     enabled: fetch,
-    // refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false,
   });
 }

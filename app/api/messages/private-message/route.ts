@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import connectDB from "@/app/backend/lib/connectDB";
 import Chat from "@/app/backend/models/Chat";
+import Content from "@/app/backend/models/Content";
 import Message from "@/app/backend/models/Message";
 import { NextResponse } from "next/server";
 import Pusher from "pusher";
@@ -14,7 +16,6 @@ const pusher = new Pusher({
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const {
       customId,
       chatId,
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
       unreads,
     } = await req.json();
 
-    await pusher.trigger(`private-message-${chatId}`, "client-message", {
+    const pusherMessagePayload = {
       chatId,
       customId,
       senderId,
@@ -37,43 +38,17 @@ export async function POST(req: Request) {
       content,
       createdAt,
       status,
-    });
+    };
 
-    console.log("chatId", chatId);
-
-    const existChat = await Chat.findOne({ chatId });
-    if (existChat) {
-      await Chat.findOneAndUpdate(
-        { chatId },
-        {
-          lastMessage: content,
-          status,
-          senderId,
-          createdAt,
-          unreadCount: unreads,
-          $push: {
-            files,
-          },
-        }
-      );
-
-      const latestMessage = new Message({
-        customId,
-        chatId,
-        content,
-        receiverId,
-        status,
-        senderId,
-      });
-
-      await latestMessage.save();
-      return NextResponse.json({
-        status: "ok",
-        message: content,
-        success: true,
-      });
-    }
-    await pusher.trigger(`private-notify-${receiverId}`, "notify", {
+    const newMessagePayload = {
+      customId,
+      chatId,
+      content,
+      receiverId,
+      status,
+      senderId,
+    };
+    const newChatPayload = {
       chatId,
       lastMessage: content,
       unreadCount: [],
@@ -85,32 +60,63 @@ export async function POST(req: Request) {
       status,
       type: "create_initial_chat",
       message: "You have New Message",
-    });
+    };
 
-    const newChat = new Chat({
+    await pusher.trigger(
+      `private-message-${chatId}`,
+      "client-message",
+      pusherMessagePayload
+    );
+    const [_, existChat] = await Promise.all([
+      connectDB(),
+      Chat.findOne({ chatId }).lean(),
+    ]);
+
+    if (existChat) {
+      let updateData: any = {
+        lastMessage: content,
+        status,
+        senderId,
+        createdAt,
+        unreadCount: unreads,
+      };
+
+      if (files?.url) {
+        updateData = { ...updateData, files };
+      }
+
+      await Promise.all([
+        Chat.findOneAndUpdate({ chatId }, updateData),
+        Message.create(newMessagePayload),
+      ]);
+      return NextResponse.json({
+        status: 200,
+        message: content,
+        success: true,
+      });
+    }
+    let updateData: any = {
       chatId: chatId,
       participants: [senderId, receiverId],
       lastMessage: content,
       status,
-      files,
       senderId,
       receiverId,
       createdAt,
       unreadCount: unreads,
-    });
-    const newMessage = new Message({
-      customId,
-      chatId,
-      content,
-      receiverId,
-      status,
-      senderId,
-    });
+    };
 
-    await newChat.save();
-    await newMessage.save();
+    if (files?.url) {
+      updateData = { ...updateData, files };
+    }
+    await Promise.all([
+      // this send to the other end user for the first time of the chat creation
+      pusher.trigger(`private-notify-${receiverId}`, "notify", newChatPayload),
+      Chat.create(updateData),
+      Message.create(newMessagePayload),
+    ]);
 
-    return NextResponse.json({ status: "ok", message: content, success: true });
+    return NextResponse.json({ status: 200, message: content, success: true });
   } catch (error) {
     console.error("Error in /api/message:", error);
     return NextResponse.json(

@@ -9,11 +9,11 @@ import {
 import { SaveMessagePayload } from "@/app/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-export function useGetMessages(chatId: string) {
+export function useGetMessages(chatId: string, activeChat: string) {
   return useQuery({
     queryKey: ["get-messages", chatId],
     queryFn: () => getMessages(chatId),
-    enabled: !!chatId,
+    enabled: !!activeChat,
     refetchOnWindowFocus: false,
   });
 }

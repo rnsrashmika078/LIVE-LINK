@@ -7,7 +7,6 @@ export async function getChats(uid: string) {
     if (!uid) {
       return {
         message: "Successfully getting chats!",
-        chats: [],
         status: 200,
       };
     }
@@ -16,6 +15,6 @@ export async function getChats(uid: string) {
     return res.json();
   } catch (err) {
     console.log(err);
-    return { message: "Error fetching chats", chats: [], status: 500 };
+    return { message: "Error fetching chats", status: 500 };
   }
 }

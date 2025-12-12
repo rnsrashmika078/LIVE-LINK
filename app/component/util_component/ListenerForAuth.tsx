@@ -5,6 +5,7 @@ import { auth } from "@/app/lib/firebase/firebase";
 import { useDispatch } from "react-redux";
 import { PusherChatDispatch } from "@/app/types";
 import { setAuthUser } from "@/app/lib/redux/chatslicer";
+import { apiFetch } from "@/app/helper/helper";
 
 export default function ListenerForAuth() {
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -19,20 +20,8 @@ export default function ListenerForAuth() {
           dp: user.photoURL,
         };
         // set cookies with authenticated user uid ( firebase id ) to give the user id access to the server component.
-       
-        const addAuthUser = async () => {
-          const response = await fetch("/api/auth/add-auth-user", {
-            method: "POST",
-            headers: {
-              "Content-type": "application/json",
-            },
-            body: JSON.stringify(authUser),
-          });
-          const result = await response.json();
-          if (result.status === 200) {
-          }
-        };
-        addAuthUser();
+        await apiFetch("/api/auth/add-auth-user", "POST", authUser);
+
         dispatch(
           setAuthUser({
             uid: user.uid!,
@@ -49,7 +38,7 @@ export default function ListenerForAuth() {
     return () => {
       unsubscribe();
     };
-  }, [dispatch]);
+  }, []);
 
   return null;
 }

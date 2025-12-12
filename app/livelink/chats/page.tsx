@@ -11,7 +11,9 @@ const ChatPage = async () => {
   const cookieStore = cookies();
   const uid = (await cookieStore).get("uid")?.value;
   if (!uid) return redirect("/");
+
   const data = await getChats(uid ?? "");
+
 
   return (
     <>

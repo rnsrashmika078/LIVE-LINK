@@ -19,6 +19,7 @@ export function useSearchFriend(searchParam: string, userId: string) {
     queryKey: ["find-friend", searchParam, userId],
     queryFn: () => findFriend(searchParam, userId),
     enabled: !!searchParam,
+    refetchOnWindowFocus: false,
   });
 }
 export function useSendFriendRequests() {
@@ -42,6 +43,7 @@ export function useGetSendRequests(userId: string) {
   return useQuery({
     queryKey: ["get-send-requests", userId],
     queryFn: () => getSendRequests(userId),
+    refetchOnWindowFocus: false,
     enabled: !!userId,
   });
 }
@@ -49,14 +51,17 @@ export function useReceivedRequest(userId: string) {
   return useQuery({
     queryKey: ["get-received-requests", userId],
     queryFn: () => getReceivedRequests(userId),
+    refetchOnWindowFocus: false,
     enabled: !!userId,
   });
 }
-export function useGetFriends(userId: string) {
+export function useGetFriends(userId: string, openModal: boolean) {
   return useQuery({
     queryKey: ["get-friends", userId],
     queryFn: () => getUserFriends(userId),
-    enabled: !!userId,
+    enabled: openModal,
+    refetchOnWindowFocus: false,
+
   });
 }
 export function useUpdateLastSeen(onSuccess?: (result: any) => void) {
@@ -65,11 +70,12 @@ export function useUpdateLastSeen(onSuccess?: (result: any) => void) {
       lastSeenUpdate(uid, lastSeen),
     onSuccess,
   });
-}export function useGetLastSeen(uid: string) {
-    return useQuery({
-      queryKey: ["get-last-seen", uid],
-      queryFn: () => getLastSeenUpdate(uid),
-      enabled: !!uid,
-    });
-  }
-  
+}
+export function useGetLastSeen(uid: string) {
+  return useQuery({
+    queryKey: ["get-last-seen", uid],
+    queryFn: () => getLastSeenUpdate(uid),
+    refetchOnWindowFocus: false,
+    enabled: !!uid,
+  });
+}

@@ -47,10 +47,7 @@ const ChatPanel = React.memo(
     const dispatch = useDispatch<PusherChatDispatch>();
 
     // get Chats ( tanstack )
-    const { data, refetch } = useGetChats(
-      states.authUser?.uid ?? "",
-      !!states.chatsArray
-    );
+    const { data, refetch } = useGetChats(states.authUser?.uid ?? "", true);
     const msg = useMemo(
       () => states.liveMessagesArray.at(-1),
       [states.liveMessagesArray]
@@ -114,11 +111,7 @@ const ChatPanel = React.memo(
       <div
         className={`z-50 transition-all bg-[var(--pattern_2)] h-full w-full sm:w-90  custom-scrollbar-y `}
       >
-        {/* <BaseModal setOpenModal={setOpenModal} openModal={openModal}>
-          <NewChat className="pointer-events-auto" />
-        </BaseModal> */}
         <div>{states.authUser?.createdAt}</div>
-        {/* <div> {formattedDate(authUser?.createdAt ?? "")}</div> */}
         <div className=" space-y-2 relative ">
           <div className=" p-5 justify-center items-center  sticky top-0 space-y-2  bg-[var(--pattern_2)]">
             <div className=" flex justify-between items-center ">

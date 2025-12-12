@@ -8,7 +8,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
-  useRef,
+
   useState,
 } from "react";
 import { useSelector } from "react-redux";
@@ -34,7 +34,7 @@ export const PusherProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return () => pusher?.disconnect();
-  }, [authUser?.uid, pusher]);
+  }, [authUser?.uid]);
 
   return (
     <PusherContext.Provider value={pusher}>{children}</PusherContext.Provider>

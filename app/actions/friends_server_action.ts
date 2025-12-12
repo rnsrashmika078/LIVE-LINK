@@ -81,7 +81,7 @@ export async function getReceivedRequests(userId: string) {
 
 export async function getUserFriends(userId: string) {
   try {
-    if (!userId) return;
+    if (!userId) return [];
 
     const res = await apiFetch(`/api/friends/get-friends/${userId}`, "GET");
 

@@ -34,25 +34,6 @@ export type ModalProps = {
 interface AddNewFriend {
   setSelection: React.Dispatch<React.SetStateAction<string>>;
 }
-export const BaseModalContext = createContext<ModalProps | null>(null);
-// export const useBaseModal = () => {
-//   const context = useContext(BaseModalContext);
-//   if (!context) {
-//     throw new Error("useLayout must be used within a <Layout>");
-//   }
-//   return context;
-// };
-
-export const BaseModal = React.memo(
-  ({ children, setOpenModal, openModal }: ModalProps) => {
-    return (
-      <BaseModalContext.Provider value={{ children, setOpenModal, openModal }}>
-        <div className="">{openModal && children}</div>
-      </BaseModalContext.Provider>
-    );
-  }
-);
-BaseModal.displayName = "BaseModal";
 
 export const NewChat = React.memo(({ className }: { className?: string }) => {
   const { openModal, setOpenModal } = useLiveLink();
@@ -61,7 +42,8 @@ export const NewChat = React.memo(({ className }: { className?: string }) => {
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
 
   const { data: friends, isPending: isGettingFriends } = useGetFriends(
-    authUser?.uid ?? ""
+    authUser?.uid ?? "",
+    openModal
   );
   const dispatch = useDispatch<PusherChatDispatch>();
 

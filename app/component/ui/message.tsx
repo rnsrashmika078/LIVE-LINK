@@ -1,18 +1,29 @@
-import React, { HTMLAttributes, ReactNode, useState } from "react";
-import { AuthUser, ClickedMessageType, Message } from "@/app/types";
+import React, {
+  HTMLAttributes,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { AuthUser, Message } from "@/app/types";
 import { OnMessageSeen } from "@/app/helper/jsxhelper";
-import { MdArrowDropDown } from "react-icons/md";
 import MessageFormat from "./format";
-import { DropDown, MenuItem } from "./dropdown";
+
+import { useLiveLink } from "@/app/context/LiveLinkContext";
+import { Menu, MenuItem } from "./action_menu";
+import { useClickFocus } from "@/app/hooks/useHooks";
 
 interface MessageUIProps extends HTMLAttributes<HTMLDivElement> {
   msg: Message;
-  selectId: string;
   authUser: AuthUser;
   children?: ReactNode;
 }
 export const MessageUI = React.memo(
-  ({ msg, selectId, children, authUser, ...props }: MessageUIProps) => {
+  ({ msg, children, authUser, ...props }: MessageUIProps) => {
+    const focusRef = useRef<HTMLDivElement | null>(null);
+    const { id, setId, onSelect, setOnSelect } = useLiveLink();
+    const area = useClickFocus(focusRef);
+
     if (!msg) return null;
 
     let parsed;
@@ -24,9 +35,8 @@ export const MessageUI = React.memo(
 
     const { format, url, message } = parsed;
 
-    // ---- FILE MESSAGES ----
-
     // ---- main return statement ----
+
     return (
       <div
         className={`flex w-full mt-2   ${
@@ -34,8 +44,9 @@ export const MessageUI = React.memo(
         }`}
       >
         <div
+          ref={focusRef}
           {...props}
-          className={` flex flex-col w-fit relative ${
+          className={`pr-5 flex flex-col w-fit relative bg-red-500  ${
             msg.senderId === authUser?.uid
               ? `${
                   url
@@ -49,22 +60,29 @@ export const MessageUI = React.memo(
                 } justify-start  rounded-br-2xl`
           }`}
         >
-          <div
-            className={` w-full    ${
-              msg.senderId === authUser?.uid
-                ? "top-0  justify-end translate-x-8"
-                : "top-0 justify-start translate-x-0"
-            }`}
-          >
-           
-          </div>
           {children}
           <MessageFormat
-            id={msg._id ?? ""}
+            id={msg.customId ?? ""}
             format={format}
             url={url}
             message={message}
           />
+          {area !== "Outside" && (
+            <Menu
+              id={id}
+              setId={setId}
+              msg={msg}
+              onSelect={setOnSelect}
+              condition={authUser.uid === msg.senderId}
+            >
+              <MenuItem value="Reply" />
+              <MenuItem value="Copy" />
+              <MenuItem value="Forward" />
+              <MenuItem value="Delete" />
+              <MenuItem value="Report" />
+            </Menu>
+          )}
+
           <div className="flex items-end gap-2">
             <p className="text-[10px] text-[var(--pattern_4)]">
               {msg.createdAt
