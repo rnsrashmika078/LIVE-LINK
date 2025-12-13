@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useSelector } from "react-redux";
-import { PusherChatState } from "../types";
+import { Message, PusherChatState } from "../types";
 import { useEffect, useState } from "react";
+import { useMessageDelete } from "../lib/tanstack/messageQuery";
 
 export function usePathName() {
   if (typeof window !== "undefined") {
@@ -53,4 +55,35 @@ export function useClickFocus(
   }, []);
 
   return clickArea ?? "Outside";
+}
+
+export function useActionMenuOperation() {
+  const [result, setResult] = useState<any>("");
+
+  const { mutate: deleteMessage } = useMessageDelete((result) => {
+    if (result) {
+      setResult(result);
+    }
+  });
+  const handleOperation = (
+    value: string,
+    messageId: string,
+    chatId: string,
+    public_id: string
+  ) => {
+    if (value === "Delete") {
+      deleteMessage({
+        messageId,
+        public_id,
+        chatId,
+      });
+      return;
+    }
+    // switch (value) {
+    //   case "Delete":
+    //
+    // }
+  };
+
+  return { result, handleOperation };
 }

@@ -6,7 +6,7 @@ const Spinner = React.memo(
     return (
       <div>
         {condition ? (
-          <div className="flex flex-col w-fit mx-auto">
+          <div className="flex flex-col w-fit mx-auto relative">
             <RxReload className="animate-spin mx-auto mt-3" size={30} />
             <h1>{heading}</h1>
           </div>

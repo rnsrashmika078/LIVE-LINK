@@ -5,10 +5,11 @@ interface FormatProps {
   id: string;
   url: string;
   format: string;
+  info?: string;
   message: string;
 }
 const MessageFormat = React.memo(
-  ({ id, url, format, message }: FormatProps) => {
+  ({ info, url, format, message }: FormatProps) => {
     const openFile = () => {
       if (url) window.open(url, "_blank");
     };
@@ -64,7 +65,7 @@ const MessageFormat = React.memo(
 
         return <p className="text-gray-400 text-sm">Unsupported file</p>;
       }
-      return <p className=" w-fit font-extralight">{message}</p>;
+      return <p className=" w-fit font-extralight">{info ? info : message}</p>;
     };
     return <div className="">{renderFile()}</div>;
   }

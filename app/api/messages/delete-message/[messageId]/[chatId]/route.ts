@@ -3,6 +3,16 @@ import Message from "@/app/backend/models/Message";
 import { NextRequest, NextResponse } from "next/server";
 import cloudinary from "@/app/lib/cloudinary/cloudinary";
 import Chat from "@/app/backend/models/Chat";
+import Pusher from "pusher";
+
+// const pusher = new Pusher({
+//   appId: process.env.PUSHER_APP_ID!,
+//   key: process.env.PUSHER_KEY!,
+//   secret: process.env.PUSHER_SECRET!,
+//   cluster: process.env.PUSHER_CLUSTER!,
+//   useTLS: true,
+// });
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { messageId: string; chatId: string } }
@@ -18,15 +28,22 @@ export async function DELETE(
     } catch (err) {
       public_id = undefined;
     }
+    const message_structure = `
+      {"url": "","message": "🚫This message was deleted","name": "","format": "","public_id": ""}`;
 
-    //delete message
-    await Message.deleteOne({ customId: messageId });
+    await Promise.all([
+      Message.deleteOne({ customId: messageId }),
 
-    //delete file from chat
-    await Chat.updateOne(
-      { chatId },
-      { $pull: { files: { public_id: public_id } } }
-    );
+      // pusher.trigger("private-message")
+      //delete file from chat
+      Chat.updateOne(
+        { chatId },
+        {
+          lastMessage: `${message_structure}`,
+          $pull: { files: { public_id: public_id } },
+        }
+      ),
+    ]);
 
     if (public_id) {
       await cloudinary.uploader.destroy(public_id ?? "");
@@ -36,7 +53,7 @@ export async function DELETE(
     return NextResponse.json({
       status: 200,
       success: true,
-      message: "Successfully delete the message",
+      message: "🚫This message was deleted",
     });
   } catch (error) {
     console.log(error);

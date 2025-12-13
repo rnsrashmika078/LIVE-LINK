@@ -26,15 +26,24 @@ export async function apiFetch(
 
 export function modifiedMessage(input: string): string | null {
   if (!input) return null;
-  const { url, format, message, name } = JSON.parse(input);
+  let msg;
+  try {
+    const parsedMessage =
+      typeof input === "string" ? JSON?.parse(input) : input;
+    const { url, format, message, name } = parsedMessage;
 
-  if (url && message) {
-    return message;
-  } else if (url) {
-    return name + "." + format;
-  } else {
-    return message;
+    if (url && message) {
+      msg = message;
+    } else if (url) {
+      msg = name + "." + format;
+    } else {
+      msg = message;
+    }
+  } catch (err) {
+    console.log(err);
   }
+
+  return msg;
 }
 
 export function modifiedMessageOnMessageArea(
@@ -53,3 +62,5 @@ export function modifiedMessageOnMessageArea(
   }
   return null;
 }
+
+//action menu operations functions

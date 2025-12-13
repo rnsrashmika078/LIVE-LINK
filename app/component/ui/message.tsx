@@ -1,17 +1,16 @@
 import React, {
   HTMLAttributes,
   ReactNode,
-  useEffect,
   useRef,
-  useState,
+
 } from "react";
 import { AuthUser, Message } from "@/app/types";
 import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import MessageFormat from "./format";
-
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { Menu, MenuItem } from "./action_menu";
-import { useClickFocus } from "@/app/hooks/useHooks";
+import { useActionMenuOperation, useClickFocus } from "@/app/hooks/useHooks";
+
 
 interface MessageUIProps extends HTMLAttributes<HTMLDivElement> {
   msg: Message;
@@ -23,6 +22,7 @@ export const MessageUI = React.memo(
     const focusRef = useRef<HTMLDivElement | null>(null);
     const { id, setId, onSelect, setOnSelect } = useLiveLink();
     const area = useClickFocus(focusRef);
+    const { handleOperation, result } = useActionMenuOperation();
 
     if (!msg) return null;
 
@@ -33,9 +33,15 @@ export const MessageUI = React.memo(
       return <p className="text-red-500">Invalid message</p>;
     }
 
-    const { format, url, message } = parsed;
+    const { format, url, message, public_id } = parsed;
 
     // ---- main return statement ----
+
+    function actionMenuHandler(value: string) {
+      handleOperation(value, msg.customId, msg.chatId, public_id);
+      // alert(value);
+    }
+    // your Redux store
 
     return (
       <div
@@ -46,7 +52,7 @@ export const MessageUI = React.memo(
         <div
           ref={focusRef}
           {...props}
-          className={`pr-5 flex flex-col w-fit relative bg-red-500  ${
+          className={`pr-5 flex flex-col w-fit relative   ${
             msg.senderId === authUser?.uid
               ? `${
                   url
@@ -62,17 +68,18 @@ export const MessageUI = React.memo(
         >
           {children}
           <MessageFormat
+            info={result.message}
             id={msg.customId ?? ""}
             format={format}
             url={url}
             message={message}
           />
-          {area !== "Outside" && (
+          {area !== "OutSide" && (
             <Menu
               id={id}
               setId={setId}
               msg={msg}
-              onSelect={setOnSelect}
+              onSelect={actionMenuHandler}
               condition={authUser.uid === msg.senderId}
             >
               <MenuItem value="Reply" />

@@ -18,6 +18,7 @@ export const useMenu = () => {
   }
   return context;
 };
+
 export function Menu({
   id,
   msg,
@@ -37,7 +38,6 @@ export function Menu({
   const handleSelection = (value: string) => {
     setSelection(value);
     if (setId) setId("");
-
     if (onSelect) onSelect(value);
   };
   let dynamicStyles;
@@ -50,7 +50,7 @@ export function Menu({
       <div onSelect={() => handleSelection}>
         {id === msg.customId && (
           <div
-            className={`z-[9999]   absolute p-2 pointer-events-auto ${dynamicStyles}`}
+            className={`z-[9999] pattern_2  absolute rounded-xl pointer-events-auto ${dynamicStyles}`}
           >
             {children}
           </div>
@@ -62,5 +62,12 @@ export function Menu({
 export function MenuItem({ value }: { value: string }) {
   const { setSelection } = useMenu();
 
-  return <div onClick={() => setSelection(value)}>{value}</div>;
+  return (
+    <div
+      className="hover:bg-[var(--pattern_5)] first:rounded-t-xl last:rounded-b-xl  px-3 py-2"
+      onClick={() => setSelection(value)}
+    >
+      {value}
+    </div>
+  );
 }
