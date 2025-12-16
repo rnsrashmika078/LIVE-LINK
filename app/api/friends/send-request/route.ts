@@ -27,15 +27,6 @@ export async function POST(req: Request) {
       uid: sen_uid,
     } = requestSender;
 
-    await pusher.trigger(`private-notify-${rec_uid}`, "notify", {
-      uid: sen_uid,
-      name: sen_name,
-      email: sen_email,
-      dp: sen_dp,
-      type: "friend_request",
-      message: "You have friend request from " + sen_name,
-    });
-
     //check if the already sent requests
     const update = await User.findOne({
       uid: sen_uid,
@@ -57,14 +48,17 @@ export async function POST(req: Request) {
         message: "already sent!",
       });
     }
-    const updateSendRequest = await User.findOneAndUpdate(
-      { uid: sen_uid, receivedRequests: { $ne: rec_uid } },
-      { $addToSet: { sentRequests: rec_uid } }
-    );
-    const updateReceivedRequest = await User.findOneAndUpdate(
-      { uid: rec_uid, sentRequests: { $ne: sen_uid } },
-      { $addToSet: { receivedRequests: sen_uid } }
-    );
+
+    await Promise.all([
+      User.findOneAndUpdate(
+        { uid: sen_uid, receivedRequests: { $ne: rec_uid } },
+        { $addToSet: { sentRequests: rec_uid } }
+      ),
+      User.findOneAndUpdate(
+        { uid: rec_uid, sentRequests: { $ne: sen_uid } },
+        { $addToSet: { receivedRequests: sen_uid } }
+      ),
+    ]);
 
     // const alreadySent
     return NextResponse.json({

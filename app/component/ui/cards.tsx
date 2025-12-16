@@ -87,7 +87,6 @@ export const UserCard = ({
     (u) => u.userId === authUserId && u.count > 0
   );
 
-  console.log("last message", lastMessage);
   return (
     <div
       className={`${dynamicClass} hover:bg-[var(--pattern_5)] mt-1 ${className}  transition-all`}

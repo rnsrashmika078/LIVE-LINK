@@ -6,17 +6,25 @@ import { Provider } from "react-redux";
 import GlobalPusherListener from "./GlobalPusherListener";
 import PusherListenerPresence from "./PusherListenerPresence";
 import { PusherProvider } from "./PusherProvider";
+import Communication from "./Communication";
+import LiveLink from "@/app/context/LiveLinkContext";
+import { SocketProvider } from "./SocketProvider";
 
 const AppProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <PusherProvider>
-          <GlobalPusherListener />
-          <PusherListenerPresence />
-          {children}
-        </PusherProvider>
+        <SocketProvider>
+          <LiveLink>
+            <PusherProvider>
+              <GlobalPusherListener />
+              <PusherListenerPresence />
+              <Communication />
+              {children}
+            </PusherProvider>
+          </LiveLink>
+        </SocketProvider>
       </Provider>
     </QueryClientProvider>
   );

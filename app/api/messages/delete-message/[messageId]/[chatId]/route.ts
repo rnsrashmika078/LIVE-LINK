@@ -5,13 +5,13 @@ import cloudinary from "@/app/lib/cloudinary/cloudinary";
 import Chat from "@/app/backend/models/Chat";
 import Pusher from "pusher";
 
-// const pusher = new Pusher({
-//   appId: process.env.PUSHER_APP_ID!,
-//   key: process.env.PUSHER_KEY!,
-//   secret: process.env.PUSHER_SECRET!,
-//   cluster: process.env.PUSHER_CLUSTER!,
-//   useTLS: true,
-// });
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID!,
+  key: process.env.PUSHER_KEY!,
+  secret: process.env.PUSHER_SECRET!,
+  cluster: process.env.PUSHER_CLUSTER!,
+  useTLS: true,
+});
 
 export async function DELETE(
   req: NextRequest,
@@ -32,23 +32,37 @@ export async function DELETE(
       {"url": "","message": "🚫This message was deleted","name": "","format": "","public_id": ""}`;
 
     await Promise.all([
-      Message.deleteOne({ customId: messageId }),
-
-      // pusher.trigger("private-message")
-      //delete file from chat
+      Message.updateOne(
+        { customId: messageId },
+        { content: message_structure }
+      ),
       Chat.updateOne(
-        { chatId },
+        { lastMessageId: messageId },
         {
           lastMessage: `${message_structure}`,
-          $pull: { files: { public_id: public_id } },
         }
       ),
+      pusher.trigger(`private-message-${chatId}`, "client-message", {
+        type: "deleting",
+        messageId,
+        chatId,
+      }),
     ]);
 
     if (public_id) {
-      await cloudinary.uploader.destroy(public_id ?? "");
+      await Promise.all([
+        //delete file from cloudinary
+        cloudinary.uploader.destroy(public_id ?? ""),
+
+        //delete file from chat
+        Chat.updateOne(
+          { chatId },
+          {
+            $pull: { files: { public_id: public_id } },
+          }
+        ),
+      ]);
     }
-    //delete file from cloudinary
 
     return NextResponse.json({
       status: 200,

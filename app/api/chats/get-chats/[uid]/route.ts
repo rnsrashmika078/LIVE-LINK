@@ -11,9 +11,7 @@ export async function GET(
     await connectDB();
     const { uid } = await params;
 
-    const chats = await Chat.find({ participants: { $in: [uid] } }).select(
-      "participants lastMessage unreadCount chatId createdAt updatedAt status senderId receiverId"
-    );
+    const chats = await Chat.find({ participants: { $in: [uid] } }).lean();
     const chatList = [];
     for (const ch of chats) {
       const otherUserId = ch.participants.find((p: string) => p !== uid);
@@ -33,6 +31,7 @@ export async function GET(
         status: ch.status,
         senderId: ch.senderId,
         receiverId: ch.receiverId,
+        lastMessageId: ch.lastMessageId,
       });
     }
     if (chatList.length > 0) {

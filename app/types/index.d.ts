@@ -1,6 +1,51 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Socket } from "socket.io-client";
 import { store } from "../lib/redux/store";
 
 //app types
+//communication types
+export type SessionInfo = {
+  callType?: "audio" | "video";
+  callId?: string | null;
+  callFrom?: string | null;
+  callTo?: string | null;
+  callerName?: string | null;
+  callerDp?: string | null;
+  calleeName?: string | null;
+  calleeDp?: string | null;
+  callStatus?: "Connecting.." | "Connected" | "Call End";
+  callEndBy?: string | null;
+  sdp?: RTCSessionDescriptionInit | null;
+  candidate?: RTCIceCandidateInit | null;
+  localAudioRef?: React.RefObject<HTMLAudioElement | null>;
+  pendingCandidatesRef?: React.RefObject<RTCIceCandidateInit[]>;
+  remoteAudioRef?: React.RefObject<HTMLAudioElement | null>;
+  pcRef?: React.RefObject<RTCPeerConnection | null>;
+  socket?: Socket | null;
+};
+export type SessionInfoSerialize = {
+  callType?: "audio" | "video";
+  callId?: string | null;
+  callFrom?: string | null;
+  callTo?: string | null;
+  callerName?: string | null;
+  callerDp?: string | null;
+  calleeName?: string | null;
+  calleeDp?: string | null;
+  callStatus?: string | null;
+  callEndBy?: string | null;
+};
+// export type CommunicationRefs = {
+//   localAudioRef: React.RefObject<HTMLAudioElement | null>;
+//   remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
+//   pcRef: React.RefObject<RTCPeerConnection | null>;
+//   channelRef: React.RefObject<any>;
+// };
+export type DeletedMessage = {
+  type?: string;
+  messageId: string;
+  chatId: string;
+};
 export type FileType = {
   format: string;
   url: string;
@@ -71,6 +116,7 @@ export type ChatsType = {
   uid: string;
   name: string;
   email: string;
+  lastMessageId?: string;
   dp: string;
   lastMessage: string;
   type?: string;

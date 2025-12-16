@@ -1,5 +1,12 @@
 "use client";
-import { AuthUser, ChatsType, Message, SeenType, TypingUser } from "@/app/types";
+import {
+  AuthUser,
+  ChatsType,
+  DeletedMessage,
+  Message,
+  SeenType,
+  TypingUser,
+} from "@/app/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type ReduxChatState = {
@@ -12,6 +19,7 @@ type ReduxChatState = {
   chats: ChatsType[];
   typingUsers: TypingUser[];
   chatArray: ChatsType[];
+  deletedMessage: DeletedMessage[];
   debouncedText: string;
 };
 const initialState: ReduxChatState = {
@@ -25,6 +33,7 @@ const initialState: ReduxChatState = {
   messageSeen: { state: "", chatId: "", receiverId: "", senderId: "" },
   messagesArray: [],
   debouncedText: "",
+  deletedMessage: [],
 };
 const chatSlicer = createSlice({
   name: "chatslicer",
@@ -79,6 +88,20 @@ const chatSlicer = createSlice({
       }
       state.typingUsers.push(action.payload);
     },
+    setDeletedMessage: (state, action: PayloadAction<DeletedMessage>) => {
+      const exist = state.deletedMessage.some(
+        (u) => u.chatId === action.payload.chatId
+      );
+      if (exist) {
+        state.deletedMessage = state.deletedMessage.map((u) =>
+          u.chatId === action.payload.chatId
+            ? { ...u, messageId: action.payload.messageId }
+            : u
+        );
+        return;
+      }
+      state.deletedMessage.push(action.payload);
+    },
     setDebouncedText: (state, action: PayloadAction<string>) => {
       state.debouncedText = action.payload;
     },
@@ -91,6 +114,7 @@ export const {
   setChats,
   setMessageSeen,
   setMessages,
+  setDeletedMessage,
   setMessagesArray,
   setChatsArray,
   setTypingUsers,

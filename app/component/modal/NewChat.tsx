@@ -1,11 +1,9 @@
 import React, {
-  createContext,
   ReactNode,
   useCallback,
-  useContext,
   useState,
 } from "react";
-import SearchArea from "../../component/ui/searcharea";
+import SearchArea from "../ui/searcharea";
 import Avatar from "../ui/avatar";
 import { UserCard } from "../ui/cards";
 import { IoIosArrowRoundBack } from "react-icons/io";
@@ -232,7 +230,7 @@ export const UserDetails = React.memo(() => {
           <CgProfile />
         </div>
       </div>
-      <div className="w-62 border flex flex-col justify-start items-start te h-full bg-red-500x p-5 ">
+      <div className="w-62 border flex flex-col justify-start items-start te h-full  p-5 ">
         <Avatar
           image={authUser?.dp ?? "/no_avatar.png"}
           width={20}

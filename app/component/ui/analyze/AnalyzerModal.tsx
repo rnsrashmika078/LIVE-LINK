@@ -1,5 +1,4 @@
 import { PusherChatState } from "@/app/types";
-import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
@@ -15,25 +14,17 @@ const AnalyzerModal = () => {
     }, 0);
   }, [chat, friends, layout, notify]);
 
-  const variants = {
-    initial: { y: 0, x: 0 },
-    animate: { y: 20, x: 50 },
-  };
+  const mb = (size / 1024 / 1024).toFixed(4);
   return (
-    <motion.div
-      variants={variants}
-      initial="hidden"
-      animate="visible"
-      className="fixed top-1/3 right-5 h-[350px] bg-gray-800 p-5 w-[300px] space-y-5 rounded-xl"
-    >
+    <div className="fixed top-1/3 right-5 h-[350px] bg-gray-800 p-5 w-[300px] space-y-5 rounded-xl">
       <h1 className="font-bold text-center bg-gray-700 rounded-t-2xl ">
         Analyzer 1.0
       </h1>
       <div className="flex justify-between">
         <h2 className="font-extralight">Redux Size Usage</h2>
-        <h2>{size}</h2>
+        <h2>{mb} MB</h2>
       </div>
-    </motion.div>
+    </div>
   );
 };
 export default AnalyzerModal;

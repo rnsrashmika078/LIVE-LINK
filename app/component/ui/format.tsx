@@ -24,14 +24,17 @@ const MessageFormat = React.memo(
           type.includes("avif")
         ) {
           return (
-            <Image
-              src={url}
-              alt="uploaded image"
-              width={200}
-              onClick={openFile}
-              height={200}
-              className="object-contain w-[200px] h-[200px] cursor-pointer"
-            />
+            <>
+              <Image
+                src={url}
+                alt="uploaded image"
+                width={200}
+                onClick={openFile}
+                height={200}
+                className="object-contain w-[200px] h-[200px] cursor-pointer"
+              />
+              <p className="mt-1 w-fit font-extralight">{info ? info : message}</p>
+            </>
           );
         }
         // VIDEO
@@ -41,30 +44,37 @@ const MessageFormat = React.memo(
           type.includes("webm")
         ) {
           return (
-            <video
-              src={url}
-              controls
-              className="object-contain w-[250px] h-[250px] cursor-pointer"
-              width={250}
-              onClick={openFile}
-              height={250}
-            ></video>
+            <>
+              <video
+                src={url}
+                controls
+                className="object-contain w-[250px] h-[250px] cursor-pointer"
+                width={250}
+                onClick={openFile}
+                height={250}
+              ></video>
+              <p className="mt-1 w-fit font-extralight">{info ? info : message}</p>
+            </>
           );
         }
 
         // PDF
         if (type.includes("pdf")) {
           return (
-            <FaFilePdf
-              onClick={openFile}
-              size={50}
-              className="cursor-pointer hover:scale-110 transition-all"
-            />
+            <>
+              <FaFilePdf
+                onClick={openFile}
+                size={50}
+                className="cursor-pointer hover:scale-110 transition-all"
+              />
+              <p className=" w-fit font-extralight">{info ? info : message}</p>
+            </>
           );
         }
 
         return <p className="text-gray-400 text-sm">Unsupported file</p>;
       }
+
       return <p className=" w-fit font-extralight">{info ? info : message}</p>;
     };
     return <div className="">{renderFile()}</div>;

@@ -20,7 +20,7 @@ export async function GET(
       return NextResponse.json({
         success: true,
         status: 200,
-        friends: [],
+        friends: friends,
         message: "error while receiving friend list!",
       });
     }

@@ -62,5 +62,8 @@ export function modifiedMessageOnMessageArea(
   }
   return null;
 }
-
+export function elapsedTime(startedAt: number) {
+  const time = new Date();
+  return time;
+}
 //action menu operations functions

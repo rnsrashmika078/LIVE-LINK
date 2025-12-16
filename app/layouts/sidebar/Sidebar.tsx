@@ -9,6 +9,8 @@ import Image from "next/image";
 import React, { useEffect } from "react";
 import { setActiveChat } from "@/app/lib/redux/chatslicer";
 import { usePathName } from "@/app/hooks/useHooks";
+import { apiFetch } from "@/app/helper/helper";
+import { useSocket } from "@/app/component/util_component/SocketProvider";
 
 // one hydration error occur in this component that needed be solve
 const Sidebar = React.memo(() => {
@@ -16,7 +18,9 @@ const Sidebar = React.memo(() => {
   const currentTab = useSelector(
     (store: PusherChatState) => store.layout.currentTab
   );
-
+  const activeChat = useSelector(
+    (store: PusherChatState) => store.chat.activeChat
+  );
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
   const router = useRouter();
 
@@ -41,7 +45,8 @@ const Sidebar = React.memo(() => {
     if (!path) return;
     dispatch(setCurrentTab(path.split("/")[2]));
   }, []);
-  
+  const socket = useSocket();
+
   return (
     <div className="bg-[var(--pattern_1)] w-14 h-full flex flex-col justify-between py-2 px-1">
       <div className="flex flex-col justify-center">

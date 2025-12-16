@@ -1,16 +1,10 @@
-import React, {
-  HTMLAttributes,
-  ReactNode,
-  useRef,
-
-} from "react";
+import React, { HTMLAttributes, ReactNode, useCallback, useRef } from "react";
 import { AuthUser, Message } from "@/app/types";
 import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import MessageFormat from "./format";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { Menu, MenuItem } from "./action_menu";
 import { useActionMenuOperation, useClickFocus } from "@/app/hooks/useHooks";
-
 
 interface MessageUIProps extends HTMLAttributes<HTMLDivElement> {
   msg: Message;
@@ -24,6 +18,9 @@ export const MessageUI = React.memo(
     const area = useClickFocus(focusRef);
     const { handleOperation, result } = useActionMenuOperation();
 
+    const actionMenuHandler = (value: string) => {
+      handleOperation(value, msg.customId, msg.chatId, public_id);
+    };
     if (!msg) return null;
 
     let parsed;
@@ -37,10 +34,6 @@ export const MessageUI = React.memo(
 
     // ---- main return statement ----
 
-    function actionMenuHandler(value: string) {
-      handleOperation(value, msg.customId, msg.chatId, public_id);
-      // alert(value);
-    }
     // your Redux store
 
     return (

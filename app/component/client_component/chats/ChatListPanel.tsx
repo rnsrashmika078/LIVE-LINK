@@ -2,7 +2,7 @@
 "use client";
 import { BiEdit, BiFilter } from "react-icons/bi";
 import SearchArea from "@/app/component/ui/searcharea";
-import { BaseModal, NewChat, UserDetails } from "@/app/component/modal/modal";
+import { NewChat, UserDetails } from "@/app/component/modal/NewChat";
 import { useEffect, useMemo, useState } from "react";
 import { UserChatCard } from "@/app/component/ui/cards";
 import { ChatsType, PusherChatDispatch, PusherChatState } from "@/app/types";
@@ -10,14 +10,15 @@ import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import React from "react";
 import { setActiveChat, setChats } from "@/app/lib/redux/chatslicer";
 import Spinner from "@/app/component/ui/spinner";
+
+import { useGetChats } from "@/app/lib/tanstack/chatsQuery";
+import { useLiveLink } from "@/app/context/LiveLinkContext";
 import {
   useUnreadCountClear,
   useUnreadCountIncrease,
-  useUnreadCountStop,
   useUpdateMessageSeenInChat,
-} from "@/app/hooks/useEffectHooks";
-import { useGetChats } from "@/app/lib/tanstack/chatsQuery";
-import { useLiveLink } from "@/app/context/LiveLinkContext";
+} from "@/app/hooks/CustomHooks/chatEffectHook";
+import { useDeleteMessage } from "@/app/hooks/CommonEffectHooks";
 
 const ChatPanel = React.memo(
   ({ initialChats }: { initialChats: ChatsType[] }) => {
@@ -27,6 +28,9 @@ const ChatPanel = React.memo(
     // const [isPending, setIsPending] = useState(
     //   initialChats.length === 0  ? f
     // );
+
+    //use hooks
+    const { openModal, setOpenModal, connectionState } = useLiveLink();
 
     //redux states
     const states = useSelector(
@@ -39,6 +43,7 @@ const ChatPanel = React.memo(
         currentTab: store.layout.currentTab,
         debounce: store.chat.debouncedText,
         unreads: store.chat.unreads,
+        deletedMessages: store.chat.deletedMessage,
       }),
       shallowEqual
     );
@@ -47,7 +52,10 @@ const ChatPanel = React.memo(
     const dispatch = useDispatch<PusherChatDispatch>();
 
     // get Chats ( tanstack )
-    const { data, refetch } = useGetChats(states.authUser?.uid ?? "", true);
+    const { data, refetch } = useGetChats(
+      states.authUser?.uid ?? "",
+      connectionState
+    );
     const msg = useMemo(
       () => states.liveMessagesArray.at(-1),
       [states.liveMessagesArray]
@@ -73,6 +81,7 @@ const ChatPanel = React.memo(
     }, [states.chatsArray?.length, refetch, states.chatsArray]);
 
     // update the ( increase ) the unread message count
+    // update the chat states to latest message data coming from live socket ( pusher )
     useUnreadCountIncrease(
       msg!,
       setChatState,
@@ -87,30 +96,49 @@ const ChatPanel = React.memo(
     // useUnreadCountStop(msg!, setChatState, states.activeChat!);
 
     //update message seen status ( in this case last messagee status of chat)
+    // update the chat states to latest message data coming from live socket ( pusher )
     useUpdateMessageSeenInChat(setChatState, states.messageSeen!);
+
+    //update delete message from the message
+    useDeleteMessage("Chat", states.deletedMessages!, setChatState);
 
     //here get the shallow copy from the chatState -> object are same but the array is change ( new array )
     //new array = new memory address -> but the object inside the array referencing to the same memory address of previous
 
-    const chats = useMemo(
-      () =>
-        [...chatState].sort((a, b) => {
+    const chats = useMemo(() => {
+      if (chatState && chatState?.length > 0) {
+        [...chatState]?.sort((a, b) => {
           const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
           const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
 
           return bTime - aTime;
-        }),
-
-      [chatState]
-    );
-
-    //use hooks
-    const { openModal, setOpenModal } = useLiveLink();
+        });
+      }
+      return [];
+    }, [chatState]);
 
     return (
       <div
         className={`z-50 transition-all bg-[var(--pattern_2)] h-full w-full sm:w-90  custom-scrollbar-y `}
       >
+        {/* {states.deletedMessages.map((d, index) => (
+          <div
+            key={index}
+            className="z-[999] bg-red-500 flex text-center w-full flex-col fixed top-10 left-1/2 -translate-x-1/2"
+          >
+            <div> CHAT ID {d.chatId}</div>
+            <div> MESSAGE ID {d.messageId}</div>
+          </div>
+        ))}
+        {chatState.map((d, index) => (
+          <div
+            key={index}
+            className="z-[999] bg-green-500 flex text-center w-full flex-col fixed bottom-10 left-1/2 -translate-x-1/2"
+          >
+            <div> CHAT ID {d.chatId}</div>
+            <div> LAST MESSAGE ID {d.lastMessageId}</div>
+          </div>
+        ))} */}
         <div>{states.authUser?.createdAt}</div>
         <div className=" space-y-2 relative ">
           <div className=" p-5 justify-center items-center  sticky top-0 space-y-2  bg-[var(--pattern_2)]">

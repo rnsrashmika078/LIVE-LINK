@@ -8,7 +8,7 @@ export async function GET() {
     const allUsers = await User.find();
 
     return Response.json({
-      message: "Successfully getting all ther users!",
+      message: "Successfully getting all there users!",
       allUsers,
       status: 200,
     });

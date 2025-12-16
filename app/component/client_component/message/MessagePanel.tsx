@@ -19,10 +19,7 @@ const MessageViewArea = React.lazy(
 import { setUnreads } from "@/app/lib/redux/chatslicer";
 import { TextArea } from "@/app/component/ui/textarea";
 import { handleImageUpload } from "@/app/util/util";
-import {
-  usePusherSubscribe,
-  useUpdateMessageSeen,
-} from "@/app/hooks/useEffectHooks";
+
 import { FileShare } from "@/app/component/ui/preview";
 import { TypingIndicator } from "@/app/component/ui/typingIndicator";
 import {
@@ -36,12 +33,24 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useDragDropHook } from "@/app/hooks/useDragDropHook";
 import Spinner from "../../ui/spinner";
+import {
+  usePusherSubscribe,
+  useUpdateMessageSeen,
+} from "@/app/hooks/CustomHooks/messageEffectHooks";
+import { useDeleteMessage } from "@/app/hooks/CommonEffectHooks";
 
+import { useLiveLink } from "@/app/context/LiveLinkContext";
+import { useSocket } from "../../util_component/SocketProvider";
+import AudioCallWithPusher from "@/app/test";
+const OutGoingCall = React.lazy(
+  () => import("../../ui/communications/OutGoingCall")
+);
 const MessagePanel = () => {
   //use states
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const { setClickedIcon, clickedIcon } = useLiveLink();
 
   //query client ( tanstack )
   const QueryClient = useQueryClient();
@@ -55,6 +64,7 @@ const MessagePanel = () => {
       activeChat: store.chat.activeChat,
       unreads: store.chat.unreads,
       messageSeen: store.chat.messageSeen,
+      deletedMessages: store.chat.deletedMessage,
       // liveMessages: store.chat.messages,
       authUser: store.chat.authUser,
       typingUsers: store.chat.typingUsers,
@@ -82,10 +92,7 @@ const MessagePanel = () => {
   );
 
   //get Messages ( tanstack )
-  const { data, isPending, refetch } = useGetMessages(
-    chatId,
-    states.activeChat?.chatId ?? ""
-  );
+  const { data, isPending, refetch } = useGetMessages(chatId);
 
   //get last seen time ( tanstack ) and store in state
   const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
@@ -191,6 +198,9 @@ const MessagePanel = () => {
   // pusher typing state trigger
   usePusherSubscribe(debounce, states.activeChat!, states.authUser!);
 
+  //update delete message from the message
+  useDeleteMessage("Message", states.deletedMessages!, setMessages);
+
   // use Effect:  update the user last seen when presence changes ( listening to the presence changes )
   useEffect(() => {
     const seenTime = new Date().toString();
@@ -264,9 +274,21 @@ const MessagePanel = () => {
               </div>
             </div>
             <div className="flex gap-5">
-              <BiPhoneCall size={20} />
-              <BiVideo size={20} />
-              <BiSearch size={20} />
+              <BiPhoneCall
+                className="cursor-pointer transition-all hover:scale-120"
+                size={20}
+                onClick={() => setClickedIcon("audio")}
+              />
+              <BiVideo
+                className="cursor-pointer transition-all hover:scale-120"
+                size={20}
+                onClick={() => setClickedIcon("video")}
+              />
+              <BiSearch
+                className="cursor-pointer transition-all hover:scale-120"
+                size={20}
+                onClick={() => setClickedIcon("search")}
+              />
             </div>
           </div>
 
@@ -279,7 +301,11 @@ const MessagePanel = () => {
               onDragLeave={onDragLeave}
             />
           </Suspense>
-
+          {clickedIcon === "audio" && (
+            <Suspense fallback={null}>
+              <OutGoingCall />
+            </Suspense>
+          )}
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
             <TypingIndicator
               isUserTyping={isUserTyping}

@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useSelector } from "react-redux";
 import { Message, PusherChatState } from "../types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMessageDelete } from "../lib/tanstack/messageQuery";
 
 export function usePathName() {
@@ -71,6 +72,7 @@ export function useActionMenuOperation() {
     chatId: string,
     public_id: string
   ) => {
+    if (!value) return;
     if (value === "Delete") {
       deleteMessage({
         messageId,
@@ -83,7 +85,40 @@ export function useActionMenuOperation() {
     //   case "Delete":
     //
     // }
+    return;
   };
 
   return { result, handleOperation };
+}
+
+export function useElapsedTime(condition: boolean) {
+  const startAtRef = useRef<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!condition) {
+      startAtRef.current = null;
+      setElapsedTime(null);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (!startAtRef.current) {
+        // if the ref current hold value is null
+        startAtRef.current = Date.now();
+      }
+      const diff = Date.now() - startAtRef.current; // this is the time difference in milliseconds
+      const timeDiffInSec = Math.floor(diff / 1000); // this is the time difference in seconds
+      const minute = Math.floor(timeDiffInSec / 60);
+      const seconds = timeDiffInSec % 60;
+      const format = `${minute.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+
+      setElapsedTime(format);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [condition]);
+
+  return elapsedTime ? elapsedTime : null;
 }

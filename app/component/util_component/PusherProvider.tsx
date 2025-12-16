@@ -8,7 +8,6 @@ import {
   ReactNode,
   useContext,
   useEffect,
-
   useState,
 } from "react";
 import { useSelector } from "react-redux";
@@ -16,7 +15,6 @@ import { useSelector } from "react-redux";
 const PusherContext = createContext<Pusher | null>(null);
 export const PusherProvider = ({ children }: { children: ReactNode }) => {
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
-  // const pusherRef = useRef<Pusher | null>(null);
   const [pusher, setPusher] = useState<Pusher | null>(null);
 
   useEffect(() => {
@@ -35,6 +33,13 @@ export const PusherProvider = ({ children }: { children: ReactNode }) => {
 
     return () => pusher?.disconnect();
   }, [authUser?.uid]);
+
+  useEffect(() => {
+    return () => {
+      pusher?.disconnect();
+    };
+  }, [pusher]);
+
 
   return (
     <PusherContext.Provider value={pusher}>{children}</PusherContext.Provider>

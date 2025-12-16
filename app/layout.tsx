@@ -4,7 +4,8 @@ import "./globals.css";
 import AppProvider from "./component/util_component/AppProvider";
 import ListenerForAuth from "./component/util_component/ListenerForAuth";
 import { Toast } from "./component/ui/Toast";
-import Analyzer from "./component/ui/analyze/analyzer";
+import Analyzer from "./component/ui/analyze/Analyzer";
+import Connection from "./component/util_component/Connection";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
         <AppProvider>
           <Toast />
           <ListenerForAuth />
+          <Connection />
           <Analyzer />
           {children}
         </AppProvider>

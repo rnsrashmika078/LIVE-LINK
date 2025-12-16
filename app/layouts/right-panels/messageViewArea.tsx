@@ -1,15 +1,16 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import { Message, PusherChatState } from "@/app/types";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { useInView } from "framer-motion";
 import React from "react";
 import Spinner from "@/app/component/ui/spinner";
-import { useMessageSeenAPI } from "@/app/hooks/useEffectHooks";
 import { MessageUI } from "@/app/component/ui/message";
-import { useMessageDelete } from "@/app/lib/tanstack/messageQuery";
 import { MdArrowDropDown } from "react-icons/md";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
+import { useMessageSeenAPI } from "@/app/hooks/CustomHooks/messageEffectHooks";
+import { useElapsedTime } from "@/app/hooks/useHooks";
 
 interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: Message[];
@@ -17,6 +18,7 @@ interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
   //states
+  const { setId } = useLiveLink();
 
   const states = useSelector(
     (store: PusherChatState) => ({
@@ -42,11 +44,20 @@ function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
     }
   }, [messages]);
 
-   const { setId } = useLiveLink();
+  /**
+   * create a elapsed time ticker
+   * useRef to store createdAt as number
+   * useState to store ElapsedTime as string
+   * useEffect to do the calculation part
+   * setInterval to run the useEffect in each seconds
+   * display the elapsed time ( 01:25 )
+   * use padStart to show the time in two number if the sec or minute it single figure : (0 -> 00) padStart(2,"0")
+   */
 
   return (
-    <div className="p-5 relative custom-scrollbar-y h-full w-full" {...props}>
+    <div className="p-5 relative custom-scrollbar-y h-full w-full " {...props}>
       <Spinner condition={state} />
+
       {messages
         .filter((m) => m.chatId === states.activeChat?.chatId)
         .map((msg, index) => (

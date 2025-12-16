@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import connectDB from "@/app/backend/lib/connectDB";
 import Chat from "@/app/backend/models/Chat";
-import Content from "@/app/backend/models/Content";
 import Message from "@/app/backend/models/Message";
 import { NextResponse } from "next/server";
 import Pusher from "pusher";
@@ -51,6 +50,7 @@ export async function POST(req: Request) {
     const newChatPayload = {
       chatId,
       lastMessage: content,
+      lastMessageId: customId,
       unreadCount: [],
       participants: [],
       name,
@@ -75,6 +75,7 @@ export async function POST(req: Request) {
     if (existChat) {
       let updateData: any = {
         lastMessage: content,
+        lastMessageId: customId,
         status,
         senderId,
         createdAt,
@@ -97,6 +98,7 @@ export async function POST(req: Request) {
     }
     let updateData: any = {
       chatId: chatId,
+      lastMessageId: customId,
       participants: [senderId, receiverId],
       lastMessage: content,
       status,
