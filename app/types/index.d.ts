@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Socket } from "socket.io-client";
 import { store } from "../lib/redux/store";
+import { IconType } from "react-icons/lib";
 
 //app types
 //communication types
@@ -41,6 +42,15 @@ export type SessionInfoSerialize = {
 //   pcRef: React.RefObject<RTCPeerConnection | null>;
 //   channelRef: React.RefObject<any>;
 // };
+
+export type IconArrayType = {
+  name: string;
+  icon: IconType;
+}[];
+export type RelativePositionType = {
+  top: number;
+  left: number;
+};
 export type DeletedMessage = {
   type?: string;
   messageId: string;
@@ -79,6 +89,7 @@ export type AuthUser = {
   type?: string;
   createdAt?: string;
 };
+
 export type SaveMessagePayload = {
   content: string;
   senderId: string;
@@ -126,6 +137,8 @@ export type ChatsType = {
   message?: string;
   unreadCount?: Unread[];
   createdAt?: string;
+
+  participants?: AuthUser[];
   updatedAt?: string;
   status?: "sent" | "delivered" | "seen";
 };
@@ -134,7 +147,42 @@ type ClickedMessageType = {
   id: string;
   message: Message | null;
 };
-//this type is use to switch between the chat list layout and the chat info layout
+
+// export type GroupMembers = {
+//   userId: string;
+//   firstName: string;
+//   lastName: string;
+// };
+
+//group
+export type GroupType = {
+  chatId: string;
+  groupName: string;
+  createdBy: string;
+  dp: string;
+  lastMessage: LastMessageGroup;
+  participants: string[];
+  updatedAt?: string;
+  type?: string;
+  message?: string;
+};
+
+export type LastMessageGroup = {
+  message: string;
+  name: string;
+};
+export type GroupMessage = {
+  customId: string;
+  senderId: string;
+  dp: string;
+  firstName: string;
+  lastName: string;
+  message: string;
+  status: string;
+  seenBy: [string];
+  deliveredTo: [string];
+};
+
 export type SectionType = {
   section: string;
 };

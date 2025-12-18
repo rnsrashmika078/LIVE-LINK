@@ -24,18 +24,29 @@ export default function PusherListenerPresence() {
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
   const pusher = usePusher();
 
+
   useEffect(() => {
-    if (!pusher) return;
-    if (!authUser?.uid || !chats.length) {
+    if (!pusher) {
+      console.log("no pusher found!");
+      return;
+    }
+    if (!authUser?.uid) {
+
       return;
     }
 
+
     const chat_channels: Record<string, any> = {};
+
 
     chats.forEach((chat) => {
       if (!chat.chatId) {
+
+
         return;
       }
+
+
       const channelName = `private-message-${chat.chatId}`;
 
       const channel = pusher.subscribe(channelName);

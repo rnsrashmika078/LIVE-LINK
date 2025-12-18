@@ -1,6 +1,6 @@
 "use client";
 
-import { getChats } from "@/app/actions/chats_server_actions";
+import { getChats } from "@/app/actions/chats_actions";
 import { useQuery } from "@tanstack/react-query";
 
 export function useGetChats(uid: string, fetch: boolean) {

@@ -4,20 +4,23 @@ import React from "react";
 import { cookies } from "next/headers";
 
 import { redirect } from "next/navigation";
-import { getChats } from "@/app/actions/chats_server_actions";
+import { getChats } from "@/app/actions/chats_actions";
 import ChatListClient from "@/app/component/client_component/chats/ChatListClient";
+import { getGroups } from "@/app/actions/group_action";
 
 const ChatPage = async () => {
   const cookieStore = cookies();
   const uid = (await cookieStore).get("uid")?.value;
   if (!uid) return redirect("/");
 
-  const data = await getChats(uid ?? "");
-
+  const [chats, groupChats] = await Promise.all([
+    getChats(uid ?? ""),
+    getGroups(uid ?? ""),
+  ]);
 
   return (
     <>
-      <ChatListClient chats={data.chats} />
+      <ChatListClient chats={chats} groupChats={groupChats} />
     </>
   );
 };

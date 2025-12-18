@@ -3,19 +3,26 @@ export async function apiFetch(
   route: string,
   method: "GET" | "POST" | "DELETE" | "PUT",
   body?: any,
-  routeType: "NATIVE" | "EXTERNAL" = "NATIVE"
+  routeType: "NATIVE" | "EXTERNAL" = "NATIVE",
+  cache:
+    | "no-store"
+    | "force-cache"
+    | "no-cache"
+    | "default"
+    | "only-if-cached"
+    | "reload" = "no-store"
 ) {
   let res;
   if (routeType === "EXTERNAL") {
     res = await fetch(`${route}`, {
       method,
-      cache: "no-store",
+      cache,
       body,
     });
   } else {
     res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${route}`, {
       method,
-      cache: "no-store",
+      cache,
       headers: body ? { "Content-Type": "application/json" } : undefined,
       body: body ? JSON.stringify(body) : undefined,
     });

@@ -22,7 +22,10 @@ const friendsSlicer = createSlice({
   initialState,
   reducers: {
     setFriends: (state, action: PayloadAction<AuthUser>) => {
-      state.friends.push(action.payload);
+      const exist = state.friends.some((f) => f.uid === action.payload.uid);
+      if (!exist) {
+        state.friends.push(action.payload);
+      }
     },
     setFriendRequest: (state, action: PayloadAction<AuthUser | null>) => {
       state.friendRequest = action.payload;
@@ -36,7 +39,7 @@ const friendsSlicer = createSlice({
         state.OnlineUsers.push(action.payload);
       }
     },
-   
+
     setLeftUser: (state, action: PayloadAction<string>) => {
       const exist = state.OnlineUsers.some((u) => u === action.payload);
       if (exist) {

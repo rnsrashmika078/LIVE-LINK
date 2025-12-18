@@ -62,6 +62,7 @@ export async function POST(req: Request) {
       message: "You have New Message",
     };
 
+    console.log("Payload", newChatPayload);
     await pusher.trigger(
       `private-message-${chatId}`,
       "client-message",

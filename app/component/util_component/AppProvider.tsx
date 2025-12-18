@@ -9,6 +9,7 @@ import { PusherProvider } from "./PusherProvider";
 import Communication from "./Communication";
 import LiveLink from "@/app/context/LiveLinkContext";
 import { SocketProvider } from "./SocketProvider";
+import GlobalSocket from "./GlobalSocket";
 
 const AppProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = new QueryClient();
@@ -19,6 +20,7 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
           <LiveLink>
             <PusherProvider>
               <GlobalPusherListener />
+              <GlobalSocket />
               <PusherListenerPresence />
               <Communication />
               {children}

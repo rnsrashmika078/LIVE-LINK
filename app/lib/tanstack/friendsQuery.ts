@@ -10,7 +10,7 @@ import {
   getUserFriends,
   lastSeenUpdate,
   sendRequest,
-} from "@/app/actions/friends_server_action";
+} from "@/app/actions/friends_action";
 import { AuthUser } from "@/app/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -55,13 +55,12 @@ export function useReceivedRequest(userId: string) {
     enabled: !!userId,
   });
 }
-export function useGetFriends(userId: string, openModal: boolean) {
+export function useGetFriends(userId: string) {
   return useQuery({
     queryKey: ["get-friends", userId],
     queryFn: () => getUserFriends(userId),
-    enabled: openModal,
+    enabled: !!userId,
     refetchOnWindowFocus: false,
-
   });
 }
 export function useUpdateLastSeen(onSuccess?: (result: any) => void) {

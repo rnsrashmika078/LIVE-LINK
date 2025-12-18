@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const GroupSchema = new mongoose.Schema(
   {
+    chatId: {
+      type: String,
+      required: true,
+    },
     groupName: {
       type: String,
       required: true,
@@ -10,20 +14,24 @@ const GroupSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    avatar: {
+    dp: {
       type: String,
       required: false,
     },
-    groupMembers: [
+    lastMessage: [
       {
-        userId: { type: String, required: true },
-
-        firstName: { type: String, required: true },
-
-        lastName: { type: String, required: true },
+        message: {
+          type: String,
+          required: false,
+        },
+        name: {
+          // sender name
+          type: String,
+          required: false,
+        },
       },
     ],
-  
+    participants: [{ type: String }],
   },
   {
     timestamps: true,

@@ -31,7 +31,7 @@ export const Button = ({
   const variants = {
     default:
       "bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer hover:shadow-md transition",
-    eco: "bg-green-700 text-white hover:bg-green-800 hover:cursor-pointer hover:shadow-md transition",
+    eco: "bg-green-700 text-white hover:bg-green-800 hover:cursor-pointer hover:shadow-md transition disabled:bg-red-500",
     danger:
       "bg-red-500 text-white hover:bg-red-600 hover:cursor-pointer hover:shadow-md transition",
     positive:

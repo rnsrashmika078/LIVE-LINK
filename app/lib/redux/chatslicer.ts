@@ -3,6 +3,7 @@ import {
   AuthUser,
   ChatsType,
   DeletedMessage,
+  GroupType,
   Message,
   SeenType,
   TypingUser,
@@ -10,7 +11,7 @@ import {
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type ReduxChatState = {
-  activeChat: ChatsType | null;
+  activeChat: ChatsType | GroupType | null;
   authUser: AuthUser | null;
   messages: Message | null;
   messagesArray: Message[];
@@ -21,6 +22,7 @@ type ReduxChatState = {
   chatArray: ChatsType[];
   deletedMessage: DeletedMessage[];
   debouncedText: string;
+  groupChats: GroupType[] | [];
 };
 const initialState: ReduxChatState = {
   activeChat: null,
@@ -29,6 +31,7 @@ const initialState: ReduxChatState = {
   chats: [],
   unreads: 0,
   chatArray: [],
+  groupChats: [],
   typingUsers: [],
   messageSeen: { state: "", chatId: "", receiverId: "", senderId: "" },
   messagesArray: [],
@@ -42,7 +45,7 @@ const chatSlicer = createSlice({
     setAuthUser: (state, action: PayloadAction<AuthUser | null>) => {
       state.authUser = action.payload;
     },
-    setActiveChat: (state, action: PayloadAction<ChatsType | null>) => {
+    setActiveChat: (state, action: PayloadAction<ChatsType | GroupType | null>) => {
       state.activeChat = action.payload;
     },
     setMessages: (state, action: PayloadAction<Message>) => {
@@ -53,6 +56,9 @@ const chatSlicer = createSlice({
     },
     setChats: (state, action: PayloadAction<ChatsType[]>) => {
       state.chats = [...state.chats, ...action.payload];
+    },
+    setGroupChats: (state, action: PayloadAction<GroupType>) => {
+      state.groupChats = [...state.groupChats, action.payload];
     },
     setMessageSeen: (state, action: PayloadAction<SeenType>) => {
       state.messageSeen = {
@@ -119,5 +125,6 @@ export const {
   setChatsArray,
   setTypingUsers,
   setDebouncedText,
+  setGroupChats,
 } = chatSlicer.actions;
 export default chatSlicer.reducer;

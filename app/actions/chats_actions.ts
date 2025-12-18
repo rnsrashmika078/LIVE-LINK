@@ -5,14 +5,12 @@ import { apiFetch } from "../helper/helper";
 export async function getChats(uid: string) {
   try {
     if (!uid) {
-      return {
-        message: "Successfully getting chats!",
-        status: 200,
-      };
+      return [];
     }
     const res = await apiFetch(`/api/chats/get-chats/${uid}`, "GET");
 
-    return res.json();
+    const data = await res.json();
+    return data.chats;
   } catch (err) {
     console.log(err);
     return { message: "Error fetching chats", status: 500 };

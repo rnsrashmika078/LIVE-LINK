@@ -12,6 +12,7 @@ import {
 } from "@/app/types";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { BiPhoneCall, BiSearch } from "react-icons/bi";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { setUnreads } from "@/app/lib/redux/chatslicer";
 import { TextArea } from "@/app/component/ui/textarea";
@@ -39,8 +40,9 @@ import OutGoingCall from "../../ui/communications/OutGoingCall";
 import SearchArea from "../../ui/searcharea";
 import AppIcons from "../../ui/icons";
 import { MessagePanelIcons } from "@/app/util/data";
+import { useSendGroupMessage } from "@/app/lib/tanstack/groupQuery";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
-const MessagePanel = () => {
+const GroupMessagePanel = () => {
   // --------------------------------------------------------------------------use states --------------------------------------------------------------------------------
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
@@ -84,7 +86,7 @@ const MessagePanel = () => {
     states.authUser!
   );
   //update delete message from the message
-  useDeleteMessage("Message", states.deletedMessages!, setMessages);
+  useDeleteMessage("Message", states.deletedMessages, setMessages);
   //D&D hook
   const {
     isDragging,
@@ -117,13 +119,13 @@ const MessagePanel = () => {
       setLastSeen(result.lastSeen);
     }
   });
-  const { mutate } = useSaveMessage((result) => {
+  const { mutate } = useSendGroupMessage((result) => {
     if (messages?.length === 0) {
       if (result.success) {
-        refetch();
-        QueryClient.invalidateQueries({
-          queryKey: ["get-chats", states.authUser?.uid ?? ""],
-        });
+        // refetch();
+        // QueryClient.invalidateQueries({
+        //   queryKey: ["get-chats", states.authUser?.uid ?? ""],
+        // });
       }
     }
   });
@@ -181,6 +183,10 @@ const MessagePanel = () => {
       filePayload = { url, name, format, public_id };
 
       const customId = uuidv4();
+
+      const payload = {
+        customId,
+      };
       mutate({
         customId,
         content: message,
@@ -247,14 +253,9 @@ const MessagePanel = () => {
             <div className=" flex items-center gap-3">
               <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
-                <h1 className="">{states.activeChat?.name}</h1>
-                <p className="text-xs text-[var(--pattern_4)]">
-                  {presence === "Online"
-                    ? "Online"
-                    : lastSeen
-                    ? "Last seen " + new Date(lastSeen).toLocaleTimeString()
-                    : "Offline"}
-                </p>
+                <h1 className="">
+                  {states.activeChat?.name || states.activeChat?.groupName}
+                </h1>
               </div>
             </div>
             <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
@@ -318,4 +319,4 @@ const MessagePanel = () => {
     </div>
   );
 };
-export default MessagePanel;
+export default GroupMessagePanel;

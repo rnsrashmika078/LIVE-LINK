@@ -5,6 +5,7 @@ import MessageFormat from "./format";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { Menu, MenuItem } from "./action_menu";
 import { useActionMenuOperation, useClickFocus } from "@/app/hooks/useHooks";
+import { actionMenuItem } from "@/app/util/data";
 
 interface MessageUIProps extends HTMLAttributes<HTMLDivElement> {
   msg: Message;
@@ -14,7 +15,7 @@ interface MessageUIProps extends HTMLAttributes<HTMLDivElement> {
 export const MessageUI = React.memo(
   ({ msg, children, authUser, ...props }: MessageUIProps) => {
     const focusRef = useRef<HTMLDivElement | null>(null);
-    const { id, setId, onSelect, setOnSelect } = useLiveLink();
+    const { id, setId } = useLiveLink();
     const area = useClickFocus(focusRef);
     const { handleOperation, result } = useActionMenuOperation();
 
@@ -75,11 +76,9 @@ export const MessageUI = React.memo(
               onSelect={actionMenuHandler}
               condition={authUser.uid === msg.senderId}
             >
-              <MenuItem value="Reply" />
-              <MenuItem value="Copy" />
-              <MenuItem value="Forward" />
-              <MenuItem value="Delete" />
-              <MenuItem value="Report" />
+              {actionMenuItem.map((item) => (
+                <MenuItem key={item} value={item} />
+              ))}
             </Menu>
           )}
 

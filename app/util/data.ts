@@ -1,5 +1,13 @@
-import { BiArchive, BiMessage, BiPhoneCall, BiUser } from "react-icons/bi";
-import { FaMessage, FaRegCircleDot, FaUsers } from "react-icons/fa6";
+import {
+  BiArchive,
+  BiEdit,
+  BiFilter,
+  BiMessage,
+  BiPhoneCall,
+  BiSearch,
+  BiUser,
+} from "react-icons/bi";
+import { FaRegCircleDot, FaUsers } from "react-icons/fa6";
 import { SlSettings } from "react-icons/sl";
 import { TbTagStarred } from "react-icons/tb";
 import {
@@ -7,6 +15,7 @@ import {
   IoCheckmarkDone,
   IoCheckmarkDoneSharp,
 } from "react-icons/io5";
+import { IconArrayType } from "../types";
 
 //side bar items array
 export const StartItems = [
@@ -53,3 +62,24 @@ export const messageStatus = {
   delivered: IoCheckmarkDone,
   sent: IoCheckmark,
 };
+
+export const actionMenuItem = ["Reply", "Copy", "Forward", "Delete", "Report"];
+export const chatListIcons: IconArrayType = [
+  { name: "edit", icon: BiEdit },
+  // { name: "filter", icon: BiFilter },
+];
+export const MessagePanelIcons: IconArrayType = [
+  { name: "audio", icon: BiPhoneCall },
+  { name: "search", icon: BiSearch },
+];
+
+export const NewChatModalItem = [
+  {
+    image: "/group_avatar.png",
+    title: "Create Group",
+  },
+  {
+    image: "/add_friend_avatar.png",
+    title: "Add Friend",
+  },
+];

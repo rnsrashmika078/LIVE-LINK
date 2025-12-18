@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { SessionInfo } from "../types";
+import { RelativePositionType, SessionInfo } from "../types";
 
 interface LiveLinkContextType {
   openModal: boolean;
@@ -17,10 +17,14 @@ interface LiveLinkContextType {
   onSelect: string;
   clickedIcon: string;
   setClickedIcon: (name: string) => void;
+  internalClickState: string;
+  setInternalClickState: (name: string) => void;
   uid: string | null;
   setUid: React.Dispatch<React.SetStateAction<string | null>>;
   setConnectionState: (state: boolean) => void;
   connectionState: boolean;
+  relativePosition: RelativePositionType;
+  setRelativePosition: (relativePosition: RelativePositionType) => void;
 
   //refs
   localAudioRef: React.RefObject<HTMLAudioElement | null>;
@@ -45,11 +49,15 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
   const [onSelect, setOnSelect] = useState<string>("");
   const [id, setId] = useState<string>("");
   const [clickedIcon, setClickedIcon] = useState<string>("");
+  const [internalClickState, setInternalClickState] = useState<string>("chats");
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
   const [uid, setUid] = useState<string | null>(null);
+  const [relativePosition, setRelativePosition] =
+    useState<RelativePositionType>({ top: 0, left: 0 });
   const [connectionState, setConnectionState] = useState<boolean>(
     typeof window !== "undefined" ? navigator.onLine : true
   );
+  // const [filter,setFilter] = useState<{}
 
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const localAudioRef = useRef<HTMLAudioElement>(null);
@@ -71,6 +79,8 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         setId, // this is the setter of current click message id
         clickedIcon, // global icon click for message panel ( audio , video )
         setClickedIcon,
+        setInternalClickState,
+        internalClickState,
         //global icon click setter for message panel ( audio , video )
         //refs
         localAudioRef,
@@ -89,6 +99,10 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         //connection status
         setConnectionState,
         connectionState,
+
+        //relative position
+        relativePosition,
+        setRelativePosition,
 
         setUid,
         uid,

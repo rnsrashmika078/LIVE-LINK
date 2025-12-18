@@ -10,28 +10,27 @@ export async function GET(
     await connectDB();
 
     const { uid } = await params;
-    const friendsArray = await User.findOne({ uid }).select("friends");
+    const user = await User.findOne({ uid }).select("friends");
 
-    const friends = await User.find({
-      uid: { $in: friendsArray?.friends || [] },
-    }).select("uid name email dp");
+    const friendsUIDs = user?.friends || [];
 
-    if (friends?.length === 0) {
-      return NextResponse.json({
-        success: true,
-        status: 200,
-        friends: friends,
-        message: "error while receiving friend list!",
-      });
-    }
+    const friends = await User.find({ uid: { $in: friendsUIDs } })
+      .select("uid name email dp")
+      .lean();
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       status: 200,
       friends: friends,
-      message: "receiving friend list!",
+      message: "Receiving friend list!",
     });
   } catch (error) {
-    return Response.json({ error: "Server error" + error }, { status: 500 });
+    return NextResponse.json(
+      {
+        error:
+          "Server error: " + (error instanceof Error ? error.message : error),
+      },
+      { status: 500 }
+    );
   }
 }

@@ -24,17 +24,19 @@ const MessageFormat = React.memo(
           type.includes("avif")
         ) {
           return (
-            <>
+            <div className="place-items-center">
               <Image
                 src={url}
                 alt="uploaded image"
                 width={200}
                 onClick={openFile}
                 height={200}
-                className="object-contain w-[200px] h-[200px] cursor-pointer"
+                className="object-contain w-[200px]  h-[200px] cursor-pointer"
               />
-              <p className="mt-1 w-fit font-extralight">{info ? info : message}</p>
-            </>
+              <p className="mt-1 w-fit font-extralight">
+                {info ? info : message}
+              </p>
+            </div>
           );
         }
         // VIDEO
@@ -53,7 +55,9 @@ const MessageFormat = React.memo(
                 onClick={openFile}
                 height={250}
               ></video>
-              <p className="mt-1 w-fit font-extralight">{info ? info : message}</p>
+              <p className="mt-1 w-fit font-extralight">
+                {info ? info : message}
+              </p>
             </>
           );
         }

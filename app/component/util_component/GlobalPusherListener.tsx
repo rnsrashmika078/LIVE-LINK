@@ -76,8 +76,12 @@ export default function GlobalPusherListener() {
       const id = new Date().toLocaleTimeString();
       dispatch(setNotification({ notify: data.message || "", id }));
       if (data.type === "friend_request") {
+        const id = new Date().toLocaleTimeString();
+        dispatch(setNotification({ notify: data.message || "", id }));
         dispatch(setFriendRequest(data as AuthUser));
       } else if (data.type === "friend_accept") {
+        const id = new Date().toLocaleTimeString();
+        dispatch(setNotification({ notify: data.message || "", id }));
         dispatch(setFriends(data as AuthUser));
       } else if (data.type === "create_initial_chat") {
         const id = new Date().toLocaleTimeString();
@@ -90,6 +94,7 @@ export default function GlobalPusherListener() {
     presence.bind("pusher:subscription_succeeded", (members: any) => {
       const onlineUsers: any[] = [];
       members.each((m: any) => {
+        // this each comes from pusher
         onlineUsers.push(m.info?.userId);
       });
       dispatch(setOnlineUsers(onlineUsers));

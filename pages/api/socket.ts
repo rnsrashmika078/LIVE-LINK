@@ -17,8 +17,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   });
 
   io.on("connection", (socket) => {
-    console.log("Client connected:", socket.id);
-
     socket.on("join-room", (data) => {
       socket.join(`user-${data}`);
       socket.emit("room-joined", data);
@@ -101,12 +99,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         });
       }
     });
-    socket.on("disconnect", () => {
-      console.log("Client disconnected:", socket.id);
+
+    socket.on("create-new-chat", (data: any) => {
+      data.participants.forEach((element: any) => {
+        io.to(`user-${element.uid}`).emit("send-group-notification", data);
+      });
     });
-    socket.on("disconnect", () => {
-      console.log("Client disconnected:", socket.id);
-    });
+    socket.on("disconnect", () => {});
+    socket.on("disconnect", () => {});
   });
 
   //@ts-expect-error:server key not found issue

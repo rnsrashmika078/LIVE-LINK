@@ -94,7 +94,7 @@ const ConnectionPanel = () => {
 
   return (
     <div
-      className={`transition-all bg-[var(--pattern_2)] h-full relative w-full sm:w-72 custom-scrollbar-y`}
+      className={`transition-all bg-[var(--pattern_2)] h-full relative w-full sm:w-[550px] custom-scrollbar-y`}
     >
       <div className="p-5 space-y-2">
         <h1 className="header">Connections</h1>

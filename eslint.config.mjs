@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "@typescript-eslint/no-unused-vars", //ignore no-used-var warning for development
   ]),
 ]);
 

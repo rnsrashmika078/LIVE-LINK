@@ -76,7 +76,7 @@ const Sidebar = React.memo(() => {
                       ? " border-green-500"
                       : " border-transparent"
                   }
-                                            transition-all absolute top-0  rounded-2xl translate-x-1/2 translate-y-1/2 border-l border-4 h-5 left-0`}
+                   transition-all absolute top-0  rounded-2xl translate-x-1/2 translate-y-1/2 border-l border-4 h-5 left-0`}
                 ></div>{" "}
               </Button>
             </div>

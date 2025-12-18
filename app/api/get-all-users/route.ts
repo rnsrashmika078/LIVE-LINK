@@ -1,18 +1,25 @@
 import connectDB from "@/app/backend/lib/connectDB";
 import User from "@/app/backend/models/User";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     await connectDB();
 
-    const allUsers = await User.find();
+    const allUsers = await User.find().lean();
 
-    return Response.json({
-      message: "Successfully getting all there users!",
+    return NextResponse.json({
+      message: "Successfully retrieved all users!",
       allUsers,
       status: 200,
     });
   } catch (error) {
-    return Response.json({ error: "Server error" + error }, { status: 500 });
+    return NextResponse.json(
+      {
+        error:
+          "Server error: " + (error instanceof Error ? error.message : error),
+      },
+      { status: 500 }
+    );
   }
 }

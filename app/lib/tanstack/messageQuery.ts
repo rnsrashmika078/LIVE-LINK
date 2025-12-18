@@ -5,7 +5,7 @@ import {
   deleteMessage,
   getMessages,
   saveMessages,
-} from "@/app/actions/message_server_action";
+} from "@/app/actions/message_action";
 import { SaveMessagePayload } from "@/app/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
