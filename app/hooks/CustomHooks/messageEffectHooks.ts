@@ -28,7 +28,7 @@ export function usePusherSubscribe(
 
     const channel = pusher.channel(channelName);
     channel?.trigger("client-message", {
-      type: "typing",
+      useFor: "typing",
       userId: authUser?.uid,
       chatId: activeChat.chatId,
       isTyping: !!debounce?.length,

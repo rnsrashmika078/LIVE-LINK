@@ -88,6 +88,7 @@ export type AuthUser = {
   message?: string;
   type?: string;
   createdAt?: string;
+  useFor?: string;
 };
 
 export type SaveMessagePayload = {
@@ -101,6 +102,7 @@ export type SaveMessagePayload = {
   createdAt: string;
   status: string;
   files?: FileType;
+  type?: string;
   unreads?: Unread[];
 };
 
@@ -108,6 +110,8 @@ export type Message = {
   customId: string;
   chatId: string;
   senderId: string;
+  senderName?: string;
+  senderInfo?: SenderInfoType;
   receiverId: string;
   content: string;
   type?: string;
@@ -137,9 +141,9 @@ export type ChatsType = {
   message?: string;
   unreadCount?: Unread[];
   createdAt?: string;
-
   participants?: AuthUser[];
   updatedAt?: string;
+  useFor?: string;
   status?: "sent" | "delivered" | "seen";
 };
 
@@ -163,6 +167,8 @@ export type GroupType = {
   lastMessage: LastMessageGroup;
   participants: string[];
   updatedAt?: string;
+  createdAt?: string;
+  senderInfo?: SenderInfoType;
   type?: string;
   message?: string;
 };
@@ -171,16 +177,21 @@ export type LastMessageGroup = {
   message: string;
   name: string;
 };
+export type SenderInfoType = {
+  senderId: string;
+  senderName: string;
+};
 export type GroupMessage = {
   customId: string;
-  senderId: string;
-  dp: string;
-  firstName: string;
-  lastName: string;
-  message: string;
+  chatId: string;
+  senderInfo: SenderInfoType;
+  content: string;
   status: string;
-  seenBy: [string];
-  deliveredTo: [string];
+  message?: string;
+  seenBy?: string[];
+  files?: FileType[] | null;
+  deliveredTo?: string[];
+  createdAt?: string;
 };
 
 export type SectionType = {

@@ -127,7 +127,6 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
   // );
 
 
-
   const filteredChats = useMemo(
     () =>
       [...chatState]?.sort((a, b) => {
@@ -147,7 +146,9 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
             <UserChatCard
               key={i}
               chat={chat}
-              handleClick={() => dispatch(setActiveChat(chat))}
+              handleClick={() => {
+                dispatch(setActiveChat(chat));
+              }}
             />
           );
         })

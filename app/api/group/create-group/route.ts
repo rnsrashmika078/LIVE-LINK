@@ -1,7 +1,11 @@
+import connectDB from "@/app/backend/lib/connectDB";
 import Group from "@/app/backend/models/Group";
 import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
+
+    await connectDB();
+
     const groupData = await req.json();
     const existGroup = await Group.findOne({ groupName: groupData.groupName });
     const groupMembers = groupData.groupMembers;

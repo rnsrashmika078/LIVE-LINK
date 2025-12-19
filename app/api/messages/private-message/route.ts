@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       status,
       files,
       unreads,
+      type,
     } = await req.json();
 
     const pusherMessagePayload = {
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
       content,
       createdAt,
       status,
+      type,
     };
 
     const newMessagePayload = {
@@ -58,11 +60,11 @@ export async function POST(req: Request) {
       dp,
       createdAt,
       status,
-      type: "create_initial_chat",
+      type,
+      useFor: "create_initial_chat",
       message: "You have New Message",
     };
 
-    console.log("Payload", newChatPayload);
     await pusher.trigger(
       `private-message-${chatId}`,
       "client-message",
@@ -81,6 +83,7 @@ export async function POST(req: Request) {
         senderId,
         createdAt,
         unreadCount: unreads,
+        type,
       };
 
       if (files?.url) {
@@ -105,6 +108,7 @@ export async function POST(req: Request) {
       status,
       senderId,
       receiverId,
+      type,
       createdAt,
       unreadCount: unreads,
     };
@@ -112,9 +116,13 @@ export async function POST(req: Request) {
     if (files?.url) {
       updateData = { ...updateData, files };
     }
+
+    await pusher.trigger(
+      `private-notify-${receiverId}`,
+      "notify",
+      newChatPayload
+    );
     await Promise.all([
-      // this send to the other end user for the first time of the chat creation
-      pusher.trigger(`private-notify-${receiverId}`, "notify", newChatPayload),
       Chat.create(updateData),
       Message.create(newMessagePayload),
     ]);

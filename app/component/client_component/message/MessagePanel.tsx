@@ -53,7 +53,7 @@ const MessagePanel = () => {
   // -------------------------------------------------------------------------- Redux states ---------------------------------------------------------------------------------
   const states = useSelector(
     (store: PusherChatState) => ({
-      activeChat: store.chat.activeChat,
+      activeChat: store.chat.activeChat as ChatsType,
       unreads: store.chat.unreads,
       messageSeen: store.chat.messageSeen,
       deletedMessages: store.chat.deletedMessage,
@@ -72,17 +72,9 @@ const MessagePanel = () => {
   let debounce = useDebounce(input, 500);
   const presence = useOnlinePresence(states.activeChat?.uid ?? "");
   //update message seen
-  useUpdateMessageSeen(
-    setMessages,
-    states.activeChat as ChatsType,
-    states.messageSeen!
-  );
+  useUpdateMessageSeen(setMessages, states.activeChat, states.messageSeen!);
   // pusher typing state trigger
-  usePusherSubscribe(
-    debounce,
-    states.activeChat as ChatsType,
-    states.authUser!
-  );
+  usePusherSubscribe(debounce, states.activeChat, states.authUser!);
   //update delete message from the message
   useDeleteMessage("Message", states.deletedMessages!, setMessages);
   //D&D hook
@@ -188,6 +180,7 @@ const MessagePanel = () => {
         senderId: states.authUser?.uid ?? "",
         receiverId: states.activeChat?.uid ?? "",
         chatId: chatId,
+        type: "Individual",
         name: states.authUser?.name ?? "",
         dp: states.authUser?.dp ?? "",
         createdAt: date.toISOString(),

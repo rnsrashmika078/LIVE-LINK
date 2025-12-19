@@ -31,6 +31,7 @@ export function useSaveMessage(onSuccess?: (result: any) => void) {
       status,
       files,
       unreads,
+      type,
     }: SaveMessagePayload) =>
       saveMessages(
         content,
@@ -43,7 +44,8 @@ export function useSaveMessage(onSuccess?: (result: any) => void) {
         customId,
         status,
         files,
-        unreads
+        unreads,
+        type
       ),
     onSuccess,
   });

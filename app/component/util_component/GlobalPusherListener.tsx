@@ -75,15 +75,15 @@ export default function GlobalPusherListener() {
     notify.bind("notify", (data: AuthUser | ChatsType) => {
       const id = new Date().toLocaleTimeString();
       dispatch(setNotification({ notify: data.message || "", id }));
-      if (data.type === "friend_request") {
+      if (data.useFor === "friend_request") {
         const id = new Date().toLocaleTimeString();
         dispatch(setNotification({ notify: data.message || "", id }));
         dispatch(setFriendRequest(data as AuthUser));
-      } else if (data.type === "friend_accept") {
+      } else if (data.useFor === "friend_accept") {
         const id = new Date().toLocaleTimeString();
         dispatch(setNotification({ notify: data.message || "", id }));
         dispatch(setFriends(data as AuthUser));
-      } else if (data.type === "create_initial_chat") {
+      } else if (data.useFor === "create_initial_chat") {
         const id = new Date().toLocaleTimeString();
         dispatch(setNotification({ notify: data.message || "", id }));
         dispatch(setChats([data as ChatsType]));

@@ -1,3 +1,6 @@
+import { FileType, PreviewDataType } from "../types";
+import { handleImageUpload } from "../util/util";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function apiFetch(
   route: string,
@@ -73,4 +76,38 @@ export function elapsedTime(startedAt: number) {
   const time = new Date();
   return time;
 }
-//action menu operations functions
+export async function buildMessageStructure(
+  file: File | null,
+  inputMessage: string,
+  loadingState: (state: boolean) => void,
+  sendMessage: (structure: string, fileMeta: FileType | null) => void,
+  previewState: (data: PreviewDataType | null) => void,
+  setInput: (input: string) => void,
+  fileState: (file: File | null) => void
+) {
+  let fileMeta = null;
+  let messageStructure = null;
+  if (file) {
+    console.log("file is uploading!");
+    loadingState(true);
+    fileMeta = await handleImageUpload(file);
+    if (fileMeta) {
+      const { url, name, format, public_id } = fileMeta;
+      messageStructure = `{"url": "${url}", "message" : "${inputMessage}" ,"name" : "${name}" , "format" : "${format}", "public_id" : "${public_id}"}`;
+      loadingState(false);
+      sendMessage(messageStructure, fileMeta);
+    } else {
+      loadingState(false);
+      fileState(null);
+      return;
+    }
+  } else {
+    messageStructure = `{"url": "", "message" : "${inputMessage}" ,"name" : "" , "format" : "", "public_id" : ""}`;
+    sendMessage(messageStructure, fileMeta);
+  }
+  previewState(null);
+  setInput("");
+  fileState(null);
+  return;
+}
+

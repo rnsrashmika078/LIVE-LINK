@@ -13,7 +13,8 @@ export async function saveMessages(
   customId: string,
   status: string,
   files?: FileType,
-  unreads?: Unread[]
+  unreads?: Unread[],
+  type?: string
 ) {
   try {
     if (!chatId)
@@ -35,6 +36,7 @@ export async function saveMessages(
       unreads,
       files,
       customId,
+      type,
     };
 
     const res = await apiFetch(

@@ -24,7 +24,6 @@ const ContactList = ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (fr: any) => {
       setClickedIcon("");
-
       const chatId = [authUser?.uid, fr?.uid].sort().join("-");
       const newActiveChat = {
         chatId: chatId,
@@ -33,6 +32,7 @@ const ContactList = ({
         name: fr?.name ?? "",
         email: fr?.email ?? "",
         dp: fr?.dp ?? "",
+        type:"Individual"
       };
       dispatch(setActiveChat(newActiveChat));
     },

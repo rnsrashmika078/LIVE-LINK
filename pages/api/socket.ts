@@ -102,7 +102,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     socket.on("create-new-chat", (data: any) => {
       data.participants.forEach((element: any) => {
-        io.to(`user-${element.uid}`).emit("send-group-notification", data);
+        io.to(`user-${element}`).emit("send-group-notification", data);
       });
     });
     socket.on("disconnect", () => {});

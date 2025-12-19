@@ -24,6 +24,12 @@ const ChatSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    type: {
+      type: String,
+      enum: ["Group", "Individual"],
+      required: true,
+    },
+
     files: [
       {
         public_id: {
@@ -55,6 +61,7 @@ const ChatSchema = new mongoose.Schema(
       type: String,
     },
   },
+
   { timestamps: true }
 );
 

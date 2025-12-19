@@ -1,31 +1,18 @@
+/* eslint-disable react-hooks/set-state-in-render */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from "react";
-import { UserChatCard, UserGroupCard } from "@/app/component/ui/cards";
-import {
-  ChatsType,
-  GroupType,
-  PusherChatDispatch,
-  PusherChatState,
-} from "@/app/types";
+import { UserGroupCard } from "@/app/component/ui/cards";
+import { GroupType, PusherChatDispatch, PusherChatState } from "@/app/types";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import React from "react";
-import { setActiveChat, setChats } from "@/app/lib/redux/chatslicer";
-import { useGetChats } from "@/app/lib/tanstack/chatsQuery";
+import { setActiveChat, setGroupChats } from "@/app/lib/redux/chatslicer";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
-import {
-  useUnreadCountClear,
-  useUnreadCountIncrease,
-  useUpdateMessageSeenInChat,
-} from "@/app/hooks/CustomHooks/chatEffectHook";
-import { useDeleteMessage } from "@/app/hooks/CommonEffectHooks";
 
 const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
-  const [groups, setGroups] = useState<GroupType[]>(initialGroups);
+  const [groups, setGroups] = useState<GroupType[]>(initialGroups ?? []);
 
   //use hooks
   const { connectionState } = useLiveLink();
-
-
 
   //redux states
   const states = useSelector(
@@ -48,14 +35,16 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
   const dispatch = useDispatch<PusherChatDispatch>();
 
   useEffect(() => {
-    if (initialGroups.length > 0) setGroups(initialGroups);
+    if (initialGroups?.length > 0) {
+      dispatch(setGroupChats(initialGroups));
+      setGroups(initialGroups);
+    }
   }, [initialGroups]);
 
+  //check whether the new chat is already exist on Groups state old chat array
   useEffect(() => {
     if (states.groupChatsArray.length) {
       const lastGroupChat = states.groupChatsArray.at(-1);
-  console.log("last groups" , states.groupChatsArray)
-
       if (!lastGroupChat) return;
 
       setGroups((prev) => {
@@ -65,13 +54,12 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
         }
         return prev;
       });
-      // setGroupChatStates((prev) => [...prev, lastGroupChat]);
     }
   }, [states.groupChatsArray]);
 
   const filteredGroup = useMemo(
     () =>
-      [...groups]?.sort((a, b) => {
+      [...(groups ?? [])].sort((a, b) => {
         const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
         const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
 
@@ -79,9 +67,25 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
       }),
     [groups]
   );
-  console.log("states groups" , states.groupChatsArray)
 
-  console.log("groups" , groups)
+  useEffect(() => {
+    const lastMessage = states.liveMessagesArray.at(-1);
+    if (!lastMessage) return;
+    setGroups((prev) =>
+      prev.map((g) => {
+        if (g.chatId !== lastMessage.chatId) return g;
+        return {
+          ...g,
+          lastMessage: {
+            name: lastMessage.senderInfo?.senderName ?? "mother fucker",
+            message: lastMessage.content,
+          },
+          updatedAt: lastMessage.createdAt ?? "",
+        };
+      })
+    );
+  }, [states.liveMessagesArray]);
+
   return (
     <div className="px-5 flex w-full flex-col justify-start items-center">
       {filteredGroup && filteredGroup?.length > 0 ? (

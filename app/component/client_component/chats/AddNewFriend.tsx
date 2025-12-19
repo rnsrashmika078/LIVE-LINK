@@ -37,7 +37,7 @@ export const AddNewFriend = React.memo(() => {
       requestSender: authUser as AuthUser, // this is me
       requestReceiver: user as AuthUser, // this is friend
     });
-    setInternalClickState("");
+    // setInternalClickState("");
   };
   return (
     <div

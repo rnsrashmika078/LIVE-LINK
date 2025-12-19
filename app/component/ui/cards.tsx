@@ -214,6 +214,7 @@ export const UserChatCard = ({
     receiverId,
     lastMessage,
     status,
+    useFor,
   },
   handleClick,
 }: UCDInterface) => {
@@ -227,12 +228,7 @@ export const UserChatCard = ({
   );
 
   const isUserTyping = useMemo(
-    () =>
-      typingUsers.some(
-        (u) =>
-          u.chatId === chatId &&
-          u.isTyping
-      ),
+    () => typingUsers.some((u) => u.chatId === chatId && u.isTyping),
     [chatId, typingUsers]
   );
 
@@ -240,8 +236,6 @@ export const UserChatCard = ({
   const unreads = unreadCount?.find(
     (u) => u.userId === authUser?.uid && u.count > 0
   );
-
-
 
   return (
     <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
@@ -294,6 +288,7 @@ interface UGDInterface {
 }
 export const UserGroupCard = ({
   group: {
+    senderInfo,
     groupName,
     dp,
     updatedAt,
@@ -330,7 +325,6 @@ export const UserGroupCard = ({
   const unreads = unreadCount?.find(
     (u) => u.userId === authUser?.uid && u.count > 0
   );
-  console.log("lastMessage.message ", lastMessage.name );
   return (
     <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
       <div
@@ -359,7 +353,12 @@ export const UserGroupCard = ({
                 {isUserTyping ? (
                   <TypingIndicator isUserTyping={isUserTyping} version="2" />
                 ) : (
-                  modifiedMessage(lastMessage.message ?? "")
+                  <p>
+                    <strong className="">
+                      {lastMessage?.name?.split(" ")[0]}:{" "}
+                    </strong>
+                    {modifiedMessage(lastMessage.message ?? "")}
+                  </p>
                 )}
               </div>
               {!isUserTyping &&

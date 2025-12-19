@@ -5,3 +5,8 @@ first message doesnt dispatch to the livemessage array for some reason
 
 need route to update the user when they comes online 
 // typing state is not correctly work to one end some times
+
+
+
+//TODOS:
+remove UseEffects as possible 

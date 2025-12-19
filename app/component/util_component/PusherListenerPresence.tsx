@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import {
   DeletedMessage,
   PusherChatDispatch,
@@ -17,54 +17,57 @@ import {
 } from "@/app/lib/redux/chatslicer";
 import { Message } from "@/app/types/index";
 import { usePusher } from "./PusherProvider";
+import { setNotification } from "@/app/lib/redux/notificationSlicer";
 
 export default function PusherListenerPresence() {
   const dispatch = useDispatch<PusherChatDispatch>();
-  const chats = useSelector((store: PusherChatState) => store.chat.chats);
-  const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
+
+  const { chats, groupChats, authUser } = useSelector(
+    (store: PusherChatState) => ({
+      authUser: store.chat.authUser,
+      chats: store.chat.chats, // this is individual chats
+      groupChats: store.chat.groupChats,
+    }),
+    shallowEqual
+  );
   const pusher = usePusher();
 
+  const handler = (data: any) => {
+    if (data.useFor === "typing") {
+      if (data.senderId === authUser?.uid) return;
+      const typeData = {
+        userId: data.userId ?? "",
+        chatId: data.chatId ?? "",
+        isTyping: data.isTyping ?? false,
+      };
+      dispatch(setTypingUsers(typeData as TypingUser));
+    } else if (data.useFor === "deleting") {
+      dispatch(setDeletedMessage(data as DeletedMessage));
+    } else {
+      dispatch(setMessages(data as Message));
+      dispatch(setMessagesArray(data as Message));
+    }
+  };
 
   useEffect(() => {
     if (!pusher) {
-      console.log("no pusher found!");
       return;
     }
     if (!authUser?.uid) {
-
       return;
     }
 
-
     const chat_channels: Record<string, any> = {};
 
-
-    chats.forEach((chat) => {
+    [...groupChats, ...chats].forEach((chat) => {
       if (!chat.chatId) {
-
-
         return;
       }
-
-
       const channelName = `private-message-${chat.chatId}`;
-
       const channel = pusher.subscribe(channelName);
+
       channel.bind("client-message", (data: any) => {
-        if (data.type === "typing") {
-          if (data.senderId === authUser?.uid) return;
-          const typeData = {
-            userId: data.userId ?? "",
-            chatId: data.chatId ?? "",
-            isTyping: data.isTyping ?? false,
-          };
-          dispatch(setTypingUsers(typeData as TypingUser));
-        } else if (data.type === "deleting") {
-          dispatch(setDeletedMessage(data as DeletedMessage));
-        } else {
-          dispatch(setMessages(data as Message));
-          dispatch(setMessagesArray(data as Message));
-        }
+        handler(data);
       });
       chat_channels[chat.chatId] = channel;
     });
@@ -75,7 +78,12 @@ export default function PusherListenerPresence() {
         pusher.unsubscribe(channel.name);
       });
     };
-  }, [authUser?.uid, chats, dispatch, pusher]);
+  }, [authUser?.uid, groupChats, chats, pusher]);
+
+  /**
+   *  remove the following from the dependency array:
+   *  **`Dispatch`**
+   *  */
 
   return null;
 }

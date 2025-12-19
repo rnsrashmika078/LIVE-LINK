@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import {
   AuthUser,
@@ -17,12 +18,12 @@ type ReduxChatState = {
   messagesArray: Message[];
   messageSeen: SeenType;
   unreads: number;
-  chats: ChatsType[];
+  chats: ChatsType[] | GroupType[];
   typingUsers: TypingUser[];
   chatArray: ChatsType[];
   deletedMessage: DeletedMessage[];
   debouncedText: string;
-  groupChats: GroupType[] | [];
+  groupChats: GroupType[];
 };
 const initialState: ReduxChatState = {
   activeChat: null,
@@ -45,7 +46,10 @@ const chatSlicer = createSlice({
     setAuthUser: (state, action: PayloadAction<AuthUser | null>) => {
       state.authUser = action.payload;
     },
-    setActiveChat: (state, action: PayloadAction<ChatsType | GroupType | null>) => {
+    setActiveChat: (
+      state,
+      action: PayloadAction<ChatsType | GroupType | null>
+    ) => {
       state.activeChat = action.payload;
     },
     setMessages: (state, action: PayloadAction<Message>) => {
@@ -54,11 +58,15 @@ const chatSlicer = createSlice({
     setMessagesArray: (state, action: PayloadAction<Message>) => {
       state.messagesArray.push(action.payload);
     },
-    setChats: (state, action: PayloadAction<ChatsType[]>) => {
+    setChats: (state, action: PayloadAction<any>) => {
       state.chats = [...state.chats, ...action.payload];
     },
-    setGroupChats: (state, action: PayloadAction<GroupType>) => {
-      state.groupChats = [...state.groupChats, action.payload];
+    setGroupChats: (state, action: PayloadAction<GroupType | GroupType[]>) => {
+      if (Array.isArray(action.payload)) {
+        state.groupChats = [...state.groupChats, ...action.payload];
+      } else {
+        state.groupChats = [...state.groupChats, action.payload];
+      }
     },
     setMessageSeen: (state, action: PayloadAction<SeenType>) => {
       state.messageSeen = {

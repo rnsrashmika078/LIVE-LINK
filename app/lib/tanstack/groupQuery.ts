@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   createGroup,
+  getGroupMessages,
   getGroups,
   sendMessage,
 } from "@/app/actions/group_action";
@@ -26,6 +27,14 @@ export function useGetGroups(uid: string, connection: boolean) {
     queryKey: ["get-groups", uid],
     queryFn: () => getGroups(uid),
     enabled: !!uid || connection,
+    refetchOnWindowFocus: false,
+  });
+}
+export function useGetGroupMessage(chatId: string) {
+  return useQuery({
+    queryKey: ["get-group-messages", chatId],
+    queryFn: () => getGroupMessages(chatId),
+    enabled: !!chatId,
     refetchOnWindowFocus: false,
   });
 }

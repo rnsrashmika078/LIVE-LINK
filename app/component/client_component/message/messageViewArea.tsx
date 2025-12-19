@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import { ChatsType, Message, PusherChatState } from "@/app/types";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { useInView } from "framer-motion";
 import React from "react";
@@ -21,20 +21,20 @@ function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
 
   const states = useSelector(
     (store: PusherChatState) => ({
-      activeChat: store.chat.activeChat,
+      activeChat: store.chat.activeChat as ChatsType,
       authUser: store.chat.authUser,
     }),
     shallowEqual
   );
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(scrollRef);
-  const lastMessage = messages.at(-1);
+  const lastMessage = useMemo(() => messages.at(-1), [messages]);
 
   useMessageSeenAPI(
     isInView,
     lastMessage!,
     states.authUser!,
-    states.activeChat as ChatsType
+    states.activeChat
   );
 
   useEffect(() => {
@@ -43,14 +43,12 @@ function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
     }
   }, [messages]);
 
+
   return (
     <div className="p-5 relative custom-scrollbar-y h-full w-full " {...props}>
       <Spinner condition={state} />
       {messages
-        .filter(
-          (m) => m.chatId === states.activeChat?.chatId
-          // || states.activeChat?.uid as ChatsType
-        )
+        .filter((m) => m.chatId === states.activeChat?.chatId)
         .map((msg, index) => (
           <div key={index} className=" ">
             <MessageUI msg={msg} authUser={states.authUser!}>

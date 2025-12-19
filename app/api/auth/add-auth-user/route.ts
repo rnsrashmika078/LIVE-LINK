@@ -5,7 +5,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
+    const result = await connectDB();
+
+    if (result) {
+      console.log("result", result);
+    }
     const { uid, name, email, dp } = await req.json();
 
     const existingUser = await User.findOne({ uid });

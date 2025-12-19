@@ -1,15 +1,18 @@
 import React from "react";
 import { FaFilePdf } from "react-icons/fa6";
 import Image from "next/image";
+import { SenderInfoType } from "@/app/types";
+import { SenderNameStyle } from "@/app/helper/jsxhelper";
 interface FormatProps {
   id: string;
   url: string;
   format: string;
   info?: string;
   message: string;
+  senderInfo?: SenderInfoType;
 }
 const MessageFormat = React.memo(
-  ({ info, url, format, message }: FormatProps) => {
+  ({ info, url, format, message, senderInfo }: FormatProps) => {
     const openFile = () => {
       if (url) window.open(url, "_blank");
     };
@@ -24,7 +27,7 @@ const MessageFormat = React.memo(
           type.includes("avif")
         ) {
           return (
-            <div className="place-items-center">
+            <div className="place-items-start">
               <Image
                 src={url}
                 alt="uploaded image"
@@ -81,7 +84,14 @@ const MessageFormat = React.memo(
 
       return <p className=" w-fit font-extralight">{info ? info : message}</p>;
     };
-    return <div className="">{renderFile()}</div>;
+    return (
+      <div className="">
+        {senderInfo?.senderName && (
+          <SenderNameStyle name={senderInfo?.senderName ?? ""} />
+        )}
+        {renderFile()}{" "}
+      </div>
+    );
   }
 );
 

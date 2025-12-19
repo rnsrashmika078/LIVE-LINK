@@ -32,6 +32,7 @@ export async function GET(
         senderId: ch.senderId,
         receiverId: ch.receiverId,
         lastMessageId: ch.lastMessageId,
+        type: ch.type,
       });
     }
     if (chatList.length > 0) {

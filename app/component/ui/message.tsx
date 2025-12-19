@@ -40,14 +40,18 @@ export const MessageUI = React.memo(
     return (
       <div
         className={`flex w-full mt-2   ${
-          msg.senderId === authUser?.uid ? "justify-end" : "justify-start"
+          msg.senderId === authUser?.uid ||
+          msg.senderInfo?.senderId === authUser.uid
+            ? "justify-end"
+            : "justify-start"
         }`}
       >
         <div
           ref={focusRef}
           {...props}
-          className={`pr-5 flex flex-col w-fit relative   ${
-            msg.senderId === authUser?.uid
+          className={`flex text-xs flex-col w-fit relative   ${
+            msg.senderId === authUser?.uid ||
+            msg.senderInfo?.senderId === authUser.uid
               ? `${
                   url
                     ? "bg-transparent space-y-2"
@@ -67,6 +71,7 @@ export const MessageUI = React.memo(
             format={format}
             url={url}
             message={message}
+            senderInfo={msg.senderInfo} // use only in group chats
           />
           {area !== "OutSide" && (
             <Menu

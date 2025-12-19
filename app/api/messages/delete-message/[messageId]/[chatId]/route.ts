@@ -43,7 +43,7 @@ export async function DELETE(
         }
       ),
       pusher.trigger(`private-message-${chatId}`, "client-message", {
-        type: "deleting",
+        useFor: "deleting",
         messageId,
         chatId,
       }),

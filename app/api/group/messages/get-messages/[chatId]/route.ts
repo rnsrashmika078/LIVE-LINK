@@ -1,34 +1,29 @@
 import connectDB from "@/app/backend/lib/connectDB";
-import Group from "@/app/backend/models/Group";
+import GroupMessage from "@/app/backend/models/GroupMessage";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { uid: string };
-  }
+  { params }: { params: { chatId: string } }
 ) {
   try {
     await connectDB();
-    const {uid} = await params;
+    const { chatId } = await params;
 
-    const groups = await Group.find({ participants: uid });
-    console.log("groups ", groups);
-    console.log("uid ", uid);
+    const chatMessages = await GroupMessage.find({ chatId });
 
     return NextResponse.json({
-      status: 200,
       success: true,
-      message: "Group  Successfully!",
-      groups,
+      chatMessages,
+      message: "Message save in db successfully!",
+      status: 200,
     });
   } catch (err) {
     console.log(err);
     return NextResponse.json({
-      status: 500,
+      success: false,
       message: err,
+      status: 505,
     });
   }
 }

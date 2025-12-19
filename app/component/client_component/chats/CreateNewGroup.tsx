@@ -95,7 +95,7 @@ export const CreateNewGroup = React.memo(() => {
         createdBy,
         dp: result ? result.url : "",
         participants: updatedList,
-        type: "create_initial_chat",
+        type: "Group",
         message: `You have added to the ${groupName} by ${username}`,
         lastMessage: {
           message: `{"url": "", "message" : "You were added!" ,"name" : "" , "format" : "", "public_id" : ""}`,
@@ -192,6 +192,7 @@ export const CreateNewGroup = React.memo(() => {
               height={250}
             ></Image>
             <input
+            
               type="file"
               onChange={(e) => {
                 const file = e.target.files?.[0];

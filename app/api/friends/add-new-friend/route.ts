@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     } = friend;
 
     await pusher.trigger(`private-notify-${rec_uid}`, "notify", {
-      type: "friend_accept",
+      useFor: "friend_accept",
       message: `Your Friend request accepted by ${sen_name}`,
     });
     await User.findOneAndUpdate(

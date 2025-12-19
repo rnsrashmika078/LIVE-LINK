@@ -18,6 +18,31 @@ const GroupSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    type: {
+      type: String,
+      enum: ["Group", "Individual"],
+      required: true,
+    },
+    files: [
+      {
+        public_id: {
+          type: String,
+          required: false,
+        },
+        format: {
+          type: String,
+          required: false,
+        },
+        url: {
+          type: String,
+          required: false,
+        },
+        name: {
+          type: String,
+          required: false,
+        },
+      },
+    ],
     lastMessage: {
       message: {
         type: String,

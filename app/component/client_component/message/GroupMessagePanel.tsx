@@ -6,12 +6,22 @@ import { useDebounce, useOnlinePresence } from "@/app/hooks/useHooks";
 
 import {
   ChatsType,
+  FileType,
+  GroupMessage,
+  GroupType,
   Message,
   PusherChatDispatch,
   PusherChatState,
 } from "@/app/types";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { BiPhoneCall, BiSearch } from "react-icons/bi";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { setUnreads } from "@/app/lib/redux/chatslicer";
@@ -40,22 +50,22 @@ import OutGoingCall from "../../ui/communications/OutGoingCall";
 import SearchArea from "../../ui/searcharea";
 import AppIcons from "../../ui/icons";
 import { MessagePanelIcons } from "@/app/util/data";
-import { useSendGroupMessage } from "@/app/lib/tanstack/groupQuery";
+import {
+  useGetGroupMessage,
+  useSendGroupMessage,
+} from "@/app/lib/tanstack/groupQuery";
+import { buildMessageStructure } from "@/app/helper/helper";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const GroupMessagePanel = () => {
-  // --------------------------------------------------------------------------use states --------------------------------------------------------------------------------
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [lastSeen, setLastSeen] = useState<string>("Offline");
   const { setClickedIcon, clickedIcon } = useLiveLink();
-  // -------------------------------------------------------------------------refs states --------------------------------------------------------------------------------
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // -------------------------------------------------------------------------- Redux states ---------------------------------------------------------------------------------
   const states = useSelector(
     (store: PusherChatState) => ({
-      activeChat: store.chat.activeChat,
+      activeChat: store.chat.activeChat as GroupType,
       unreads: store.chat.unreads,
       messageSeen: store.chat.messageSeen,
       deletedMessages: store.chat.deletedMessage,
@@ -67,26 +77,17 @@ const GroupMessagePanel = () => {
   const liveMessages = useSelector(
     (store: PusherChatState) => store.chat.messages
   );
-  // -------------------------------------------------------------------------- useHooks ---------------------------------------------------------------------------------
   const QueryClient = useQueryClient();
   //redux dispatcher
   const dispatch = useDispatch<PusherChatDispatch>();
   let debounce = useDebounce(input, 500);
-  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
+  // const presence = useOnlinePresence(states.activeChat?.uid ?? "");
   //update message seen
-  useUpdateMessageSeen(
-    setMessages,
-    states.activeChat as ChatsType,
-    states.messageSeen!
-  );
+  // useUpdateMessageSeen(setMessages, states.activeChat, states.messageSeen!);
   // pusher typing state trigger
-  usePusherSubscribe(
-    debounce,
-    states.activeChat as ChatsType,
-    states.authUser!
-  );
+  // usePusherSubscribe(debounce, states.activeChat, states.authUser!);
   //update delete message from the message
-  useDeleteMessage("Message", states.deletedMessages, setMessages);
+  // useDeleteMessage("Message", states.deletedMessages, setMessages);
   //D&D hook
   const {
     isDragging,
@@ -100,25 +101,28 @@ const GroupMessagePanel = () => {
   } = useDragDropHook();
 
   // ----------------------------------------------------------------------- memoized logics --------------------------------------------------------------------------------
-  const chatId = useMemo(
-    () => [states.authUser?.uid, states.activeChat?.uid].sort().join("-"),
-    [states.authUser?.uid, states.activeChat?.uid]
-  );
-  const isUserTyping = useMemo(
-    () =>
-      states.typingUsers.some(
-        (u) => u.userId === states.activeChat?.uid && u.isTyping
-      ),
-    [states.activeChat?.uid, states.typingUsers]
-  );
+
+  // const isUserTyping = useMemo(
+  //   () =>
+  //     states.typingUsers.some(
+  //       (u) => u.userId === states.activeChat?.uid && u.isTyping
+  //     ),
+  //   [states.activeChat?.uid, states.typingUsers]
+  // );
   // -------------------------------------------------------------------------- tanstack --------------------------------------------------------------------------------
-  const { data, isPending, refetch } = useGetMessages(chatId);
-  const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
-  const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {
-    if (result.success) {
-      setLastSeen(result.lastSeen);
-    }
-  });
+  // const { data, isPending, refetch } = useGetMessages(chatId);
+  // const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
+  // const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {
+  //   if (result.success) {
+  //     setLastSeen(result.lastSeen);
+  //   }
+  // });
+
+  const { data: groupMessage, isPending: isMsgLoading } = useGetGroupMessage(
+    states.activeChat.chatId!
+  );
+  const [messages, setMessages] = useState<Message[]>([]);
+
   const { mutate } = useSendGroupMessage((result) => {
     if (messages?.length === 0) {
       if (result.success) {
@@ -141,14 +145,14 @@ const GroupMessagePanel = () => {
     }
   }, [states.activeChat?.chatId]);
 
-  useEffect(() => {
-    const seenTime = new Date().toString();
-    lastSeenMutate({
-      uid: states.activeChat?.uid ?? "",
-      lastSeen: seenTime?.toString(),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presence]);
+  // useEffect(() => {
+  //   const seenTime = new Date().toString();
+  //   lastSeenMutate({
+  //     uid: states.activeChat?.uid ?? "",
+  //     lastSeen: seenTime?.toString(),
+  //   });
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [presence]);
 
   //use Effect: merge lives messages ( pusher ) with current Message
   useEffect(() => {
@@ -158,89 +162,58 @@ const GroupMessagePanel = () => {
 
   //use Effect: add messages that fetch from backend to the messages state ( initially )
   useEffect(() => {
-    if (!data?.history) return;
-    setMessages(data?.history);
-  }, [data]);
+    if (!groupMessage?.chatMessages) return;
+    setMessages(groupMessage?.chatMessages);
+  }, [groupMessage?.chatMessages]);
 
-  useEffect(() => {
-    if (!lastSeenUpdate?.lastSeen) return;
-    setLastSeen(lastSeenUpdate?.lastSeen);
-  }, [lastSeenUpdate]);
+  // useEffect(() => {
+  //   if (!lastSeenUpdate?.lastSeen) return;
+  //   setLastSeen(lastSeenUpdate?.lastSeen);
+  // }, [lastSeenUpdate]);
   // -------------------------------------------------------------------------- Additional functions  --------------------------------------------------------------------------------
   //save message calling actually happen here
-  const request = async (message: string) => {
-    const date = new Date();
-
+  const sendMessage = async (message: string, fileMeta: FileType | null) => {
     try {
-      const parsedMessage =
-        typeof message === "string" ? JSON?.parse(message) : message;
-      const { url, name, format, public_id } = parsedMessage;
-
-      let filePayload;
-      if (!url) {
-        filePayload = null;
-      }
-      filePayload = { url, name, format, public_id };
-
-      const customId = uuidv4();
-
+      const messageId = uuidv4(); // generate messageId
+      const chatId = states.activeChat?.chatId ?? ""; //get current Chat id
+      const senderId = states.authUser?.uid ?? "";
+      const senderName = states.authUser?.name ?? "";
+      const createdAt = new Date().toISOString();
+      const status = "sent";
       const payload = {
-        customId,
-      };
-      mutate({
-        customId,
+        customId: messageId,
+        chatId,
+        senderInfo: {
+          senderId,
+          senderName,
+        },
         content: message,
-        files: filePayload,
-        senderId: states.authUser?.uid ?? "",
-        receiverId: states.activeChat?.uid ?? "",
-        chatId: chatId,
-        name: states.authUser?.name ?? "",
-        dp: states.authUser?.dp ?? "",
-        createdAt: date.toISOString(),
-        status: presence === "Online" ? "delivered" : "sent",
-        unreads: [
-          {
-            userId: states.activeChat?.uid ?? "",
-            count: states.unreads === 0 ? 1 : states.unreads,
-          },
-        ],
-      });
+        files: fileMeta ? [fileMeta] : null,
+        status,
+        createdAt,
+        deliveredTo: [senderId],
+        seenBy: [senderId],
+      };
+      mutate({ message: payload });
     } catch (err) {
-      console.error("Invalid JSON:", message, err);
+      console.error("", message, err);
     }
-
-    dispatch(setUnreads(states.unreads + 1));
+    // dispatch(setUnreads(states.unreads + 1));
   };
 
-  // use Effect:  update the user last seen when presence changes ( listening to the presence changes )
-  const handleSendMessageBasedOnFile = async () => {
-    if (preview?.url && file) {
-      setIsUploading(true);
-      const content = await handleImageUpload(file);
-      if (content) {
-        const { url, name, format, public_id } = content;
-        setIsUploading(false);
-        request(
-          `{"url": "${url}", "message" : "${input}" ,"name" : "${name}" , "format" : "${format}", "public_id" : "${public_id}"}`
-        );
-      } else {
-        setIsUploading(false);
-        return;
-      }
-    } else {
-      request(
-        `{"url": "", "message" : "${input}" ,"name" : "" , "format" : "", "public_id" : ""}`
-      );
-    }
-    setPreview(null);
-    setInput("");
-    return;
-  };
   const handleMessageSend = (item: string) => {
     switch (item) {
       case "send":
       case "enter":
-        handleSendMessageBasedOnFile();
+        buildMessageStructure(
+          file,
+          input,
+          setIsUploading,
+          sendMessage,
+          setPreview,
+          setInput,
+          setFile
+        );
         break;
     }
   };
@@ -253,9 +226,7 @@ const GroupMessagePanel = () => {
             <div className=" flex items-center gap-3">
               <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
-                <h1 className="">
-                  {states.activeChat?.name || states.activeChat?.groupName}
-                </h1>
+                <h1 className="">{states.activeChat?.groupName}</h1>
               </div>
             </div>
             <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
@@ -280,11 +251,11 @@ const GroupMessagePanel = () => {
           )}
 
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
-            <TypingIndicator
+            {/* <TypingIndicator
               isUserTyping={isUserTyping}
               version="1"
               username={states.authUser?.name ?? ""}
-            />
+            /> */}
             <FileShare
               isUploading={isUploading}
               isDragging={isDragging}
