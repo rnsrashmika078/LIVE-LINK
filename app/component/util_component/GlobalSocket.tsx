@@ -15,12 +15,12 @@ const GlobalSocket = () => {
     if (!socket) return;
 
     const handler = (data: any) => {
-      if (data.createdBy === authUser?.uid) {
-        dispatch(setGroupChats(data));
-        return () => {
-          socket.off("send-group-notification", handler);
-        };
-      }
+      // if (data.createdBy === authUser?.uid) {
+      dispatch(setGroupChats(data));
+      // return () => {
+      //   socket.off("send-group-notification", handler);
+      // };
+      // }
       dispatch(setGroupChats(data));
       const id = Date.now().toString();
       dispatch(setNotification({ notify: data.message || "", id }));

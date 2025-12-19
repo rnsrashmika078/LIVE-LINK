@@ -54,6 +54,8 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
   useEffect(() => {
     if (states.groupChatsArray.length) {
       const lastGroupChat = states.groupChatsArray.at(-1);
+  console.log("last groups" , states.groupChatsArray)
+
       if (!lastGroupChat) return;
 
       setGroups((prev) => {
@@ -77,7 +79,9 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
       }),
     [groups]
   );
+  console.log("states groups" , states.groupChatsArray)
 
+  console.log("groups" , groups)
   return (
     <div className="px-5 flex w-full flex-col justify-start items-center">
       {filteredGroup && filteredGroup?.length > 0 ? (

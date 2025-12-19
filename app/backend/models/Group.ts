@@ -18,19 +18,17 @@ const GroupSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    lastMessage: [
-      {
-        message: {
-          type: String,
-          required: false,
-        },
-        name: {
-          // sender name
-          type: String,
-          required: false,
-        },
+    lastMessage: {
+      message: {
+        type: String,
+        required: false,
       },
-    ],
+      name: {
+        // sender name
+        type: String,
+        required: false,
+      },
+    },
     participants: [{ type: String }],
   },
   {
