@@ -84,12 +84,21 @@ export const CreateNewGroup = React.memo(() => {
       result = await handleImageUpload(file);
     }
     if (authUser && authUser.uid) {
-      const updatedList = [...list, authUser].map((p) => p.uid);
+      const updatedList = [...list, authUser].map((p) => ({
+        userId: p.uid,
+        userName: p.name,
+        userDp: p.dp,
+      }));
+      const updateUnreadList = [...list, authUser].map((p) => ({
+        userId: p.uid,
+        count: 0,
+      }));
 
       const chatId = uuidv4();
       const createdBy = authUser.uid;
       const username = authUser.name;
 
+      // alert(JSON.stringify(updateUnreadList));
       const payload: GroupType = {
         groupName,
         createdBy,
@@ -101,6 +110,8 @@ export const CreateNewGroup = React.memo(() => {
           message: `{"url": "", "message" : "You were added!" ,"name" : "" , "format" : "", "public_id" : ""}`,
           name: username,
         },
+        seenBy: [],
+        unreads: updateUnreadList,
         updatedAt: new Date().toISOString(),
         chatId,
       };
@@ -192,7 +203,7 @@ export const CreateNewGroup = React.memo(() => {
               height={250}
             ></Image>
             <input
-            
+              title="file upload"
               type="file"
               onChange={(e) => {
                 const file = e.target.files?.[0];

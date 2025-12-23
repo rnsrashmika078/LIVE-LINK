@@ -16,8 +16,8 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
-        <SocketProvider>
-          <LiveLink>
+        <LiveLink>
+          <SocketProvider>
             <PusherProvider>
               <GlobalPusherListener />
               <GlobalSocket />
@@ -25,8 +25,8 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
               <Communication />
               {children}
             </PusherProvider>
-          </LiveLink>
-        </SocketProvider>
+          </SocketProvider>
+        </LiveLink>
       </Provider>
     </QueryClientProvider>
   );

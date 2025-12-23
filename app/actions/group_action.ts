@@ -39,15 +39,12 @@ export async function sendMessage(message: GroupMessage) {
 export async function getGroupMessages(chatId: string) {
   try {
     if (!chatId) {
-      console.log("chat is  null");
       return [];
     }
     const res = await apiFetch(
       `/api/group/messages/get-messages/${chatId}`,
       "GET"
     );
-    // console.log("message from", result.chatMessages);
-    // console.log("chatId", chatId);
     return res.json();
   } catch (err) {
     console.log(err);

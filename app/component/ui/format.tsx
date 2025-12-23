@@ -1,15 +1,16 @@
 import React from "react";
 import { FaFilePdf } from "react-icons/fa6";
 import Image from "next/image";
-import { SenderInfoType } from "@/app/types";
+import { SeenByType, SenderInfoType } from "@/app/types";
 import { SenderNameStyle } from "@/app/helper/jsxhelper";
 interface FormatProps {
-  id: string;
+  id?: string;
   url: string;
   format: string;
   info?: string;
   message: string;
   senderInfo?: SenderInfoType;
+
 }
 const MessageFormat = React.memo(
   ({ info, url, format, message, senderInfo }: FormatProps) => {

@@ -1,3 +1,4 @@
+import { number } from "framer-motion";
 import mongoose from "mongoose";
 
 const GroupSchema = new mongoose.Schema(
@@ -43,6 +44,18 @@ const GroupSchema = new mongoose.Schema(
         },
       },
     ],
+    seenBy: [
+      {
+        userId: { type: String, required: true },
+        userName: { type: String, required: true },
+        status: { type: String, required: true },
+        userDp: {
+          type: String,
+          required: false,
+        },
+        // this is individual member message status
+      },
+    ],
     lastMessage: {
       message: {
         type: String,
@@ -54,7 +67,19 @@ const GroupSchema = new mongoose.Schema(
         required: false,
       },
     },
-    participants: [{ type: String }],
+    unreads: [
+      {
+        userId: { type: String, required: false },
+        count: { type: Number, required: false },
+      },
+    ],
+    participants: [
+      {
+        userId: { type: String, required: true },
+        userName: { type: String, required: true },
+        userDp: { type: String, required: true },
+      },
+    ],
   },
   {
     timestamps: true,

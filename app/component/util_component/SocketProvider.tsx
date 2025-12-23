@@ -11,12 +11,15 @@ import {
 import { io, Socket } from "socket.io-client";
 import { useSelector } from "react-redux";
 import { PusherChatState } from "@/app/types";
-
 const SocketContext = createContext<Socket | null>(null);
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
+  const chats = useSelector((store: PusherChatState) => store.chat.chats);
+  const groupChats = useSelector(
+    (store: PusherChatState) => store.chat.groupChats
+  );
 
   // Ensure server is initialized before connecting
   useEffect(() => {
@@ -33,13 +36,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     });
 
     socketInstance.on("connect", () => {
-
-      // ✅ JOIN ROOM: Immediately join personal room after connection
-      socketInstance.emit("join-room", authUser.uid);
-    });
-
-    // ✅ LISTEN: For room joined confirmation
-    socketInstance.on("room-joined", (data) => {
+      socketInstance.emit("join-user", authUser.uid);
+      [...chats, ...groupChats].forEach((c) => {
+        socketInstance.emit("join-chat", c.chatId);
+      });
     });
 
     socketInstance.on("connect_error", (err) => {
@@ -56,7 +56,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       socketInstance.disconnect();
       socketInstance.off();
     };
-  }, [authUser?.uid]);
+  }, [authUser?.uid, chats, groupChats]);
 
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>

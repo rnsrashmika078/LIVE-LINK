@@ -1,50 +1,30 @@
+/* eslint-disable react-hooks/immutability */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import Avatar from "@/app/component/ui/avatar";
-import { useDebounce, useOnlinePresence } from "@/app/hooks/useHooks";
+import { useDebounce } from "@/app/hooks/useHooks";
 
 import {
-  ChatsType,
   FileType,
-  GroupMessage,
   GroupType,
   Message,
   PusherChatDispatch,
   PusherChatState,
+  SeenByType,
 } from "@/app/types";
-import { useQueryClient } from "@tanstack/react-query";
-import React, {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { BiPhoneCall, BiSearch } from "react-icons/bi";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { setUnreads } from "@/app/lib/redux/chatslicer";
+
 import { TextArea } from "@/app/component/ui/textarea";
-import { handleImageUpload } from "@/app/util/util";
 import { FileShare } from "@/app/component/ui/preview";
 import { TypingIndicator } from "@/app/component/ui/typingIndicator";
-import {
-  useGetMessages,
-  useSaveMessage,
-} from "@/app/lib/tanstack/messageQuery";
-import {
-  useGetLastSeen,
-  useUpdateLastSeen,
-} from "@/app/lib/tanstack/friendsQuery";
+
 import { v4 as uuidv4 } from "uuid";
 import { useDragDropHook } from "@/app/hooks/useDragDropHook";
 import Spinner from "../../ui/spinner";
-import {
-  usePusherSubscribe,
-  useUpdateMessageSeen,
-} from "@/app/hooks/CustomHooks/messageEffectHooks";
-import { useDeleteMessage } from "@/app/hooks/CommonEffectHooks";
+import { useUpdateGroupMessageSeen } from "@/app/hooks/CustomHooks/messageEffectHooks";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import OutGoingCall from "../../ui/communications/OutGoingCall";
 import SearchArea from "../../ui/searcharea";
@@ -55,15 +35,25 @@ import {
   useSendGroupMessage,
 } from "@/app/lib/tanstack/groupQuery";
 import { buildMessageStructure } from "@/app/helper/helper";
+import { useSocket } from "../../util_component/SocketProvider";
+import { AnimatePresence, motion } from "framer-motion";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const GroupMessagePanel = () => {
   const [input, setInput] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [lastSeen, setLastSeen] = useState<string>("Offline");
-  const { setClickedIcon, clickedIcon } = useLiveLink();
+  const { setClickedIcon, clickedIcon, setActionMenuSelection, countRef } =
+    useLiveLink();
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const states = useSelector(
+  const {
+    activeChat,
+    messageSeen,
+    authUser,
+    typingUsers,
+    onlineUsers,
+    groupMessageSeen,
+    activeUsers,
+  } = useSelector(
     (store: PusherChatState) => ({
       activeChat: store.chat.activeChat as GroupType,
       unreads: store.chat.unreads,
@@ -71,23 +61,20 @@ const GroupMessagePanel = () => {
       deletedMessages: store.chat.deletedMessage,
       authUser: store.chat.authUser,
       typingUsers: store.chat.typingUsers,
+      groupMessageSeen: store.chat.GroupMessageSeen,
+      activeUsers: store.chat.activeUsers,
+      onlineUsers: store.friends.OnlineUsers,
     }),
     shallowEqual
   );
   const liveMessages = useSelector(
     (store: PusherChatState) => store.chat.messages
   );
-  const QueryClient = useQueryClient();
+
   //redux dispatcher
   const dispatch = useDispatch<PusherChatDispatch>();
   let debounce = useDebounce(input, 500);
-  // const presence = useOnlinePresence(states.activeChat?.uid ?? "");
-  //update message seen
-  // useUpdateMessageSeen(setMessages, states.activeChat, states.messageSeen!);
-  // pusher typing state trigger
-  // usePusherSubscribe(debounce, states.activeChat, states.authUser!);
-  //update delete message from the message
-  // useDeleteMessage("Message", states.deletedMessages, setMessages);
+
   //D&D hook
   const {
     isDragging,
@@ -102,37 +89,12 @@ const GroupMessagePanel = () => {
 
   // ----------------------------------------------------------------------- memoized logics --------------------------------------------------------------------------------
 
-  // const isUserTyping = useMemo(
-  //   () =>
-  //     states.typingUsers.some(
-  //       (u) => u.userId === states.activeChat?.uid && u.isTyping
-  //     ),
-  //   [states.activeChat?.uid, states.typingUsers]
-  // );
-  // -------------------------------------------------------------------------- tanstack --------------------------------------------------------------------------------
-  // const { data, isPending, refetch } = useGetMessages(chatId);
-  // const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
-  // const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {
-  //   if (result.success) {
-  //     setLastSeen(result.lastSeen);
-  //   }
-  // });
-
   const { data: groupMessage, isPending: isMsgLoading } = useGetGroupMessage(
-    states.activeChat.chatId!
+    activeChat.chatId!
   );
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const { mutate } = useSendGroupMessage((result) => {
-    if (messages?.length === 0) {
-      if (result.success) {
-        // refetch();
-        // QueryClient.invalidateQueries({
-        //   queryKey: ["get-chats", states.authUser?.uid ?? ""],
-        // });
-      }
-    }
-  });
+  const { mutate } = useSendGroupMessage();
   // -------------------------------------------------------------------------- use Effect --------------------------------------------------------------------------------
 
   //use Effect: make messages empty initially
@@ -143,16 +105,7 @@ const GroupMessagePanel = () => {
     if (textAreaRef.current) {
       textAreaRef.current.value = "";
     }
-  }, [states.activeChat?.chatId]);
-
-  // useEffect(() => {
-  //   const seenTime = new Date().toString();
-  //   lastSeenMutate({
-  //     uid: states.activeChat?.uid ?? "",
-  //     lastSeen: seenTime?.toString(),
-  //   });
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [presence]);
+  }, [activeChat?.chatId]);
 
   //use Effect: merge lives messages ( pusher ) with current Message
   useEffect(() => {
@@ -166,20 +119,51 @@ const GroupMessagePanel = () => {
     setMessages(groupMessage?.chatMessages);
   }, [groupMessage?.chatMessages]);
 
-  // useEffect(() => {
-  //   if (!lastSeenUpdate?.lastSeen) return;
-  //   setLastSeen(lastSeenUpdate?.lastSeen);
-  // }, [lastSeenUpdate]);
-  // -------------------------------------------------------------------------- Additional functions  --------------------------------------------------------------------------------
-  //save message calling actually happen here
   const sendMessage = async (message: string, fileMeta: FileType | null) => {
     try {
       const messageId = uuidv4(); // generate messageId
-      const chatId = states.activeChat?.chatId ?? ""; //get current Chat id
-      const senderId = states.authUser?.uid ?? "";
-      const senderName = states.authUser?.name ?? "";
+      const chatId = activeChat?.chatId ?? ""; //get current Chat id
+      const senderId = authUser?.uid ?? "";
+      const senderName = authUser?.name ?? "";
       const createdAt = new Date().toISOString();
-      const status = "sent";
+      const participants = activeChat?.participants;
+      const isAnyOneOnline = onlineUsers.some((o) =>
+        participants.some((p) => p.userId === o && p.userId !== authUser?.uid)
+      );
+      const seenBy: SeenByType[] = [];
+      const onlineSet = new Set(onlineUsers);
+
+      participants.forEach((p) => {
+        const isThisUserOnline = onlineSet.has(p.userId);
+
+        seenBy.push({
+          userId: p.userId,
+          userName: p.userName,
+          userDp: p.userDp,
+          status: isThisUserOnline
+            ? p.userId === authUser?.uid
+              ? "seen"
+              : "delivered"
+            : "sent",
+        });
+      });
+
+      const status = isAnyOneOnline ? "delivered" : "sent";
+      const updateUnseen = seenBy.map((s) => {
+        if (s.userId === authUser?.uid) {
+          countRef.current[chatId + "-" + authUser?.uid] = 0;
+          return {
+            userId: s.userId,
+            count: 0,
+          };
+        }
+        countRef.current[chatId + "-" + s?.userId] =
+          (countRef.current[chatId + "-" + s?.userId] ?? 0) + 1;
+        return {
+          userId: s.userId,
+          count: countRef.current[chatId + "-" + s?.userId],
+        };
+      });
       const payload = {
         customId: messageId,
         chatId,
@@ -187,20 +171,41 @@ const GroupMessagePanel = () => {
           senderId,
           senderName,
         },
+        unreads: updateUnseen,
         content: message,
         files: fileMeta ? [fileMeta] : null,
         status,
+        seenBy: seenBy,
         createdAt,
-        deliveredTo: [senderId],
-        seenBy: [senderId],
       };
       mutate({ message: payload });
     } catch (err) {
       console.error("", message, err);
     }
-    // dispatch(setUnreads(states.unreads + 1));
   };
 
+  useUpdateGroupMessageSeen(setMessages, activeChat, groupMessageSeen);
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket || !activeChat?.chatId || !authUser?.uid) return;
+    socket?.emit("user-typing", {
+      useFor: "typing",
+      userId: authUser?.uid,
+      chatId: activeChat?.chatId,
+      userName: authUser?.name,
+      participants: activeChat.participants,
+      type: "Group",
+      isTyping: !!debounce?.length,
+    });
+  }, [
+    debounce,
+    socket,
+    activeChat.chatId,
+    authUser?.uid,
+    activeChat.participants,
+    authUser?.name,
+  ]);
   const handleMessageSend = (item: string) => {
     switch (item) {
       case "send":
@@ -218,15 +223,42 @@ const GroupMessagePanel = () => {
     }
   };
 
+  const isUserTyping = useMemo(() => {
+    return typingUsers.find(
+      (u) =>
+        u.isTyping &&
+        u.type === "Group" &&
+        u.chatId === activeChat.chatId &&
+        activeChat.participants.some((p) => p.userId === u.userId)
+    );
+  }, [typingUsers, activeChat.chatId, activeChat.participants]);
+
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
-      {states.activeChat && (
+      {/* <AnimatePresence>
+        <motion.div
+          className="top-25 p-2 absolute left-1/2"
+          initial={{ x: 0, scale: 0.8, opacity: 0 }}
+          animate={{ x: 0, scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        >
+          <p>{`${activeUsers?.at(-1)?.userName ?? ""} joined `}</p>
+        </motion.div>
+      </AnimatePresence> */}
+      {activeChat && (
         <>
-          <div className=" flex p-5  justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">
+          <div
+            className=" flex p-5  justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0"
+            onClick={() =>
+              setActionMenuSelection({ selection: "chat-info", message: null })
+            }
+          >
             <div className=" flex items-center gap-3">
-              <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
+              <Avatar image={activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
-                <h1 className="">{states.activeChat?.groupName}</h1>
+                <h1 className="">{activeChat?.groupName}</h1>
+                <p>{`${activeUsers.length} Online`}</p>
               </div>
             </div>
             <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
@@ -251,11 +283,7 @@ const GroupMessagePanel = () => {
           )}
 
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
-            {/* <TypingIndicator
-              isUserTyping={isUserTyping}
-              version="1"
-              username={states.authUser?.name ?? ""}
-            /> */}
+            <TypingIndicator UserTyping={isUserTyping!} version="1" />
             <FileShare
               isUploading={isUploading}
               isDragging={isDragging}

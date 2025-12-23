@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import {
+  ActiveUsersType,
   AuthUser,
   ChatsType,
   DeletedMessage,
@@ -17,6 +18,8 @@ type ReduxChatState = {
   messages: Message | null;
   messagesArray: Message[];
   messageSeen: SeenType;
+  GroupMessageSeen: SeenType[];
+  globalMessages: Message[];
   unreads: number;
   chats: ChatsType[] | GroupType[];
   typingUsers: TypingUser[];
@@ -24,12 +27,14 @@ type ReduxChatState = {
   deletedMessage: DeletedMessage[];
   debouncedText: string;
   groupChats: GroupType[];
+  activeUsers: ActiveUsersType[];
 };
 const initialState: ReduxChatState = {
   activeChat: null,
   authUser: null,
   messages: null,
   chats: [],
+  globalMessages: [],
   unreads: 0,
   chatArray: [],
   groupChats: [],
@@ -38,6 +43,8 @@ const initialState: ReduxChatState = {
   messagesArray: [],
   debouncedText: "",
   deletedMessage: [],
+  GroupMessageSeen: [],
+  activeUsers: [],
 };
 const chatSlicer = createSlice({
   name: "chatslicer",
@@ -77,6 +84,11 @@ const chatSlicer = createSlice({
         state: action.payload.state,
       };
     },
+    setGroupMessageSeen: (state, action: PayloadAction<SeenType | null>) => {
+      if (action.payload) {
+        state.GroupMessageSeen.push(action.payload!);
+      }
+    },
     setChatsArray: (state, action: PayloadAction<ChatsType>) => {
       const exist = state.chatArray.some(
         (c) => c.chatId === action.payload.chatId
@@ -89,19 +101,41 @@ const chatSlicer = createSlice({
       state.unreads = action.payload;
     },
     setTypingUsers: (state, action: PayloadAction<TypingUser>) => {
-      const exist = state.typingUsers.some(
-        (u) => u.userId === action.payload.userId
+      const { userId, chatId, isTyping } = action.payload;
+
+      const user = state.typingUsers.find((u) => u.userId === userId);
+
+      if (user) {
+        user.isTyping = isTyping;
+        user.chatId = chatId;
+        if (!isTyping) {
+          state.typingUsers = state.typingUsers.filter(
+            (u) => !(u.userId === userId && u.chatId === chatId)
+          );
+        }
+      } else {
+        state.typingUsers.push(action.payload);
+      }
+    },
+    connectUser: (state, action: PayloadAction<ActiveUsersType>) => {
+      const exist = state.activeUsers.some(
+        (a) => a.userId === action.payload.userId
+      );
+      if (!exist) {
+        state.activeUsers.push(action.payload);
+      }
+    },
+    disconnectUser: (state, action: PayloadAction<ActiveUsersType>) => {
+      const exist = state.activeUsers.some(
+        (a) => a.userId === action.payload.userId
       );
       if (exist) {
-        state.typingUsers = state.typingUsers.map((u) =>
-          u.userId === action.payload.userId
-            ? { ...u, isTyping: action.payload.isTyping }
-            : u
+        state.activeUsers = state.activeUsers.filter(
+          (a) => a.userId !== action.payload.userId
         );
-        return;
       }
-      state.typingUsers.push(action.payload);
     },
+
     setDeletedMessage: (state, action: PayloadAction<DeletedMessage>) => {
       const exist = state.deletedMessage.some(
         (u) => u.chatId === action.payload.chatId
@@ -119,12 +153,18 @@ const chatSlicer = createSlice({
     setDebouncedText: (state, action: PayloadAction<string>) => {
       state.debouncedText = action.payload;
     },
+    setGlobalMessages: (state, action: PayloadAction<Message | Message[]>) => {
+      state.globalMessages = Array.isArray(action.payload)
+        ? action.payload
+        : [action.payload];
+    },
   },
 });
 export const {
   setActiveChat,
   setAuthUser,
   setUnreads,
+  setGlobalMessages,
   setChats,
   setMessageSeen,
   setMessages,
@@ -134,5 +174,8 @@ export const {
   setTypingUsers,
   setDebouncedText,
   setGroupChats,
+  setGroupMessageSeen,
+  connectUser,
+  disconnectUser,
 } = chatSlicer.actions;
 export default chatSlicer.reducer;

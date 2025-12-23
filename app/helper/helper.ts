@@ -1,4 +1,4 @@
-import { FileType, PreviewDataType } from "../types";
+import { AuthUser, FileType, PreviewDataType } from "../types";
 import { handleImageUpload } from "../util/util";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -88,7 +88,6 @@ export async function buildMessageStructure(
   let fileMeta = null;
   let messageStructure = null;
   if (file) {
-    console.log("file is uploading!");
     loadingState(true);
     fileMeta = await handleImageUpload(file);
     if (fileMeta) {

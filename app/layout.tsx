@@ -5,8 +5,7 @@ import ListenerForAuth from "./component/util_component/ListenerForAuth";
 import { Toast } from "./component/ui/Toast";
 import Analyzer from "./component/ui/analyze/Analyzer";
 import Connection from "./component/util_component/Connection";
-import { inter, playfair, poppins } from "@/fonts";
-
+import { geistMono, inter } from "@/fonts";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -20,9 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${poppins.className} antialiased`}
-      >
+      <body className={`${inter.className ?? geistMono.variable} antialiased`}>
         <AppProvider>
           <Toast />
           <ListenerForAuth />

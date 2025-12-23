@@ -1,8 +1,13 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
-import { ChatsType, Message, PusherChatState } from "@/app/types";
+import {
+  ChatsType,
+  Message,
+  PusherChatDispatch,
+  PusherChatState,
+} from "@/app/types";
 import { useEffect, useMemo, useRef } from "react";
-import { shallowEqual, useSelector } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { useInView } from "framer-motion";
 import React from "react";
 import Spinner from "@/app/component/ui/spinner";
@@ -10,6 +15,8 @@ import { MessageUI } from "@/app/component/ui/message";
 import { MdArrowDropDown } from "react-icons/md";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { useMessageSeenAPI } from "@/app/hooks/CustomHooks/messageEffectHooks";
+import { useSocket } from "../../util_component/SocketProvider";
+import { setActiveChat } from "@/app/lib/redux/chatslicer";
 
 interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: Message[];
@@ -17,9 +24,10 @@ interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
   //states
-  const { setId } = useLiveLink();
+  const { setId, countRef } = useLiveLink();
+  const dispatch = useDispatch<PusherChatDispatch>();
 
-  const states = useSelector(
+  const { activeChat, authUser } = useSelector(
     (store: PusherChatState) => ({
       activeChat: store.chat.activeChat as ChatsType,
       authUser: store.chat.authUser,
@@ -33,8 +41,9 @@ function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
   useMessageSeenAPI(
     isInView,
     lastMessage!,
-    states.authUser!,
-    states.activeChat
+    authUser!,
+    activeChat,
+    activeChat.type
   );
 
   useEffect(() => {
@@ -43,15 +52,15 @@ function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
     }
   }, [messages]);
 
-
+  
   return (
-    <div className="p-5 relative custom-scrollbar-y h-full w-full " {...props}>
+    <div className="p-5 relative custom-scrollbar-y h-full w-full" {...props}>
       <Spinner condition={state} />
       {messages
-        .filter((m) => m.chatId === states.activeChat?.chatId)
+        .filter((m) => m.chatId === activeChat?.chatId)
         .map((msg, index) => (
           <div key={index} className=" ">
-            <MessageUI msg={msg} authUser={states.authUser!}>
+            <MessageUI msg={msg} authUser={authUser!} type={activeChat?.type}>
               <MdArrowDropDown
                 size={25}
                 onClick={() => {

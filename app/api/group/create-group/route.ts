@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
 
     const groupData = await req.json();
     const existGroup = await Group.findOne({ groupName: groupData.groupName });
-    const groupMembers = groupData.groupMembers;
 
     if (existGroup) {
       return NextResponse.json({

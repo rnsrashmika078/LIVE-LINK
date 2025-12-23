@@ -14,25 +14,37 @@ import {
 } from "@/app/hooks/CustomHooks/chatEffectHook";
 import { useDeleteMessage } from "@/app/hooks/CommonEffectHooks";
 
+
 const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
   const [chatState, setChatState] = useState<ChatsType[]>(initialChats);
 
   //use hooks
-  const { connectionState } = useLiveLink();
+  const { connectionState,  } = useLiveLink();
 
   //redux states
-  const states = useSelector(
+  const {
+    activeChat,
+    authUser,
+    chatsArray,
+    messageSeen,
+    liveMessagesArray,
+    debounce,
+    unreads,
+    typingUsers,
+    deletedMessages,
+    onlineUsers,
+  } = useSelector(
     (store: PusherChatState) => ({
       authUser: store.chat.authUser,
       activeChat: store.chat.activeChat,
       chatsArray: store.chat.chatArray,
       messageSeen: store.chat.messageSeen,
       liveMessagesArray: store.chat.messagesArray,
-      currentTab: store.layout.currentTab,
       debounce: store.chat.debouncedText,
       unreads: store.chat.unreads,
       typingUsers: store.chat.typingUsers,
       deletedMessages: store.chat.deletedMessage,
+      onlineUsers: store.friends.OnlineUsers,
     }),
     shallowEqual
   );
@@ -42,14 +54,11 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
 
   // get Chats ( tanstack )
   const { data: chats, refetch } = useGetChats(
-    states.authUser?.uid ?? "",
+    authUser?.uid ?? "",
     connectionState
   );
 
-  const msg = useMemo(
-    () => states.liveMessagesArray.at(-1),
-    [states.liveMessagesArray]
-  );
+  const msg = useMemo(() => liveMessagesArray.at(-1), [liveMessagesArray]);
 
   //use Effect: add chats to the react state for global access ( initially )
   useEffect(() => {
@@ -62,84 +71,49 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
 
   //Use Effect: for revalidate the data ( refetch ) when chats change for the new Chats
   useEffect(() => {
-    if (!!states.chatsArray?.length) {
-      setChatState(states.chatsArray);
+    if (!!chatsArray?.length) {
+      setChatState(chatsArray);
       const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
       wait(200);
       refetch();
     }
-  }, [states.chatsArray?.length, refetch, states.chatsArray]);
+  }, [chatsArray?.length, refetch, chatsArray]);
 
   // update the ( increase ) the unread message count
   // update the chat states to latest message data coming from live socket ( pusher )
   useUnreadCountIncrease(
     msg!,
     setChatState,
-    states.activeChat as ChatsType,
-    states.authUser!
+    activeChat as ChatsType,
+    authUser!
   );
 
   //clear count
-  useUnreadCountClear(
-    setChatState,
-    states.activeChat as ChatsType,
-    states.authUser!
-  );
+  useUnreadCountClear(setChatState, activeChat as ChatsType, authUser!);
 
   //update message seen status ( in this case last messagee status of chat)
   // update the chat states to latest message data coming from live socket ( pusher )
-  useUpdateMessageSeenInChat(setChatState, states.messageSeen!);
+  useUpdateMessageSeenInChat(setChatState, messageSeen!);
 
   //update delete message from the message
-  useDeleteMessage("Chat", states.deletedMessages!, setChatState);
+  useDeleteMessage("Chat", deletedMessages!, setChatState);
 
-  //here get the shallow copy from the chatState -> object are same but the array is change ( new array )
-  //new array = new memory address -> but the object inside the array referencing to the same memory address of previous
+  const filteredChats = useMemo(() => {
+    if (!chatState?.length) return [];
+    return [...chatState]?.sort((a, b) => {
+      const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
 
-  // const { data: groups, isPending } = useGetGroups(
-  //   states.authUser?.uid ?? "",
-  //   connectionState
-  // );
+      return bTime - aTime;
+    });
+  }, [chatState]);
 
-  // useEffect(() => {
-  //   if (initialGroups.length > 0) setGroupChatStates(initialGroups);
-  // }, [initialGroups]);
-
-  // useEffect(() => {
-  //   if (groupChatsArray.length) {
-  //     const lastGroupChat = groupChatsArray.at(-1);
-  //     if (!lastGroupChat) return;
-
-  //     setGroupChatStates((prev) => {
-  //       const exist = prev.some((g) => g.groupId === lastGroupChat.groupId);
-  //       if (!exist) {
-  //         return [...(prev ?? []), lastGroupChat];
-  //       }
-  //       return prev;
-  //     });
-  //     // setGroupChatStates((prev) => [...prev, lastGroupChat]);
-  //   }
-  // }, [groupChatsArray]);
-
-  // const allChats = useMemo(
-  //   () => [...(groupChatState ?? []), ...(chatState ?? [])],
-  //   [chatState, groupChatState]
-  // );
-
-
-  const filteredChats = useMemo(
-    () =>
-      [...chatState]?.sort((a, b) => {
-        const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-        const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-
-        return bTime - aTime;
-      }),
-    [chatState]
-  );
-
+  
   return (
-    <div className="px-5 flex w-full flex-col justify-start items-center">
+    <div className="px-5 flex w-full flex-col justify-start items-start ">
+      <h1 className="text-start w-full text-[#6c6c6c] text-xs">
+        Individual Chats
+      </h1>
       {filteredChats && filteredChats?.length > 0 ? (
         filteredChats.map((chat: ChatsType, i: number) => {
           return (

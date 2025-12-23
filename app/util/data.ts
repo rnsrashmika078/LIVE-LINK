@@ -63,7 +63,14 @@ export const messageStatus = {
   sent: IoCheckmark,
 };
 
-export const actionMenuItem = ["Reply", "Copy", "Forward", "Delete", "Report"];
+export const actionMenuItem = [
+  "Info",
+  "Reply",
+  "Copy",
+  "Forward",
+  "Delete",
+  "Report",
+];
 export const chatListIcons: IconArrayType = [
   { name: "edit", icon: BiEdit },
   // { name: "filter", icon: BiFilter },

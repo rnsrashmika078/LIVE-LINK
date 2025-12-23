@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const files = payload.files;
     const chatId = payload.chatId;
     const lastMessage = payload.content;
-    
+
     const lastMessagePayload = {
       message: lastMessage,
       name: payload.senderInfo.senderName,
@@ -35,7 +35,14 @@ export async function POST(req: NextRequest) {
       GroupMessage.create(payload),
       Group.findOneAndUpdate(
         { chatId },
-        { $set: { files, lastMessage: lastMessagePayload } }
+        {
+          $set: {
+            files,
+            lastMessage: lastMessagePayload,
+            seenBy: payload.seenBy,
+            unreads: payload.unreads,
+          },
+        }
       ),
     ]);
     return NextResponse.json({

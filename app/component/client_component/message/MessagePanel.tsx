@@ -39,6 +39,7 @@ import OutGoingCall from "../../ui/communications/OutGoingCall";
 import SearchArea from "../../ui/searcharea";
 import AppIcons from "../../ui/icons";
 import { MessagePanelIcons } from "@/app/util/data";
+import { useSocket } from "../../util_component/SocketProvider";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const MessagePanel = () => {
   // --------------------------------------------------------------------------use states --------------------------------------------------------------------------------
@@ -46,12 +47,19 @@ const MessagePanel = () => {
   const [input, setInput] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [lastSeen, setLastSeen] = useState<string>("Offline");
-  const { setClickedIcon, clickedIcon } = useLiveLink();
+  const { setClickedIcon, clickedIcon, setActionMenuSelection } = useLiveLink();
   // -------------------------------------------------------------------------refs states --------------------------------------------------------------------------------
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // -------------------------------------------------------------------------- Redux states ---------------------------------------------------------------------------------
-  const states = useSelector(
+  const {
+    activeChat,
+    typingUsers,
+    authUser,
+    messageSeen,
+    deletedMessages,
+    unreads,
+  } = useSelector(
     (store: PusherChatState) => ({
       activeChat: store.chat.activeChat as ChatsType,
       unreads: store.chat.unreads,
@@ -70,13 +78,29 @@ const MessagePanel = () => {
   //redux dispatcher
   const dispatch = useDispatch<PusherChatDispatch>();
   let debounce = useDebounce(input, 500);
-  const presence = useOnlinePresence(states.activeChat?.uid ?? "");
+  const presence = useOnlinePresence(activeChat?.uid ?? "");
   //update message seen
-  useUpdateMessageSeen(setMessages, states.activeChat, states.messageSeen!);
+  useUpdateMessageSeen(setMessages, activeChat, messageSeen!);
   // pusher typing state trigger
-  usePusherSubscribe(debounce, states.activeChat, states.authUser!);
+  // usePusherSubscribe(debounce, activeChat, authUser!);
+
+  const socket = useSocket();
+  useEffect(() => {
+    if (!socket || !activeChat?.chatId || !authUser?.uid) return;
+    socket.emit("user-typing", {
+      useFor: "typing",
+      type: "Individual",
+      userId: authUser?.uid,
+      userName: authUser?.name,
+      chatId: activeChat.chatId,
+      isTyping: !!debounce?.length,
+    });
+  }, [activeChat.chatId, authUser?.name, authUser?.uid, debounce?.length, socket]);
+
+
+
   //update delete message from the message
-  useDeleteMessage("Message", states.deletedMessages!, setMessages);
+  useDeleteMessage("Message", deletedMessages!, setMessages);
   //D&D hook
   const {
     isDragging,
@@ -91,19 +115,24 @@ const MessagePanel = () => {
 
   // ----------------------------------------------------------------------- memoized logics --------------------------------------------------------------------------------
   const chatId = useMemo(
-    () => [states.authUser?.uid, states.activeChat?.uid].sort().join("-"),
-    [states.authUser?.uid, states.activeChat?.uid]
+    () => [authUser?.uid, activeChat?.uid].sort().join("-"),
+    [authUser?.uid, activeChat?.uid]
   );
-  const isUserTyping = useMemo(
+  const UserTyping = useMemo(
     () =>
-      states.typingUsers.some(
-        (u) => u.userId === states.activeChat?.uid && u.isTyping
+      typingUsers.find(
+        (u) =>
+          u.userId === activeChat?.uid &&
+          u.type === "Individual" &&
+          activeChat.chatId === u.chatId &&
+          u.isTyping
       ),
-    [states.activeChat?.uid, states.typingUsers]
+    [activeChat.chatId, activeChat?.uid, typingUsers]
   );
+
   // -------------------------------------------------------------------------- tanstack --------------------------------------------------------------------------------
   const { data, isPending, refetch } = useGetMessages(chatId);
-  const { data: lastSeenUpdate } = useGetLastSeen(states.activeChat?.uid ?? "");
+  const { data: lastSeenUpdate } = useGetLastSeen(activeChat?.uid ?? "");
   const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {
     if (result.success) {
       setLastSeen(result.lastSeen);
@@ -114,7 +143,7 @@ const MessagePanel = () => {
       if (result.success) {
         refetch();
         QueryClient.invalidateQueries({
-          queryKey: ["get-chats", states.authUser?.uid ?? ""],
+          queryKey: ["get-chats", authUser?.uid ?? ""],
         });
       }
     }
@@ -129,12 +158,12 @@ const MessagePanel = () => {
     if (textAreaRef.current) {
       textAreaRef.current.value = "";
     }
-  }, [states.activeChat?.chatId]);
+  }, [activeChat?.chatId]);
 
   useEffect(() => {
     const seenTime = new Date().toString();
     lastSeenMutate({
-      uid: states.activeChat?.uid ?? "",
+      uid: activeChat?.uid ?? "",
       lastSeen: seenTime?.toString(),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -177,18 +206,18 @@ const MessagePanel = () => {
         customId,
         content: message,
         files: filePayload,
-        senderId: states.authUser?.uid ?? "",
-        receiverId: states.activeChat?.uid ?? "",
+        senderId: authUser?.uid ?? "",
+        receiverId: activeChat?.uid ?? "",
         chatId: chatId,
         type: "Individual",
-        name: states.authUser?.name ?? "",
-        dp: states.authUser?.dp ?? "",
+        name: authUser?.name ?? "",
+        dp: authUser?.dp ?? "",
         createdAt: date.toISOString(),
         status: presence === "Online" ? "delivered" : "sent",
         unreads: [
           {
-            userId: states.activeChat?.uid ?? "",
-            count: states.unreads === 0 ? 1 : states.unreads,
+            userId: activeChat?.uid ?? "",
+            count: unreads === 0 ? 1 : unreads,
           },
         ],
       });
@@ -196,7 +225,7 @@ const MessagePanel = () => {
       console.error("Invalid JSON:", message, err);
     }
 
-    dispatch(setUnreads(states.unreads + 1));
+    dispatch(setUnreads(unreads + 1));
   };
 
   // use Effect:  update the user last seen when presence changes ( listening to the presence changes )
@@ -234,13 +263,18 @@ const MessagePanel = () => {
 
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
-      {states.activeChat && (
+      {activeChat && (
         <>
           <div className=" flex p-5  justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">
-            <div className=" flex items-center gap-3">
-              <Avatar image={states.activeChat?.dp || "/no_avatar2.png"} />
+            <div
+              className=" flex items-center gap-3 "
+              onClick={() =>
+                setActionMenuSelection({ selection: "message-Info", message: null })
+              }
+            >
+              <Avatar image={activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
-                <h1 className="">{states.activeChat?.name}</h1>
+                <h1 className="">{activeChat?.name}</h1>
                 <p className="text-xs text-[var(--pattern_4)]">
                   {presence === "Online"
                     ? "Online"
@@ -273,9 +307,8 @@ const MessagePanel = () => {
 
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
             <TypingIndicator
-              isUserTyping={isUserTyping}
+              UserTyping={UserTyping!}
               version="1"
-              username={states.authUser?.name ?? ""}
             />
             <FileShare
               isUploading={isUploading}

@@ -12,11 +12,9 @@ export async function GET(
 ) {
   try {
     await connectDB();
-    const {uid} = await params;
+    const { uid } = await params;
 
-    const groups = await Group.find({ participants: uid });
-    console.log("groups ", groups);
-    console.log("uid ", uid);
+    const groups = await Group.find({ "participants.userId": uid });
 
     return NextResponse.json({
       status: 200,

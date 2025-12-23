@@ -6,11 +6,19 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { RelativePositionType, SessionInfo } from "../types";
+import { Message, RelativePositionType, SessionInfo } from "../types";
 
+type ActionMenuSelectionType = {
+  selection: string;
+  message: Message | null;
+};
 interface LiveLinkContextType {
   openModal: boolean;
   setOpenModal: (state: boolean) => void;
+  actionMenuSelection: { selection: string; message: Message | null };
+  setActionMenuSelection: (data: ActionMenuSelectionType) => void;
+  currentTab: string;
+  setCurrentTab: (tab: string) => void;
   id: string;
   setId: (id: string) => void;
   setOnSelect: (value: string) => void;
@@ -19,12 +27,12 @@ interface LiveLinkContextType {
   setClickedIcon: (name: string) => void;
   internalClickState: string;
   setInternalClickState: (name: string) => void;
-  uid: string | null;
-  setUid: React.Dispatch<React.SetStateAction<string | null>>;
   setConnectionState: (state: boolean) => void;
   connectionState: boolean;
   relativePosition: RelativePositionType;
   setRelativePosition: (relativePosition: RelativePositionType) => void;
+  setIsActive: (state: string) => void;
+  isActive: string;
 
   //refs
   localAudioRef: React.RefObject<HTMLAudioElement | null>;
@@ -35,6 +43,7 @@ interface LiveLinkContextType {
   sdpRef: React.RefObject<RTCSessionDescriptionInit | null>;
   currentPC: React.RefObject<RTCPeerConnection | null>;
   audioRef: React.RefObject<HTMLAudioElement | null>;
+  countRef: React.RefObject<Record<string, number>>;
 
   //has incoming call
   setSessionInfo: (data: SessionInfo | null) => void;
@@ -45,18 +54,21 @@ interface LiveLinkContextType {
 export const LiveLinkContext = createContext<LiveLinkContextType | null>(null);
 
 export const LiveLink = ({ children }: { children: ReactNode }) => {
+  const [currentTab, setCurrentTab] = useState<string>("chats");
+  const [actionMenuSelection, setActionMenuSelection] =
+    useState<ActionMenuSelectionType>({ selection: " ", message: null });
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [onSelect, setOnSelect] = useState<string>("");
   const [id, setId] = useState<string>("");
   const [clickedIcon, setClickedIcon] = useState<string>("");
   const [internalClickState, setInternalClickState] = useState<string>("chats");
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
-  const [uid, setUid] = useState<string | null>(null);
   const [relativePosition, setRelativePosition] =
     useState<RelativePositionType>({ top: 0, left: 0 });
   const [connectionState, setConnectionState] = useState<boolean>(
     typeof window !== "undefined" ? navigator.onLine : true
   );
+  const [isActive, setIsActive] = useState<string>("");
   // const [filter,setFilter] = useState<{}
 
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
@@ -67,10 +79,13 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
   const channelRef = useRef<any>(null);
   const sdpRef = useRef<RTCSessionDescriptionInit | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const countRef = useRef<Record<string, number>>({});
 
   return (
     <LiveLinkContext.Provider
       value={{
+        isActive,
+        setIsActive,
         openModal,
         setOpenModal,
         onSelect,
@@ -82,6 +97,7 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         setInternalClickState,
         internalClickState,
         //global icon click setter for message panel ( audio , video )
+        
         //refs
         localAudioRef,
         remoteAudioRef,
@@ -91,6 +107,9 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         sdpRef,
         currentPC,
         audioRef,
+        countRef, // this use to keep track of the unreads count
+
+      
 
         //incoming call status
         setSessionInfo,
@@ -104,8 +123,13 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         relativePosition,
         setRelativePosition,
 
-        setUid,
-        uid,
+        //current active tab
+        currentTab,
+        setCurrentTab,
+
+        //action menu selection
+        setActionMenuSelection,
+        actionMenuSelection,
       }}
     >
       {children}

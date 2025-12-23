@@ -38,24 +38,21 @@ export default function PusherListenerPresence() {
       const typeData = {
         userId: data.userId ?? "",
         chatId: data.chatId ?? "",
+        userName: data.userName ?? "",
         isTyping: data.isTyping ?? false,
       };
       dispatch(setTypingUsers(typeData as TypingUser));
     } else if (data.useFor === "deleting") {
       dispatch(setDeletedMessage(data as DeletedMessage));
     } else {
-      dispatch(setMessages(data as Message));
-      dispatch(setMessagesArray(data as Message));
+      //receiving real time message
+      dispatch(setMessages(data as Message)); //store last message
+      dispatch(setMessagesArray(data as Message)); //store and update whole session messages as array
     }
   };
 
   useEffect(() => {
-    if (!pusher) {
-      return;
-    }
-    if (!authUser?.uid) {
-      return;
-    }
+    if (!pusher || !authUser?.uid) return;
 
     const chat_channels: Record<string, any> = {};
 

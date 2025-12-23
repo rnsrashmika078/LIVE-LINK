@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Avatar from "./avatar";
 import { Button } from "./button";
@@ -5,15 +6,19 @@ import {
   AuthUser,
   ChatsType,
   GroupType,
+  ParticipantsType,
   PusherChatState,
+  SeenByType,
+  TypingUser,
   Unread,
 } from "@/app/types";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { modifiedMessage } from "@/app/helper/helper";
 import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import { TypingIndicator } from "./typingIndicator";
 import { CgClose } from "react-icons/cg";
+import { useLiveLink } from "@/app/context/LiveLinkContext";
 
 interface UserCardProps {
   avatar?: string;
@@ -218,7 +223,7 @@ export const UserChatCard = ({
   },
   handleClick,
 }: UCDInterface) => {
-  const { authUser, typingUsers } = useSelector(
+  const { authUser, typingUsers, activeChat } = useSelector(
     (store: PusherChatState) => ({
       authUser: store.chat.authUser,
       activeChat: store.chat.activeChat,
@@ -228,7 +233,10 @@ export const UserChatCard = ({
   );
 
   const isUserTyping = useMemo(
-    () => typingUsers.some((u) => u.chatId === chatId && u.isTyping),
+    () =>
+      typingUsers.find((u) =>
+        u.chatId === chatId && u.type === "Individual" && u.isTyping ? u : null
+      ),
     [chatId, typingUsers]
   );
 
@@ -263,7 +271,10 @@ export const UserChatCard = ({
             <div className="flex  min-w-0 ">
               <div className="flex w-72 text-[var(--pattern_4)] sm:w-56 truncate flex-shrink items-center text-xs">
                 {isUserTyping ? (
-                  <TypingIndicator isUserTyping={isUserTyping} version="2" />
+                  <TypingIndicator
+                    UserTyping={isUserTyping as TypingUser}
+                    version="2"
+                  />
                 ) : (
                   modifiedMessage(lastMessage ?? "")
                 )}
@@ -284,27 +295,16 @@ export const UserChatCard = ({
 };
 interface UGDInterface {
   group: GroupType;
+  test?: string;
   handleClick?: () => void;
 }
 export const UserGroupCard = ({
-  group: {
-    senderInfo,
-    groupName,
-    dp,
-    updatedAt,
-    unreadCount,
-    chatId,
-    senderId,
-    receiverId,
-    lastMessage,
-    status,
-  },
+  group: { groupName, dp, updatedAt, unreads, chatId, lastMessage },
   handleClick,
 }: UGDInterface) => {
   const { authUser, typingUsers } = useSelector(
     (store: PusherChatState) => ({
       authUser: store.chat.authUser,
-      activeChat: store.chat.activeChat,
       typingUsers: store.chat.typingUsers,
     }),
     shallowEqual
@@ -312,19 +312,21 @@ export const UserGroupCard = ({
 
   const isUserTyping = useMemo(
     () =>
-      typingUsers.some(
-        (u) =>
-          u.chatId === chatId &&
-          (u.userId === receiverId || u.userId === senderId) &&
-          u.isTyping
+      typingUsers.find(
+        (u) => u.chatId === chatId && u.type === "Group" && u.isTyping
       ),
-    [chatId, receiverId, senderId, typingUsers]
+    [chatId, typingUsers]
   );
 
-  //grab unread count
-  const unreads = unreadCount?.find(
-    (u) => u.userId === authUser?.uid && u.count > 0
-  );
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    const unreadCountMatch = unreads?.find((u) => {
+      return u.userId === authUser?.uid ? u.count : 0;
+    });
+    setUnreadCount(unreadCountMatch?.count ?? 0);
+  }, [authUser?.uid, unreads]);
+
   return (
     <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
       <div
@@ -351,7 +353,7 @@ export const UserGroupCard = ({
             <div className="flex  min-w-0 ">
               <div className="flex w-72 text-[var(--pattern_4)] sm:w-56 truncate flex-shrink items-center text-xs">
                 {isUserTyping ? (
-                  <TypingIndicator isUserTyping={isUserTyping} version="2" />
+                  <TypingIndicator UserTyping={isUserTyping} version="2" />
                 ) : (
                   <p>
                     <strong className="">
@@ -361,12 +363,12 @@ export const UserGroupCard = ({
                   </p>
                 )}
               </div>
-              {!isUserTyping &&
-                OnMessageSeen(senderId === authUser?.uid, status as string)}
+              {/* {!isUserTyping &&
+                OnMessageSeen(senderId === authUser?.uid, status as string)} */}
             </div>
-            {unreads ? (
+            {unreadCount !== 0 ? (
               <div className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
-                {unreads?.count}
+                {unreadCount}
               </div>
             ) : null}
           </div>
@@ -398,10 +400,67 @@ export const Users = ({ friends, handleClick }: UserProps) => {
     </>
   );
 };
+interface OtherType {
+  friends?: SeenByType[];
+  participants?: ParticipantsType[];
+  phrase: string;
+}
+export const MessageVsUsers = ({
+  participants,
+  friends,
+  phrase,
+}: OtherType) => {
+  const uid = useSelector((store: PusherChatState) => store.chat.authUser?.uid);
+  return (
+    <>
+      {friends
+        ? friends
+            ?.filter(
+              (u) =>
+                u.status?.toLowerCase().includes(phrase) && u.userId !== uid
+            )
+            .map((f: SeenByType, i: number) => (
+              <div
+                key={i}
+                className="mt-2 mb-3 bg-gray-900  cursor-pointer transition-all p-2 rounded-xl flex items-center gap-2 shadow-xl border-b-2  w-full"
+              >
+                <Avatar
+                  height={8}
+                  width={8}
+                  image={f.userDp || "/no_avatar2.png"}
+                />
+                <div className="">
+                  <h1 className="text-sm">
+                    {f.userName || "name unavailable"}
+                  </h1>
+                </div>
+              </div>
+            ))
+        : participants?.map((f: ParticipantsType, i: number) => (
+            <div
+              key={i}
+              className="mt-2 mb-3 bg-gray-900  cursor-pointer transition-all p-2 rounded-xl flex items-center gap-2 shadow-xl border-b-2  w-full"
+            >
+              <Avatar
+                height={8}
+                width={8}
+                image={f.userDp || "/no_avatar2.png"}
+              />
+              <div className="">
+                <h1 className="text-sm">
+                  {f.userId === uid ? "You" : f.userName}
+                  <p>{f.userId}</p>
+                </h1>
+              </div>
+            </div>
+          ))}
+    </>
+  );
+};
 export const AddUser = ({ friends, handleClick }: UserProps) => {
   return (
     <>
-      {friends.map((f: AuthUser, i: number) => (
+      {friends.map((f: any, i: number) => (
         <div
           key={i}
           className="p-1 relative rounded-xl flex items-center gap-2 shadow-xl border-2 border-[var(--pattern_5)] w-full "

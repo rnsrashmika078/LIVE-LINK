@@ -1,31 +1,36 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { TypingUser } from "@/app/types";
 import { TiMessageTyping } from "react-icons/ti";
 
 type TypingIndicatorProps = {
-  isUserTyping: boolean;
-  username?: string;
-  version: "1" | "2";
+  UserTyping: TypingUser | TypingUser[];
+  version: "1" | "2" | "3";
 };
 export const TypingIndicator = ({
-  isUserTyping,
-  username,
+  UserTyping,
   version = "1",
 }: TypingIndicatorProps) => {
-  if (isUserTyping) {
-    return (
-      <div className="">
-        {version === "1" && (
-          <p className="fixed bottom-15 animate-pulse italic p-2 flex gap-1 items-center bg-[var(--pattern_3)]  rounded-2xl">
+  if (!Array.isArray(UserTyping)) {
+    /** if not array of objects */
+    if (UserTyping?.isTyping) {
+      /** user is typing */
+      if (version === "1") {
+        return (
+          <p className="fixed bottom-16 animate-pulse italic p-2 flex gap-1 items-center bg-[var(--pattern_3)]  rounded-2xl">
             <TiMessageTyping size={30} color="green" />
-            {username?.split(" ")[0] + " is typing..."}
+            {UserTyping?.userName?.split(" ")[0] + " is typing..."}
           </p>
-        )}
-        {version === "2" && (
+        );
+      } else if (version === "2") {
+        return (
           <p className="flex font-bold  text-xs text-green-400 animate-pulse">
-            {"Typing..."}
+            {UserTyping.type === "Group"
+              ? UserTyping?.userName + " Typing..."
+              : "Typing..."}
           </p>
-        )}
-      </div>
-    );
+        );
+      }
+    }
+    // single object
   }
-  return null;
 };

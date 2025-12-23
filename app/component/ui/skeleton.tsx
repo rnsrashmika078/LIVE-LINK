@@ -1,23 +1,39 @@
+"use client";
 import React from "react";
 
-const Skeleton = () => {
+const Skeleton = ({ version }: { version: string }) => {
+  switch (version.toLowerCase()) {
+    case "chat": {
+      return <Chat />;
+    }
+    case "sidebar": {
+      return <Sidebar />;
+    }
+  }
+};
+
+const Sidebar = () => {
   return (
-    <div className="animate-pulse p-4 space-y-4">
-      {/* Header */}
-      <div className="h-6 w-3/5 bg-gray-300 rounded"></div>
-
-      {/* Message bubbles */}
-      <div className="space-y-2">
-        <div className="h-4 w-4/5 bg-gray-300 rounded"></div>
-        <div className="h-4 w-3/4 bg-gray-300 rounded self-end"></div>
-        <div className="h-4 w-2/3 bg-gray-300 rounded"></div>
-        <div className="h-4 w-5/6 bg-gray-300 rounded self-end"></div>
-      </div>
-
-      {/* Input box */}
-      <div className="h-10 w-full bg-gray-300 rounded mt-4"></div>
+    <div className="animate-pulse overflow-hidden flex flex-col gap-5 justify-start  p-2 items-center shadow-2xl bg-[#494949] w-15 h-full">
+      {[...Array(25)].map((item, index) => (
+        <div
+          key={index}
+          className="animate-pulse p-4 w-full bg-[#545454] rounded-xl shadow-2xl"
+        ></div>
+      ))}
     </div>
   );
 };
-
+const Chat = () => {
+  return (
+    <div className="animate-pulse overflow-hidden flex flex-col gap-5 justify-start  p-2 items-center shadow-2xl bg-[#494949] w-full h-full">
+      {[...Array(25)].map((item, index) => (
+        <div
+          key={index}
+          className="animate-pulse p-4 w-full bg-[#545454] rounded-xl shadow-2xl"
+        ></div>
+      ))}
+    </div>
+  );
+};
 export default Skeleton;

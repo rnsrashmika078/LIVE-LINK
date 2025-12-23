@@ -76,10 +76,11 @@ export type SeenType = {
 export type TypingUser = {
   userId: string;
   chatId: string;
+  userName: string;
   isTyping: boolean;
+  type: string;
 };
 export type AuthUser = {
-  // or user
   _id?: string;
   uid: string;
   email: string;
@@ -117,11 +118,13 @@ export type Message = {
   type?: string;
   userId?: string;
   isTyping?: boolean;
+  seenBy?: SeenByType[];
   status?: "sent" | "delivered" | "seen";
   createdAt?: string;
+  unreads?: Unread[];
 };
 
-type Unread = {
+export type Unread = {
   userId: string;
   count: number;
 };
@@ -165,12 +168,26 @@ export type GroupType = {
   createdBy: string;
   dp: string;
   lastMessage: LastMessageGroup;
-  participants: string[];
+  participants: ParticipantsType[];
   updatedAt?: string;
   createdAt?: string;
   senderInfo?: SenderInfoType;
   type?: string;
   message?: string;
+  seenBy?: SeenByType[];
+  unreads?: Unread[];
+};
+
+export type ActiveUsersType = {
+  userName: authUser.name;
+  userId: authUser.uid;
+  chatId: group.chatId;
+};
+
+export type ParticipantsType = {
+  userId: string;
+  userName: string;
+  userDp: string;
 };
 
 export type LastMessageGroup = {
@@ -181,16 +198,22 @@ export type SenderInfoType = {
   senderId: string;
   senderName: string;
 };
+export type SeenByType = {
+  userId: string;
+  userName: string;
+  status: string;
+  userDp: string;
+};
 export type GroupMessage = {
   customId: string;
   chatId: string;
   senderInfo: SenderInfoType;
+  unreads: Unread[];
   content: string;
   status: string;
   message?: string;
-  seenBy?: string[];
+  seenBy?: SeenByType[];
   files?: FileType[] | null;
-  deliveredTo?: string[];
   createdAt?: string;
 };
 

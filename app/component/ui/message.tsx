@@ -1,4 +1,4 @@
-import React, { HTMLAttributes, ReactNode, useCallback, useRef } from "react";
+import React, { HTMLAttributes, ReactNode, useRef } from "react";
 import { AuthUser, Message } from "@/app/types";
 import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import MessageFormat from "./format";
@@ -11,16 +11,17 @@ interface MessageUIProps extends HTMLAttributes<HTMLDivElement> {
   msg: Message;
   authUser: AuthUser;
   children?: ReactNode;
+  type?: string;
 }
 export const MessageUI = React.memo(
-  ({ msg, children, authUser, ...props }: MessageUIProps) => {
+  ({ msg, children, authUser, type, ...props }: MessageUIProps) => {
     const focusRef = useRef<HTMLDivElement | null>(null);
     const { id, setId } = useLiveLink();
     const area = useClickFocus(focusRef);
     const { handleOperation, result } = useActionMenuOperation();
 
-    const actionMenuHandler = (value: string) => {
-      handleOperation(value, msg.customId, msg.chatId, public_id);
+    const actionMenuHandler = (value: string, msg: Message) => {
+      handleOperation(value, msg.customId, msg.chatId, public_id, msg);
     };
     if (!msg) return null;
 
@@ -37,21 +38,20 @@ export const MessageUI = React.memo(
 
     // your Redux store
 
+    const baseCondition =
+      msg.senderId === authUser?.uid ||
+      msg.senderInfo?.senderId === authUser.uid;
     return (
       <div
         className={`flex w-full mt-2   ${
-          msg.senderId === authUser?.uid ||
-          msg.senderInfo?.senderId === authUser.uid
-            ? "justify-end"
-            : "justify-start"
+          baseCondition ? "justify-end" : "justify-start"
         }`}
       >
         <div
           ref={focusRef}
           {...props}
-          className={`flex text-xs flex-col w-fit relative   ${
-            msg.senderId === authUser?.uid ||
-            msg.senderInfo?.senderId === authUser.uid
+          className={`pr-6 flex text-xs flex-col w-fit relative   ${
+            baseCondition
               ? `${
                   url
                     ? "bg-transparent space-y-2"
@@ -71,19 +71,28 @@ export const MessageUI = React.memo(
             format={format}
             url={url}
             message={message}
-            senderInfo={msg.senderInfo} // use only in group chats
+            senderInfo={msg.senderInfo}
+            // use only in group chats
           />
           {area !== "OutSide" && (
             <Menu
               id={id}
               setId={setId}
               msg={msg}
-              onSelect={actionMenuHandler}
-              condition={authUser.uid === msg.senderId}
+              onSelect={(value) => actionMenuHandler(value, msg)}
+              condition={authUser?.uid === msg.senderId}
             >
-              {actionMenuItem.map((item) => (
-                <MenuItem key={item} value={item} />
-              ))}
+              {actionMenuItem
+                .filter(
+                  (a) =>
+                    msg.senderId === authUser?.uid ||
+                    (msg.senderInfo?.senderId === authUser?.uid
+                      ? a
+                      : !a.toLowerCase().includes("info"))
+                )
+                .map((item) => (
+                  <MenuItem key={item} value={item} />
+                ))}
             </Menu>
           )}
 
@@ -96,7 +105,7 @@ export const MessageUI = React.memo(
                   })
                 : ""}
             </p>
-            {OnMessageSeen(msg.senderId === authUser?.uid, msg.status!)}
+            {OnMessageSeen(baseCondition, msg.status!, type!)}
           </div>
         </div>
       </div>

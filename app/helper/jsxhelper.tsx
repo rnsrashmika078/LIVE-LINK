@@ -8,15 +8,38 @@ import {
 } from "react-icons/io5";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import React, { useEffect, useState } from "react";
+import {
+  TbRelationManyToMany,
+  TbRelationManyToManyFilled,
+} from "react-icons/tb";
+import { SeenByType } from "../types";
 
-export function OnMessageSeen(condition: boolean, status: string) {
+export function OnMessageSeen(
+  condition: boolean,
+  status: string,
+  type?: string,
+) {
+
   if (condition) {
     return (
-      <div>
-        {status === "seen" && <IoMdEye color="lightgreen" />}
-        {status === "delivered" && <IoMdEyeOff />}
-        {status === "sent" && <IoCheckmark />}
-      </div>
+      <>
+        {type?.toLowerCase().includes("individual") && (
+          <div>
+            {status === "seen" && <IoMdEye color="lightgreen" />}
+            {status === "delivered" && <IoMdEyeOff />}
+            {status === "sent" && <IoCheckmark />}
+          </div>
+        )}
+        {type?.toLowerCase().includes("group") && (
+          <div>
+            {status === "seen" && (
+              <TbRelationManyToManyFilled color="lightgreen" size={15} />
+            )}
+            {status === "delivered" && <TbRelationManyToMany size={15} />}
+            {status === "sent" && <IoCheckmark size={15} />}
+          </div>
+        )}
+      </>
     );
   }
   return <div>{null}</div>;

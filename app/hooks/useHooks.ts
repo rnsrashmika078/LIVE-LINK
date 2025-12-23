@@ -2,9 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useSelector } from "react-redux";
-import { Message, PusherChatState } from "../types";
+import { AuthUser, Message, PusherChatState } from "../types";
 import { useEffect, useRef, useState } from "react";
 import { useMessageDelete } from "../lib/tanstack/messageQuery";
+import { useLiveLink } from "../context/LiveLinkContext";
 
 export function usePathName() {
   if (typeof window !== "undefined") {
@@ -60,6 +61,7 @@ export function useClickFocus(
 
 export function useActionMenuOperation() {
   const [result, setResult] = useState<any>("");
+  const { setActionMenuSelection } = useLiveLink();
 
   const { mutate: deleteMessage } = useMessageDelete((result) => {
     if (result) {
@@ -70,22 +72,24 @@ export function useActionMenuOperation() {
     value: string,
     messageId: string,
     chatId: string,
-    public_id: string
+    public_id: string,
+    message: Message
   ) => {
     if (!value) return;
     if (value === "Delete") {
+      setActionMenuSelection({ selection: value, message });
       deleteMessage({
         messageId,
         public_id,
         chatId,
       });
       return;
+    } else if (value === "Info") {
+      setActionMenuSelection({ selection: "message-info", message });
+      return;
+    } else {
+      return;
     }
-    // switch (value) {
-    //   case "Delete":
-    //
-    // }
-    return;
   };
 
   return { result, handleOperation };
@@ -101,10 +105,10 @@ export function useElapsedTime(condition: boolean) {
       setElapsedTime(null);
       return;
     }
+    startAtRef.current = Date.now();
     const interval = setInterval(() => {
       if (!startAtRef.current) {
-        // if the ref current hold value is null
-        startAtRef.current = Date.now();
+        return;
       }
       const diff = Date.now() - startAtRef.current; // this is the time difference in milliseconds
       const timeDiffInSec = Math.floor(diff / 1000); // this is the time difference in seconds

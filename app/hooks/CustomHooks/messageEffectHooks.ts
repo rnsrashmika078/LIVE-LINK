@@ -4,13 +4,24 @@ import { useEffect } from "react";
 import {
   AuthUser,
   ChatsType,
+  GroupMessage,
+  GroupType,
   Message,
   PusherChatDispatch,
+  PusherChatState,
   SeenType,
 } from "@/app/types";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { usePusher } from "@/app/component/util_component/PusherProvider";
-import { setUnreads } from "@/app/lib/redux/chatslicer";
+import {
+  setChatsArray,
+  setGroupMessageSeen,
+  setTypingUsers,
+  setUnreads,
+} from "@/app/lib/redux/chatslicer";
+import { apiFetch } from "@/app/helper/helper";
+import { useSocket } from "@/app/component/util_component/SocketProvider";
+import { useLiveLink } from "@/app/context/LiveLinkContext";
 
 //-----------------------------------------------------------message panel effects start here--------------------------------------------------------------//
 //👍 pusher subscribe for typing state ( whether the user typing or not state)
@@ -65,40 +76,87 @@ export function useMessageSeenAPI(
   isInView: boolean,
   lastMessage: Message,
   authUser: AuthUser,
-  activeChat: ChatsType
+  activeChat: ChatsType | GroupType,
+  type?: string
 ) {
   const dispatch = useDispatch<PusherChatDispatch>();
+  const socket = useSocket();
+  const { countRef } = useLiveLink();
+
+  const seenUpdate = async () => {
+    if (!socket) return;
+    const payload = {
+      chatId: activeChat?.chatId,
+      receiverId: authUser?.uid,
+      senderId: lastMessage.senderId ?? lastMessage.senderInfo?.senderId,
+      type,
+      unreadCounts: countRef.current[activeChat?.chatId + "-" + authUser?.uid],
+    };
+    const api = type?.includes("Group")
+      ? "/api/group/messages/message-seen"
+      : "/api/messages/message-seen";
+    const res = await apiFetch(api, "POST", payload);
+
+    if (type?.includes("Group")) {
+      socket?.emit("message-seen", payload);
+    }
+    const result = await res.json();
+    if (result && result.success) {
+    }
+  };
 
   useEffect(() => {
-    if (!lastMessage) return;
-    if (lastMessage.senderId === authUser?.uid) {
+    if (!lastMessage) {
       return;
     }
-
+    if (
+      lastMessage.senderId === authUser?.uid ||
+      lastMessage.senderInfo?.senderId === authUser?.uid
+    ) {
+      return;
+    }
     if (isInView && lastMessage?.status !== "seen") {
       dispatch(setUnreads(0));
-
-      const seenUpdate = async () => {
-        const res = await fetch("/api/messages/message-seen", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            chatId: activeChat?.chatId,
-            receiverId: authUser?.uid,
-            senderId: lastMessage.senderId,
-          }),
-        });
-        const result = await res.json();
-
-        if (result && result.success) {
-        }
-      };
       seenUpdate();
     }
-  }, [lastMessage, authUser?.uid, isInView]);
+  }, [lastMessage, authUser?.uid, isInView, socket]);
 }
 //---------------------------------------------------------message view area effects ends here--------------------------------------------------------------//
 
 //-----------------------------------------------------------message panel effects ends here-------------------------------------------------------------//
+export function useUpdateGroupMessageSeen(
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
+  activeChat: GroupType,
+  messageSeen: SeenType[]
+) {
+  const dispatch = useDispatch<PusherChatDispatch>();
+  const activeUsers = useSelector(
+    (store: PusherChatState) => store.chat.activeUsers
+  );
+
+  console.log("messageseen", messageSeen);
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.chatId !== activeChat.chatId) {
+          return m;
+        }
+        //find which one should update
+        const updatedSeenBy = m.seenBy?.map((s) => {
+          const activeInChat = activeUsers.some((au) => au.userId === s.userId);
+          const seensUpdate = messageSeen.find(
+            (ms) => ms.receiverId === s.userId
+          );
+          if (seensUpdate) {
+            return { ...s, status: activeInChat ? "seen" : "delivered" };
+          }
+
+          return s;
+        });
+
+        return { ...m, status: "seen", seenBy: updatedSeenBy };
+      })
+    );
+    dispatch(setGroupMessageSeen(null));
+  }, [messageSeen]);
+}

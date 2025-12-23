@@ -19,6 +19,7 @@ import {
 import {
   setChats,
   setChatsArray,
+  setGroupMessageSeen,
   setMessageSeen,
 } from "@/app/lib/redux/chatslicer";
 import { usePusher } from "./PusherProvider";
@@ -41,9 +42,10 @@ export default function GlobalPusherListener() {
       const channel = pusher.subscribe(channelName);
 
       channel.bind("message-seen", (data: any) => {
-        if (data.receiverId === authUser?.uid) return;
+        if (data.receiverId === authUser?.uid) {
+          return;
+        }
         const id = new Date().getTime().toString();
-
         dispatch(
           setMessageSeen({
             chatId: data.chatId,
@@ -60,7 +62,7 @@ export default function GlobalPusherListener() {
         pusher.unsubscribe(channelName);
       }
     };
-  }, [activeChat?.chatId, authUser?.uid, dispatch, pusher]);
+  }, [activeChat?.chatId, authUser?.uid, pusher]);
 
   useEffect(() => {
     if (!authUser?.uid || !pusher) return;

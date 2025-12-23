@@ -6,6 +6,7 @@ import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { BiSync } from "react-icons/bi";
 
 import { useRouter } from "next/navigation";
+import UserSettings from "../../modal/UserSettings";
 
 const ChatLayout = React.memo(({ children }: { children: ReactNode }) => {
   const { internalClickState, setInternalClickState } = useLiveLink();
@@ -41,6 +42,11 @@ const ChatLayout = React.memo(({ children }: { children: ReactNode }) => {
             }}
           />
         </div>
+      )}
+      {internalClickState === "users" && (
+        <>
+          <UserSettings />
+        </>
       )}
       {/* body - content */}
       {children}

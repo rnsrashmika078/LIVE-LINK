@@ -1,12 +1,15 @@
-import React from "react";
+import React, { Suspense } from "react";
 
 // import MessageAreaWrapper from "../component/client_component/message/MessageClient";
 import { cookies } from "next/headers";
 
 import { redirect } from "next/navigation";
 import { getChats } from "@/app/actions/chats_actions";
-import ChatListClient from "@/app/component/client_component/chats/ChatListClient";
+const ChatListClient = React.lazy(
+  () => import("@/app/component/client_component/chats/ChatListClient")
+);
 import { getGroups } from "@/app/actions/group_action";
+import Skeleton from "@/app/component/ui/skeleton";
 
 const ChatPage = async () => {
   const cookieStore = cookies();
@@ -20,7 +23,9 @@ const ChatPage = async () => {
 
   return (
     <>
-      <ChatListClient chats={chats} groupChats={groupChats} />
+      <Suspense fallback={<Skeleton version="sidebar" />}>
+        <ChatListClient chats={chats} groupChats={groupChats} />
+      </Suspense>
     </>
   );
 };

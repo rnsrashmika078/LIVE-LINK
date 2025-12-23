@@ -22,9 +22,19 @@ const GroupMessageSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-    },
-    seenBy: [{ type: String }],
-    deliveredTo: [{ type: String }],
+    }, // this status get updated to seen when all groups members see the message, default is sent, it one of the user in group is online then this updated to delivered
+    seenBy: [
+      {
+        userId: { type: String, required: true },
+        userName: { type: String, required: true },
+        status: { type: String, required: true },
+        userDp: {
+          type: String,
+          required: false,
+        },
+        // this is individual member message status
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now,

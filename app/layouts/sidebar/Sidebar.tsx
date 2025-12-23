@@ -3,27 +3,22 @@ import { Button } from "../../component/ui/button";
 import { EndItems, MiddleItems, StartItems } from "../../util/data";
 import { useDispatch, useSelector } from "react-redux";
 import { PusherChatDispatch, PusherChatState } from "../../types";
-import { setCurrentTab } from "../../lib/redux/layoutSlicer";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { setActiveChat } from "@/app/lib/redux/chatslicer";
-import { usePathName } from "@/app/hooks/useHooks";
-import { apiFetch } from "@/app/helper/helper";
-import { useSocket } from "@/app/component/util_component/SocketProvider";
+import { useClickFocus, usePathName } from "@/app/hooks/useHooks";
+import { useLiveLink } from "@/app/context/LiveLinkContext";
+import UserSettings from "@/app/component/modal/UserSettings";
 
 // one hydration error occur in this component that needed be solve
 const Sidebar = React.memo(() => {
   const dispatch = useDispatch<PusherChatDispatch>();
-  const currentTab = useSelector(
-    (store: PusherChatState) => store.layout.currentTab
-  );
-  const activeChat = useSelector(
-    (store: PusherChatState) => store.chat.activeChat
-  );
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
   const router = useRouter();
+  const { currentTab, setCurrentTab, setInternalClickState } = useLiveLink();
 
+  //temp function
   const deletefunction = async () => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/test-delete-route`,
@@ -43,12 +38,31 @@ const Sidebar = React.memo(() => {
 
   useEffect(() => {
     if (!path) return;
-    dispatch(setCurrentTab(path.split("/")[2]));
+    setCurrentTab(path.split("/")[2]);
   }, []);
-  const socket = useSocket();
+  // const divRef = useRef<HTMLDivElement | null>(null);
+  // const focus = useClickFocus(divRef);
 
+  // useEffect(() => {
+  //   if (currentTab !== "users") {
+  //     setCurrentTab("chats");
+  //   }
+  // }, [focus]);
+
+  const dummy_chat = {
+    chatId: "",
+    uid: "",
+    name: "",
+    email: "",
+    lastMessageId: "",
+    dp: "",
+    lastMessage: "",
+  };
   return (
-    <div className="bg-[var(--pattern_1)] w-14 h-full flex flex-col justify-between py-2 px-1">
+    <div
+      className="bg-[var(--pattern_1)] relative w-14 h-full flex flex-col justify-between py-2 px-1"
+      // ref={divRef}
+    >
       <div className="flex flex-col justify-center">
         {StartItems.map((item) => {
           const Icon = item.icon;
@@ -63,8 +77,9 @@ const Sidebar = React.memo(() => {
                     : "bg-transparent"
                 }`}
                 onClick={() => {
-                  dispatch(setCurrentTab(item.name));
+                  setCurrentTab(item.name);
                   dispatch(setActiveChat(null));
+                  setInternalClickState("chats");
                   router.push(`/livelink/${item.name}`);
                 }}
               >
@@ -100,9 +115,11 @@ const Sidebar = React.memo(() => {
                     ? "border-red-500 bg-[var(--pattern_2)]"
                     : "bg-transparent"
                 }`}
-                onClick={() => dispatch(setCurrentTab(item.name))}
+                onClick={() => {
+                  setInternalClickState("");
+                  setCurrentTab(item.name);
+                }}
               >
-                {/* <p>{item.name}</p> */}
                 <Icon size={16} className="relative" />
                 <div
                   className={`${
@@ -130,7 +147,15 @@ const Sidebar = React.memo(() => {
                     ? "bg-[var(--pattern_2)]"
                     : "bg-transparent"
                 }`}
-                onClick={() => dispatch(setCurrentTab(item.name))}
+                onClick={() => {
+                  if (item.name === "users") {
+                    setCurrentTab(item.name);
+                    setInternalClickState(item.name);
+                  } else {
+                    setCurrentTab(item.name);
+                    setInternalClickState("");
+                  }
+                }}
               >
                 {/* <p>{item.name}</p> */}
                 {item.name === "users" ? (
