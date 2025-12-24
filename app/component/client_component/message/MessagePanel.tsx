@@ -6,6 +6,7 @@ import { useDebounce, useOnlinePresence } from "@/app/hooks/useHooks";
 
 import {
   ChatsType,
+  FileType,
   Message,
   PusherChatDispatch,
   PusherChatState,
@@ -40,6 +41,13 @@ import SearchArea from "../../ui/searcharea";
 import AppIcons from "../../ui/icons";
 import { MessagePanelIcons } from "@/app/util/data";
 import { useSocket } from "../../util_component/SocketProvider";
+import {
+  activateFeature,
+  addDummyData,
+  buildMessageStructure,
+  featureActivation,
+} from "@/app/helper/helper";
+import ActiveFeature from "../../modal/ActiveFeature";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const MessagePanel = () => {
   // --------------------------------------------------------------------------use states --------------------------------------------------------------------------------
@@ -95,9 +103,13 @@ const MessagePanel = () => {
       chatId: activeChat.chatId,
       isTyping: !!debounce?.length,
     });
-  }, [activeChat.chatId, authUser?.name, authUser?.uid, debounce?.length, socket]);
-
-
+  }, [
+    activeChat.chatId,
+    authUser?.name,
+    authUser?.uid,
+    debounce?.length,
+    socket,
+  ]);
 
   //update delete message from the message
   useDeleteMessage("Message", deletedMessages!, setMessages);
@@ -172,6 +184,12 @@ const MessagePanel = () => {
   //use Effect: merge lives messages ( pusher ) with current Message
   useEffect(() => {
     if (!liveMessages) return;
+    const lastMessage = messages?.at(-1)?.content.includes("dummy");
+    if (lastMessage) {
+      setMessages((prev) => prev.filter((m) => m.customId !== "dummy_001"));
+      setMessages((prev) => [...prev, liveMessages]);
+      return;
+    }
     setMessages((prev) => [...prev, liveMessages]);
   }, [liveMessages]);
 
@@ -187,25 +205,15 @@ const MessagePanel = () => {
   }, [lastSeenUpdate]);
   // -------------------------------------------------------------------------- Additional functions  --------------------------------------------------------------------------------
   //save message calling actually happen here
-  const request = async (message: string) => {
+  const sendMessage = async (message: string, fileMeta: FileType | null) => {
     const date = new Date();
+    const customId = uuidv4();
 
     try {
-      const parsedMessage =
-        typeof message === "string" ? JSON?.parse(message) : message;
-      const { url, name, format, public_id } = parsedMessage;
-
-      let filePayload;
-      if (!url) {
-        filePayload = null;
-      }
-      filePayload = { url, name, format, public_id };
-
-      const customId = uuidv4();
-      mutate({
+      const payload = {
         customId,
         content: message,
-        files: filePayload,
+        files: fileMeta,
         senderId: authUser?.uid ?? "",
         receiverId: activeChat?.uid ?? "",
         chatId: chatId,
@@ -220,7 +228,8 @@ const MessagePanel = () => {
             count: unreads === 0 ? 1 : unreads,
           },
         ],
-      });
+      };
+      mutate({ message: payload });
     } catch (err) {
       console.error("Invalid JSON:", message, err);
     }
@@ -229,37 +238,36 @@ const MessagePanel = () => {
   };
 
   // use Effect:  update the user last seen when presence changes ( listening to the presence changes )
-  const handleSendMessageBasedOnFile = async () => {
-    if (preview?.url && file) {
-      setIsUploading(true);
-      const content = await handleImageUpload(file);
-      if (content) {
-        const { url, name, format, public_id } = content;
-        setIsUploading(false);
-        request(
-          `{"url": "${url}", "message" : "${input}" ,"name" : "${name}" , "format" : "${format}", "public_id" : "${public_id}"}`
-        );
-      } else {
-        setIsUploading(false);
-        return;
-      }
-    } else {
-      request(
-        `{"url": "", "message" : "${input}" ,"name" : "" , "format" : "", "public_id" : ""}`
-      );
-    }
-    setPreview(null);
-    setInput("");
-    return;
-  };
+
   const handleMessageSend = (item: string) => {
+    const refinedPrompt = featureActive
+      ? input.replace("LIVELINK AI: ", "")
+      : undefined; //this if ai feature active
     switch (item) {
       case "send":
       case "enter":
-        handleSendMessageBasedOnFile();
+        buildMessageStructure(
+          file,
+          input,
+          sendMessage,
+          setFile,
+          featureActive,
+          refinedPrompt
+        );
+        if (featureActive || file) {
+          addDummyData(
+            activeChat.chatId!,
+            authUser?.uid ?? "", // this never undefined at this stage
+            authUser?.name ?? "", // this never undefined at this stage
+            setMessages
+          );
+        }
+        setPreview(null);
+        setInput("");
         break;
     }
   };
+  const [featureActive, setFeatureActive] = useState<boolean>(false); // use : to toggle between features
 
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
@@ -269,7 +277,10 @@ const MessagePanel = () => {
             <div
               className=" flex items-center gap-3 "
               onClick={() =>
-                setActionMenuSelection({ selection: "message-Info", message: null })
+                setActionMenuSelection({
+                  selection: "message-Info",
+                  message: null,
+                })
               }
             >
               <Avatar image={activeChat?.dp || "/no_avatar2.png"} />
@@ -279,7 +290,8 @@ const MessagePanel = () => {
                   {presence === "Online"
                     ? "Online"
                     : lastSeen
-                    ? "Last seen " + new Date(lastSeen).toLocaleTimeString()
+                    ? "Last seen " + new Date(lastSeen).toLocaleTimeString() ||
+                      "Offline"
                     : "Offline"}
                 </p>
               </div>
@@ -290,7 +302,6 @@ const MessagePanel = () => {
           <Suspense fallback={<Spinner />}>
             <MessageViewArea
               messages={messages}
-              state={isUploading}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={onDragLeave}
@@ -306,16 +317,19 @@ const MessagePanel = () => {
           )}
 
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
-            <TypingIndicator
-              UserTyping={UserTyping!}
-              version="1"
-            />
+            <TypingIndicator UserTyping={UserTyping!} version="1" />
             <FileShare
-              isUploading={isUploading}
               isDragging={isDragging}
               preview={preview}
               setPreview={setPreview}
               setFile={setFile}
+            />
+            <ActiveFeature
+              active={featureActivation(debounce)}
+              feature="image-gen-ll"
+              onClickEvent={(state) =>
+                activateFeature(state, setFeatureActive, setInput)
+              }
             />
             <div className="flex w-full gap-2 place-items-center">
               <TextArea

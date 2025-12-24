@@ -28,12 +28,10 @@ const GlobalSocket = () => {
     if (!socket || !authUser?.uid) return;
 
     const connectToChat = (data: ActiveUsersType) => {
-      console.log(`joined: ${JSON.stringify(data)}`);
       dispatch(connectUser(data));
       // this is for group chats only
     };
     const disconnectFromChat = (data: ActiveUsersType) => {
-      console.log(`leave: ${JSON.stringify(data)}`);
       dispatch(disconnectUser(data));
 
       // this is for group chats only

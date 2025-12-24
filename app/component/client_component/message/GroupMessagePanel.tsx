@@ -34,9 +34,18 @@ import {
   useGetGroupMessage,
   useSendGroupMessage,
 } from "@/app/lib/tanstack/groupQuery";
-import { buildMessageStructure } from "@/app/helper/helper";
+import {
+  activateFeature,
+  addDummyData,
+  apiFetch,
+  buildMessageStructure,
+  featureActivation,
+} from "@/app/helper/helper";
 import { useSocket } from "../../util_component/SocketProvider";
 import { AnimatePresence, motion } from "framer-motion";
+import ImageGen from "../../ui/ai/image/ImageGen";
+import ActiveFeature from "../../modal/ActiveFeature";
+import { Button } from "../../ui/button";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const GroupMessagePanel = () => {
   const [input, setInput] = useState<string>("");
@@ -110,6 +119,12 @@ const GroupMessagePanel = () => {
   //use Effect: merge lives messages ( pusher ) with current Message
   useEffect(() => {
     if (!liveMessages) return;
+    const lastMessage = messages?.at(-1)?.content.includes("dummy");
+    if (lastMessage) {
+      setMessages((prev) => prev.filter((m) => m.customId !== "dummy_001"));
+      setMessages((prev) => [...prev, liveMessages]);
+      return;
+    }
     setMessages((prev) => [...prev, liveMessages]);
   }, [liveMessages]);
 
@@ -207,18 +222,30 @@ const GroupMessagePanel = () => {
     authUser?.name,
   ]);
   const handleMessageSend = (item: string) => {
+    const refinedPrompt = featureActive
+      ? input.replace("LIVELINK AI: ", "")
+      : undefined; //this if ai feature active
     switch (item) {
       case "send":
       case "enter":
         buildMessageStructure(
           file,
           input,
-          setIsUploading,
           sendMessage,
-          setPreview,
-          setInput,
-          setFile
+          setFile,
+          featureActive,
+          refinedPrompt
         );
+        if (featureActive || file) {
+          addDummyData(
+            activeChat.chatId!,
+            authUser?.uid ?? "", // this never undefined at this stage
+            authUser?.name ?? "", // this never undefined at this stage
+            setMessages
+          );
+        }
+        setPreview(null);
+        setInput("");
         break;
     }
   };
@@ -233,19 +260,10 @@ const GroupMessagePanel = () => {
     );
   }, [typingUsers, activeChat.chatId, activeChat.participants]);
 
+  const [featureActive, setFeatureActive] = useState<boolean>(false); // use : to toggle between features
+
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
-      {/* <AnimatePresence>
-        <motion.div
-          className="top-25 p-2 absolute left-1/2"
-          initial={{ x: 0, scale: 0.8, opacity: 0 }}
-          animate={{ x: 0, scale: 1, opacity: 1 }}
-          exit={{ scale: 0.8, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        >
-          <p>{`${activeUsers?.at(-1)?.userName ?? ""} joined `}</p>
-        </motion.div>
-      </AnimatePresence> */}
       {activeChat && (
         <>
           <div
@@ -258,7 +276,9 @@ const GroupMessagePanel = () => {
               <Avatar image={activeChat?.dp || "/no_avatar2.png"} />
               <div className="w-full">
                 <h1 className="">{activeChat?.groupName}</h1>
-                <p>{`${activeUsers.length} Online`}</p>
+                {activeUsers.length > 0 && (
+                  <p className="text-xs">{`${activeUsers.length} reading the chat`}</p>
+                )}
               </div>
             </div>
             <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
@@ -267,7 +287,6 @@ const GroupMessagePanel = () => {
           <Suspense fallback={<Spinner />}>
             <MessageViewArea
               messages={messages}
-              state={isUploading}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={onDragLeave}
@@ -285,11 +304,17 @@ const GroupMessagePanel = () => {
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
             <TypingIndicator UserTyping={isUserTyping!} version="1" />
             <FileShare
-              isUploading={isUploading}
               isDragging={isDragging}
               preview={preview}
               setPreview={setPreview}
               setFile={setFile}
+            />
+            <ActiveFeature
+              active={featureActivation(debounce)}
+              feature="image-gen-ll"
+              onClickEvent={(state) =>
+                activateFeature(state, setFeatureActive, setInput)
+              }
             />
             <div className="flex w-full gap-2 place-items-center">
               <TextArea
@@ -303,12 +328,12 @@ const GroupMessagePanel = () => {
                 onChange={(e) => {
                   setInput(e.currentTarget.value);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleMessageSend("enter");
-                  }
-                }}
+                // onKeyDown={(e) => {
+                //   if (e.key === "Enter") {
+                //     e.preventDefault();
+                //     handleMessageSend("enter");
+                //   }
+                // }}
                 onClickButton={(input) => handleMessageSend(input)}
               />
             </div>

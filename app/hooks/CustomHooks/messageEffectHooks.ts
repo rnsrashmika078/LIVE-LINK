@@ -133,8 +133,6 @@ export function useUpdateGroupMessageSeen(
   const activeUsers = useSelector(
     (store: PusherChatState) => store.chat.activeUsers
   );
-
-  console.log("messageseen", messageSeen);
   useEffect(() => {
     setMessages((prev) =>
       prev.map((m) => {

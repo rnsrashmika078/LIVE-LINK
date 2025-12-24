@@ -5,19 +5,12 @@ import React from "react";
 
 interface FileShareProp {
   isDragging: boolean;
-  isUploading: boolean;
   preview: PreviewDataType | null;
   setFile: React.Dispatch<React.SetStateAction<File | null>>;
   setPreview: React.Dispatch<React.SetStateAction<PreviewDataType | null>>;
 }
 export const FileShare = React.memo(
-  ({
-    isDragging,
-    preview,
-    isUploading,
-    setPreview,
-    setFile,
-  }: FileShareProp) => {
+  ({ isDragging, preview, setPreview, setFile }: FileShareProp) => {
     return (
       <div
         className={` ${
@@ -29,9 +22,7 @@ export const FileShare = React.memo(
         {preview?.url && (
           <>
             <div
-              className={`absolute flex-col  top-0 left-0 pointer-events-auto flex items-center justify-center w-full h-full border-gray-300 border-dashed backdrop-blur-2xl ${
-                isUploading ? "animate-pulse " : " "
-              }`}
+              className={`absolute flex-col  top-0 left-0 pointer-events-auto flex items-center justify-center w-full h-full border-gray-300 border-dashed backdrop-blur-2xl `}
             >
               {preview?.type.startsWith("image/") && (
                 <>
@@ -65,7 +56,6 @@ export const FileShare = React.memo(
                   </div>
                 </>
               )}
-
             </div>
             <div className="absolute pointer-events-auto right-8 top-18">
               <Button

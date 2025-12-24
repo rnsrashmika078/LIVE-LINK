@@ -20,9 +20,8 @@ import { setActiveChat } from "@/app/lib/redux/chatslicer";
 
 interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: Message[];
-  state: boolean;
 }
-function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
+function MessageViewArea({ messages, ...props }: ViewAreaProps) {
   //states
   const { setId, countRef } = useLiveLink();
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -55,7 +54,6 @@ function MessageViewArea({ messages, state, ...props }: ViewAreaProps) {
   
   return (
     <div className="p-5 relative custom-scrollbar-y h-full w-full" {...props}>
-      <Spinner condition={state} />
       {messages
         .filter((m) => m.chatId === activeChat?.chatId)
         .map((msg, index) => (

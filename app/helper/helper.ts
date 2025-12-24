@@ -1,4 +1,4 @@
-import { AuthUser, FileType, PreviewDataType } from "../types";
+import { AuthUser, FileType, Message, PreviewDataType } from "../types";
 import { handleImageUpload } from "../util/util";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -77,36 +77,74 @@ export function elapsedTime(startedAt: number) {
   return time;
 }
 export async function buildMessageStructure(
-  file: File | null,
+  file: File | null = null,
   inputMessage: string,
-  loadingState: (state: boolean) => void,
   sendMessage: (structure: string, fileMeta: FileType | null) => void,
-  previewState: (data: PreviewDataType | null) => void,
-  setInput: (input: string) => void,
-  fileState: (file: File | null) => void
+  fileState: (file: File | null) => void,
+  feature?: boolean,
+  prompt?: string
 ) {
   let fileMeta = null;
   let messageStructure = null;
-  if (file) {
-    loadingState(true);
-    fileMeta = await handleImageUpload(file);
-    if (fileMeta) {
+  try {
+    if (file || feature) {
+      //if file is present or features ( such as ai image gen ) used upload the file first
+      fileMeta = await handleImageUpload(file, feature, prompt);
+      if (!fileMeta) return;
       const { url, name, format, public_id } = fileMeta;
+
       messageStructure = `{"url": "${url}", "message" : "${inputMessage}" ,"name" : "${name}" , "format" : "${format}", "public_id" : "${public_id}"}`;
-      loadingState(false);
       sendMessage(messageStructure, fileMeta);
     } else {
-      loadingState(false);
-      fileState(null);
-      return;
+      //if file or features ( such as ai image gen ) not use just send message
+      messageStructure = `{"url": "", "message" : "${inputMessage}" ,"name" : "" , "format" : "", "public_id" : ""}`;
+      sendMessage(messageStructure, fileMeta);
     }
-  } else {
-    messageStructure = `{"url": "", "message" : "${inputMessage}" ,"name" : "" , "format" : "", "public_id" : ""}`;
-    sendMessage(messageStructure, fileMeta);
+  } finally {
+    fileState(null);
+    fileState(null);
   }
-  previewState(null);
-  setInput("");
-  fileState(null);
-  return;
+}
+export function addDummyData(
+  chatId: string,
+  senderId: string,
+  senderName: string,
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+) {
+  const messageStructure = `{"url": "/dummy.png", "message" : "" ,"name" : "" , "format" : "png", "public_id" : ""}`; // this change in the future to JSON Format
+  const createdAt = new Date().toISOString();
+  const customId = "dummy_001";
+  const payload = {
+    customId,
+    chatId,
+    senderInfo: {
+      senderId,
+      senderName,
+    },
+    unreads: [],
+    content: messageStructure,
+    files: null,
+    seenBy: [],
+    createdAt,
+  };
+  setMessages((prev) => [...prev, payload]);
+}
+export function activateFeature(
+  state: boolean,
+  setFeatureActive: React.Dispatch<React.SetStateAction<boolean>>,
+  setInput: React.Dispatch<React.SetStateAction<string>>
+) {
+  setFeatureActive(state);
+  setInput((prev) => prev + "LIVELINK: ");
 }
 
+export function featureActivation(debounce: string): boolean {
+  if (debounce && debounce.length > 0) {
+    const text = "@LIVELINK:";
+    if (text.toLowerCase().startsWith(debounce.toLowerCase())) {
+      return true;
+    }
+    return false;
+  }
+  return false;
+}

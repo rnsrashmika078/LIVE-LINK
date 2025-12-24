@@ -2,18 +2,11 @@
 import {
   ChangeEvent,
   forwardRef,
-  ReactNode,
   TextareaHTMLAttributes,
   useCallback,
-  useEffect,
-  useMemo,
-  useRef,
   useState,
 } from "react";
 import { MdOutlineEmojiEmotions } from "react-icons/md";
-import { Button } from "./button";
-import { IoMdSend } from "react-icons/io";
-import { useDebounce } from "@/app/hooks/useHooks";
 import { CgAttachment } from "react-icons/cg";
 import { BiMicrophone, BiSend } from "react-icons/bi";
 
@@ -23,7 +16,7 @@ type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
 };
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  ({ type, onClickButton, ...props }: TextAreaProps, ref) => {
+  ({ onClickButton, ...props }: TextAreaProps, ref) => {
     const [row, setRow] = useState<number>(1);
     const size = 20;
     const iconStyles = `hover:text-green-400 transition-all hover:scale-120 cursor-pointer`;
@@ -72,9 +65,6 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             onClick={() => onClickButton?.("voice")}
           />
         </div>
-        {/* <Button onClick={onClickButton} variant="eco" radius="full">
-          <IoMdSend />
-        </Button> */}
       </div>
     );
   }

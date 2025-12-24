@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 
 const Skeleton = ({ version }: { version: string }) => {
   switch (version.toLowerCase()) {
@@ -14,7 +13,7 @@ const Skeleton = ({ version }: { version: string }) => {
 
 const Sidebar = () => {
   return (
-    <div className="animate-pulse overflow-hidden flex flex-col gap-5 justify-start  p-2 items-center shadow-2xl bg-[#494949] w-15 h-full">
+    <div className="animate-pulse overflow-hidden flex flex-col gap-5 justify-start  p-2 items-center shadow-2xl  bg-gray-700  grayscale  w-15 h-full">
       {[...Array(25)].map((item, index) => (
         <div
           key={index}
@@ -26,7 +25,7 @@ const Sidebar = () => {
 };
 const Chat = () => {
   return (
-    <div className="animate-pulse overflow-hidden flex flex-col gap-5 justify-start  p-2 items-center shadow-2xl bg-[#494949] w-full h-full">
+    <div className="animate-pulse overflow-hidden flex flex-col gap-5 justify-start  p-2 items-center shadow-2xl bg-gray-700  grayscale  w-full h-full">
       {[...Array(25)].map((item, index) => (
         <div
           key={index}

@@ -1,12 +1,9 @@
-// when new chat being created... the first message not counted as unread ... ( needed to fix it )
-
-first message doesnt dispatch to the livemessage array for some reason
-
-
-need route to update the user when they comes online 
-// typing state is not correctly work to one end some times
-
-
 
 //TODOS:
 remove UseEffects as possible 
+
+//TODOS:
+implement message delete functionality in group chats
+
+//TODOS:
+message structure must change from string to JSON

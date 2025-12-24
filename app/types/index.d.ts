@@ -92,28 +92,28 @@ export type AuthUser = {
   useFor?: string;
 };
 
-export type SaveMessagePayload = {
-  content: string;
-  senderId: string;
-  customId: string;
-  receiverId: string;
-  chatId: string;
-  name: string;
-  dp: string;
-  createdAt: string;
-  status: string;
-  files?: FileType;
-  type?: string;
-  unreads?: Unread[];
+export type MessagePayload = {
+  content: string;//
+  senderId: string; //
+  customId: string; //
+  receiverId: string;//
+  chatId: string;//
+  name: string;//
+  dp: string;//
+  createdAt: string;//
+  status: string;//
+  files?: FileType | null; // 
+  type?: string;//
+  unreads?: Unread[];//
 };
 
 export type Message = {
   customId: string;
   chatId: string;
-  senderId: string;
+  senderId?: string;
   senderName?: string;
   senderInfo?: SenderInfoType;
-  receiverId: string;
+  receiverId?: string;
   content: string;
   type?: string;
   userId?: string;

@@ -6,7 +6,7 @@ import {
   getMessages,
   saveMessages,
 } from "@/app/actions/message_action";
-import { SaveMessagePayload } from "@/app/types";
+import { MessagePayload } from "@/app/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export function useGetMessages(chatId: string) {
@@ -19,34 +19,8 @@ export function useGetMessages(chatId: string) {
 }
 export function useSaveMessage(onSuccess?: (result: any) => void) {
   return useMutation({
-    mutationFn: ({
-      content,
-      senderId,
-      receiverId,
-      chatId,
-      name,
-      dp,
-      createdAt,
-      customId,
-      status,
-      files,
-      unreads,
-      type,
-    }: SaveMessagePayload) =>
-      saveMessages(
-        content,
-        senderId,
-        receiverId,
-        chatId,
-        name,
-        dp,
-        createdAt,
-        customId,
-        status,
-        files,
-        unreads,
-        type
-      ),
+    mutationFn: ({ message }: { message: MessagePayload }) =>
+      saveMessages(message),
     onSuccess,
   });
 }

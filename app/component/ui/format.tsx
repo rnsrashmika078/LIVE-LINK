@@ -3,6 +3,8 @@ import { FaFilePdf } from "react-icons/fa6";
 import Image from "next/image";
 import { SeenByType, SenderInfoType } from "@/app/types";
 import { SenderNameStyle } from "@/app/helper/jsxhelper";
+import clsx from "clsx";
+
 interface FormatProps {
   id?: string;
   url: string;
@@ -10,7 +12,6 @@ interface FormatProps {
   info?: string;
   message: string;
   senderInfo?: SenderInfoType;
-
 }
 const MessageFormat = React.memo(
   ({ info, url, format, message, senderInfo }: FormatProps) => {
@@ -27,6 +28,19 @@ const MessageFormat = React.memo(
           type.includes("jpg") ||
           type.includes("avif")
         ) {
+          const isDummy = url.includes("dummy");
+
+          if (isDummy) {
+            return (
+              <div
+                className={clsx("place-items-start", {
+                  "w-[200px] h-[200px] bg-gray-700  grayscale transition-all animate-pulse":
+                    isDummy,
+                  grayscale: !isDummy,
+                })}
+              ></div>
+            );
+          }
           return (
             <div className="place-items-start">
               <Image
@@ -35,7 +49,7 @@ const MessageFormat = React.memo(
                 width={200}
                 onClick={openFile}
                 height={200}
-                className="object-contain w-[200px]  h-[200px] cursor-pointer"
+                className={`object-contain w-[200px]  h-[200px] cursor-pointer`}
               />
               <p className="mt-1 w-fit font-extralight">
                 {info ? info : message}

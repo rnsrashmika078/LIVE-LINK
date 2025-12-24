@@ -29,7 +29,7 @@ export const MessageUI = React.memo(
     try {
       parsed = JSON.parse(msg.content);
     } catch {
-      return <p className="text-red-500">Invalid message</p>;
+      return null;
     }
 
     const { format, url, message, public_id } = parsed;

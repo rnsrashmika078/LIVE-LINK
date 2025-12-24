@@ -1,48 +1,20 @@
 "use server";
 import { apiFetch } from "../helper/helper";
-import { FileType, Unread } from "../types";
+import { MessagePayload } from "../types";
 
-export async function saveMessages(
-  content: string,
-  senderId: string,
-  receiverId: string,
-  chatId: string,
-  name: string,
-  dp: string,
-  createdAt: string,
-  customId: string,
-  status: string,
-  files?: FileType,
-  unreads?: Unread[],
-  type?: string
-) {
+export async function saveMessages(message: MessagePayload | null) {
   try {
-    if (!chatId)
+    if (!message)
       return {
         message: "Successfully getting messages!",
         messages: [],
         status: 200,
       };
 
-    const payload = {
-      content,
-      senderId,
-      receiverId,
-      chatId,
-      name,
-      dp,
-      createdAt,
-      status,
-      unreads,
-      files,
-      customId,
-      type,
-    };
-
     const res = await apiFetch(
       `/api/messages/private-message`,
       "POST",
-      payload
+      message
     );
 
     return res.json();

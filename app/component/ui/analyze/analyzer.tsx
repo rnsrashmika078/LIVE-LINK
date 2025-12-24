@@ -13,7 +13,7 @@ const Analyzer = () => {
       className=" flex fixed  bottom-20 right-10 w-10 h-10 justify-center items-center z-[99999] "
       onClick={() => setOpenModal((prev) => !prev)}
     >
-      <div className="hover:scale-125  transition-all cursor-pointer  bg-amber-600 rounded-full p-2">
+      <div className="hover:scale-125 opacity-20 hover:opacity-100 transition-all cursor-pointer  bg-amber-600 rounded-full p-2">
         <TbReportSearch size={30} />
       </div>
       <AnimatePresence>

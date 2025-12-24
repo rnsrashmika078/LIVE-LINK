@@ -10,6 +10,7 @@ const zb_tech = sdk.model("ZB-Tech/Text-to-Image");
 const video = sdk.model("Revanthraja/Text_to_Vision")
 export async function POST(req: NextRequest) {
   try {
+    console.log("Hit AI API")
     const prompt = await req.json();
     if (!prompt)
       return NextResponse.json({

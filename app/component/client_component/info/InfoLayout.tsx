@@ -10,7 +10,6 @@ import ChatInfo from "./ChatInfo";
 
 const InfoLayout = () => {
   const { setActionMenuSelection, actionMenuSelection } = useLiveLink();
-  console.log("action", actionMenuSelection.selection);
   const participants = useSelector(
     (store: PusherChatState) => store.chat.activeChat?.participants
   );

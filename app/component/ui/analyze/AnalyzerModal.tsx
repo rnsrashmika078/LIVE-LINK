@@ -5,14 +5,13 @@ import { useSelector } from "react-redux";
 const AnalyzerModal = () => {
   const chat = useSelector((store: PusherChatState) => store.chat);
   const friends = useSelector((store: PusherChatState) => store.friends);
-  const layout = useSelector((store: PusherChatState) => store.layout);
   const notify = useSelector((store: PusherChatState) => store.notify);
 
   const size = useMemo(() => {
-    return [chat, friends, layout, notify].reduce((acc, slicer) => {
+    return [chat, friends, notify].reduce((acc, slicer) => {
       return acc + new TextEncoder().encode(JSON.stringify(slicer)).length;
     }, 0);
-  }, [chat, friends, layout, notify]);
+  }, [chat, friends, notify]);
 
   const mb = (size / 1024 / 1024).toFixed(4);
 
@@ -32,6 +31,12 @@ const AnalyzerModal = () => {
           <h2>{tsx}</h2>
         </div>
       ))}
+
+      <div>
+        {["top", "bottom"].map((pos, i) => (
+          <p key={i}>{pos}</p>
+        ))}
+      </div>
     </div>
   );
 };
