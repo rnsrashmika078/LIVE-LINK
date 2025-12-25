@@ -11,23 +11,17 @@ const ChatInfo = ({
   msg: Message;
   participants?: ParticipantsType[];
 }) => {
-  let content = null;
-  try {
-    if (msg) {
-      content = JSON.parse(msg.content);
-    }
-  } catch (err) {
-    console.log(err);
-  }
+  if (!msg || !participants) return;
+
   return (
     <div className="flex flex-col">
       <p className=" text-xs text-gray-500 py-1">CHAT INFO</p>
       <div className="">
         <div className="flex justify-between items-center">
           <MessageFormat
-            format={content?.format}
-            message={content?.message}
-            url={content?.url}
+            format={msg.content?.format}
+            message={msg.content?.message}
+            url={msg.content?.url}
           />
           <p className="text-xs">
             {msg?.createdAt && new Date(msg.createdAt).toLocaleTimeString()}

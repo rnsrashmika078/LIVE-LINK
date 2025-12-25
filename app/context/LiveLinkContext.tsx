@@ -24,6 +24,8 @@ interface LiveLinkContextType {
   setOnSelect: (value: string) => void;
   onSelect: string;
   clickedIcon: string;
+  featureActive: boolean;
+  setFeatureActive: (state: boolean) => void;
   setClickedIcon: (name: string) => void;
   internalClickState: string;
   setInternalClickState: (name: string) => void;
@@ -61,6 +63,7 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
   const [onSelect, setOnSelect] = useState<string>("");
   const [id, setId] = useState<string>("");
   const [clickedIcon, setClickedIcon] = useState<string>("");
+  const [featureActive, setFeatureActive] = useState<boolean>(false);
   const [internalClickState, setInternalClickState] = useState<string>("chats");
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
   const [relativePosition, setRelativePosition] =
@@ -85,6 +88,8 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
     <LiveLinkContext.Provider
       value={{
         isActive,
+        featureActive,
+        setFeatureActive,
         setIsActive,
         openModal,
         setOpenModal,
@@ -97,7 +102,7 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         setInternalClickState,
         internalClickState,
         //global icon click setter for message panel ( audio , video )
-        
+
         //refs
         localAudioRef,
         remoteAudioRef,
@@ -108,8 +113,6 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         currentPC,
         audioRef,
         countRef, // this use to keep track of the unreads count
-
-      
 
         //incoming call status
         setSessionInfo,

@@ -21,18 +21,15 @@ export const MessageUI = React.memo(
     const { handleOperation, result } = useActionMenuOperation();
 
     const actionMenuHandler = (value: string, msg: Message) => {
-      handleOperation(value, msg.customId, msg.chatId, public_id, msg);
+      handleOperation(
+        value,
+        msg.customId,
+        msg.chatId,
+        msg.content.public_id,
+        msg
+      );
     };
-    if (!msg) return null;
-
-    let parsed;
-    try {
-      parsed = JSON.parse(msg.content);
-    } catch {
-      return null;
-    }
-
-    const { format, url, message, public_id } = parsed;
+    if (!msg || !msg.content) return null;
 
     // ---- main return statement ----
 
@@ -41,6 +38,7 @@ export const MessageUI = React.memo(
     const baseCondition =
       msg.senderId === authUser?.uid ||
       msg.senderInfo?.senderId === authUser.uid;
+      
     return (
       <div
         className={`flex w-full mt-2   ${
@@ -53,12 +51,12 @@ export const MessageUI = React.memo(
           className={`pr-6 flex text-xs flex-col w-fit relative   ${
             baseCondition
               ? `${
-                  url
+                  msg.content.url
                     ? "bg-transparent space-y-2"
                     : " bg-[var(--pattern_7)] px-3 py-1"
                 } justify-end  rounded-bl-2xl`
               : `${
-                  url
+                  msg.content.url
                     ? "bg-transparent space-y-2"
                     : " bg-[var(--pattern_3)] px-3 py-1"
                 } justify-start  rounded-br-2xl`
@@ -68,9 +66,9 @@ export const MessageUI = React.memo(
           <MessageFormat
             info={result.message}
             id={msg.customId ?? ""}
-            format={format}
-            url={url}
-            message={message}
+            format={msg.content.format}
+            url={msg.content.url}
+            message={msg.content.message}
             senderInfo={msg.senderInfo}
             // use only in group chats
           />

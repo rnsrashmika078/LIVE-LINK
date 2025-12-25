@@ -4,23 +4,20 @@
 "use client";
 import Avatar from "@/app/component/ui/avatar";
 import { useDebounce } from "@/app/hooks/useHooks";
-
 import {
   FileType,
   GroupType,
   Message,
+  MessageContentType,
   PusherChatDispatch,
   PusherChatState,
   SeenByType,
 } from "@/app/types";
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
-
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-
 import { TextArea } from "@/app/component/ui/textarea";
 import { FileShare } from "@/app/component/ui/preview";
 import { TypingIndicator } from "@/app/component/ui/typingIndicator";
-
 import { v4 as uuidv4 } from "uuid";
 import { useDragDropHook } from "@/app/hooks/useDragDropHook";
 import Spinner from "../../ui/spinner";
@@ -37,22 +34,31 @@ import {
 import {
   activateFeature,
   addDummyData,
-  apiFetch,
   buildMessageStructure,
   featureActivation,
 } from "@/app/helper/helper";
 import { useSocket } from "../../util_component/SocketProvider";
-import { AnimatePresence, motion } from "framer-motion";
-import ImageGen from "../../ui/ai/image/ImageGen";
 import ActiveFeature from "../../modal/ActiveFeature";
-import { Button } from "../../ui/button";
+import VoiceRecorder from "../../ui/communications/Voice";
+import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const GroupMessagePanel = () => {
   const [input, setInput] = useState<string>("");
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const { setClickedIcon, clickedIcon, setActionMenuSelection, countRef } =
-    useLiveLink();
+  const [activeFeature, setActiveFeature] = useState<string>(""); // for reference
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const {
+    setClickedIcon,
+    clickedIcon,
+    setActionMenuSelection,
+    countRef,
+    setFeatureActive,
+    featureActive,
+  } = useLiveLink();
+
+  const { blobRef } = useVoiceMessage();
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const socket = useSocket();
 
   const {
     activeChat,
@@ -81,7 +87,6 @@ const GroupMessagePanel = () => {
   );
 
   //redux dispatcher
-  const dispatch = useDispatch<PusherChatDispatch>();
   let debounce = useDebounce(input, 500);
 
   //D&D hook
@@ -101,7 +106,6 @@ const GroupMessagePanel = () => {
   const { data: groupMessage, isPending: isMsgLoading } = useGetGroupMessage(
     activeChat.chatId!
   );
-  const [messages, setMessages] = useState<Message[]>([]);
 
   const { mutate } = useSendGroupMessage();
   // -------------------------------------------------------------------------- use Effect --------------------------------------------------------------------------------
@@ -119,7 +123,7 @@ const GroupMessagePanel = () => {
   //use Effect: merge lives messages ( pusher ) with current Message
   useEffect(() => {
     if (!liveMessages) return;
-    const lastMessage = messages?.at(-1)?.content.includes("dummy");
+    const lastMessage = messages?.at(-1)?.content?.url?.includes("dummy");
     if (lastMessage) {
       setMessages((prev) => prev.filter((m) => m.customId !== "dummy_001"));
       setMessages((prev) => [...prev, liveMessages]);
@@ -134,7 +138,10 @@ const GroupMessagePanel = () => {
     setMessages(groupMessage?.chatMessages);
   }, [groupMessage?.chatMessages]);
 
-  const sendMessage = async (message: string, fileMeta: FileType | null) => {
+  const sendMessage = async (
+    message: MessageContentType,
+    fileMeta: FileType | null
+  ) => {
     try {
       const messageId = uuidv4(); // generate messageId
       const chatId = activeChat?.chatId ?? ""; //get current Chat id
@@ -200,7 +207,6 @@ const GroupMessagePanel = () => {
   };
 
   useUpdateGroupMessageSeen(setMessages, activeChat, groupMessageSeen);
-  const socket = useSocket();
 
   useEffect(() => {
     if (!socket || !activeChat?.chatId || !authUser?.uid) return;
@@ -221,18 +227,27 @@ const GroupMessagePanel = () => {
     activeChat.participants,
     authUser?.name,
   ]);
-  const handleMessageSend = (item: string) => {
+
+  const handleButtonClick = (item: string) => {
+    // alert("YES")
+    // if (!item || !debounce) return;
     const refinedPrompt = featureActive
       ? input.replace("LIVELINK AI: ", "")
       : undefined; //this if ai feature active
+
+    let blob;
+    if (blobRef.current) {
+      blob = blobRef.current;
+    }
     switch (item) {
       case "send":
       case "enter":
         buildMessageStructure(
-          file,
+          file || blob,
           input,
           sendMessage,
           setFile,
+          blobRef,
           featureActive,
           refinedPrompt
         );
@@ -247,6 +262,8 @@ const GroupMessagePanel = () => {
         setPreview(null);
         setInput("");
         break;
+      case "voice": {
+      }
     }
   };
 
@@ -259,8 +276,6 @@ const GroupMessagePanel = () => {
         activeChat.participants.some((p) => p.userId === u.userId)
     );
   }, [typingUsers, activeChat.chatId, activeChat.participants]);
-
-  const [featureActive, setFeatureActive] = useState<boolean>(false); // use : to toggle between features
 
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
@@ -317,25 +332,39 @@ const GroupMessagePanel = () => {
               }
             />
             <div className="flex w-full gap-2 place-items-center">
-              <TextArea
-                ref={textAreaRef}
-                value={input}
-                placeholder={
-                  preview?.url
-                    ? `Enter caption to the ${preview.type}`
-                    : `Enter your message`
-                }
-                onChange={(e) => {
-                  setInput(e.currentTarget.value);
-                }}
-                // onKeyDown={(e) => {
-                //   if (e.key === "Enter") {
-                //     e.preventDefault();
-                //     handleMessageSend("enter");
-                //   }
-                // }}
-                onClickButton={(input) => handleMessageSend(input)}
-              />
+              {!activeFeature.toLowerCase().includes("voice") ? (
+                <TextArea
+                  ref={textAreaRef}
+                  value={input}
+                  text={debounce}
+                  preview={preview?.type}
+                  placeholder={
+                    preview?.url
+                      ? `Enter caption to the ${preview.type}`
+                      : `Enter your message`
+                  }
+                  onChange={(e) => {
+                    setInput(e.currentTarget.value);
+                  }}
+                  // onKeyDown={(e) => {
+                  //   if (e.key === "Enter") {
+                  //     e.preventDefault();
+                  //     handleMessageSend("enter");
+                  //   }
+                  // }}
+                  onClickButton={(input) => {
+                    setActiveFeature(input as string);
+                    handleButtonClick(input);
+                  }}
+                />
+              ) : (
+                <VoiceRecorder
+                  setActiveFeature={setActiveFeature}
+                  onClick={(input) => {
+                    if (blobRef.current) handleButtonClick(input.toLowerCase());
+                  }}
+                />
+              )}
             </div>
           </div>
         </>

@@ -2,57 +2,30 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from "react";
 import { UserGroupCard } from "@/app/component/ui/cards";
-import {
-  GroupType,
-  ParticipantsType,
-  PusherChatDispatch,
-  PusherChatState,
-} from "@/app/types";
+import { GroupType, PusherChatDispatch, PusherChatState } from "@/app/types";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import React from "react";
-import {
-  setActiveChat,
-  setChats,
-  setGroupChats,
-} from "@/app/lib/redux/chatslicer";
-import { useLiveLink } from "@/app/context/LiveLinkContext";
+import { setActiveChat, setGroupChats } from "@/app/lib/redux/chatslicer";
 import { useSocket } from "../../util_component/SocketProvider";
 
 const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
   const [groups, setGroups] = useState<GroupType[]>(initialGroups ?? []);
 
   //use hooks
-  const { connectionState } = useLiveLink();
 
   //redux states
   const {
     authUser,
     activeChat,
-    chatsArray,
-    messageSeen,
     liveMessagesArray,
-    debounce,
-    unreads,
     groupChatsArray,
-    deletedMessages,
-    globalMessages,
-    typingUsers,
-    OnlineUsers,
     activeUsers,
   } = useSelector(
     (store: PusherChatState) => ({
       authUser: store.chat.authUser,
       activeChat: store.chat.activeChat,
-      chatsArray: store.chat.chatArray,
-      messageSeen: store.chat.messageSeen,
       liveMessagesArray: store.chat.messagesArray,
-      debounce: store.chat.debouncedText,
-      unreads: store.chat.unreads,
       groupChatsArray: store.chat.groupChats,
-      deletedMessages: store.chat.deletedMessage,
-      globalMessages: store.chat.globalMessages,
-      typingUsers: store.chat.typingUsers,
-      OnlineUsers: store.friends.OnlineUsers,
       activeUsers: store.chat.activeUsers,
     }),
     shallowEqual
@@ -94,7 +67,6 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
       }),
     [groups]
   );
-  const { isActive } = useLiveLink();
 
   useEffect(() => {
     const lastMessage = liveMessagesArray.at(-1);
@@ -141,7 +113,9 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
       userId: authUser.uid,
       chatId: group.chatId,
     };
+    // new Promise((resolve) => setTimeout(resolve, 2000)).then(() => {
     socket.emit("connect-to-chat", payload);
+    // });
     dispatch(setActiveChat(group));
   };
 
@@ -156,7 +130,8 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
     return () => {
       socket?.emit("disconnect-from-chat", payload);
     };
-  }, [activeChat?.chatId]);
+  }, [activeChat?.chatId, authUser?.uid]);
+
   return (
     <div className="px-5 flex w-full flex-col justify-start items-start">
       <h1 className="text-start w-full text-[#6c6c6c] text-xs">Groups</h1>

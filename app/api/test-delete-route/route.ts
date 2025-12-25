@@ -3,7 +3,6 @@ import Group from "@/app/backend/models/Group";
 import GroupMessage from "@/app/backend/models/GroupMessage";
 import Message from "@/app/backend/models/Message";
 import { NextResponse } from "next/server";
-
 export async function DELETE() {
   try {
     await Chat.collection.drop();

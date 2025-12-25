@@ -10,16 +10,12 @@ import {
   PusherChatState,
 } from "@/app/types";
 import { Button } from "../../ui/button";
-import { MdAdd } from "react-icons/md";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
-import ContactList from "./relatedUI/ContactList";
 import { AddUser, Users } from "../../ui/cards";
-import { BiArrowToRight, BiSkipNext } from "react-icons/bi";
-import { FaForward } from "react-icons/fa6";
-import { RxArrowLeft, RxArrowRight, RxArrowTopLeft } from "react-icons/rx";
+import { RxArrowRight } from "react-icons/rx";
 import Image from "next/image";
 import { useCreateGroup } from "@/app/lib/tanstack/groupQuery";
-import { handleImageUpload } from "@/app/util/util";
+import { } from "@/app/util/util";
 import { setNotification } from "@/app/lib/redux/notificationSlicer";
 import Spinner from "../../ui/spinner";
 import { v4 as uuidv4 } from "uuid";
@@ -98,6 +94,13 @@ export const CreateNewGroup = React.memo(() => {
       const createdBy = authUser.uid;
       const username = authUser.name;
 
+      const content = {
+        url: "",
+        message: `You have added to the ${groupName} by ${username}`,
+        name: "",
+        format: "",
+        public_id: "",
+      };
       // alert(JSON.stringify(updateUnreadList));
       const payload: GroupType = {
         groupName,
@@ -107,7 +110,7 @@ export const CreateNewGroup = React.memo(() => {
         type: "Group",
         message: `You have added to the ${groupName} by ${username}`,
         lastMessage: {
-          message: `{"url": "", "message" : "You were added!" ,"name" : "" , "format" : "", "public_id" : ""}`,
+          message: content,
           name: username,
         },
         seenBy: [],

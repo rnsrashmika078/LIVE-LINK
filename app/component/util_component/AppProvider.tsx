@@ -10,6 +10,7 @@ import Communication from "./Communication";
 import LiveLink from "@/app/context/LiveLinkContext";
 import { SocketProvider } from "./SocketProvider";
 import GlobalSocket from "./GlobalSocket";
+import { VoiceMessageProvider } from "@/app/context/VoiceMessageContext";
 
 const AppProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = new QueryClient();
@@ -17,15 +18,17 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
         <LiveLink>
-          <SocketProvider>
-            <PusherProvider>
-              <GlobalPusherListener />
-              <GlobalSocket />
-              <PusherListenerPresence />
-              <Communication />
-              {children}
-            </PusherProvider>
-          </SocketProvider>
+          <VoiceMessageProvider>
+            <SocketProvider>
+              <PusherProvider>
+                <GlobalPusherListener />
+                <GlobalSocket />
+                <PusherListenerPresence />
+                <Communication />
+                {children}
+              </PusherProvider>
+            </SocketProvider>
+          </VoiceMessageProvider>
         </LiveLink>
       </Provider>
     </QueryClientProvider>

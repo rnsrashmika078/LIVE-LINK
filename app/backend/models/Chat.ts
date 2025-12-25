@@ -9,8 +9,11 @@ const ChatSchema = new mongoose.Schema(
     },
     participants: [{ type: String }],
     lastMessage: {
-      type: String,
-      required: false,
+      url: { type: String, required: false },
+      format: { type: String, required: false },
+      message: { type: String, required: false },
+      name: { type: String, required: false },
+      public_id: { type: String, required: false },
     },
     lastMessageId: {
       type: String,

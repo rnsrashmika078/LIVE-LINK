@@ -1,8 +1,5 @@
 import React, { Suspense } from "react";
-
-// import MessageAreaWrapper from "../component/client_component/message/MessageClient";
 import { cookies } from "next/headers";
-
 import { redirect } from "next/navigation";
 import { getChats } from "@/app/actions/chats_actions";
 const ChatListClient = React.lazy(

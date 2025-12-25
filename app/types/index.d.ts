@@ -93,18 +93,18 @@ export type AuthUser = {
 };
 
 export type MessagePayload = {
-  content: string;//
+  content: MessageContentType; //
   senderId: string; //
   customId: string; //
-  receiverId: string;//
-  chatId: string;//
-  name: string;//
-  dp: string;//
-  createdAt: string;//
-  status: string;//
-  files?: FileType | null; // 
-  type?: string;//
-  unreads?: Unread[];//
+  receiverId: string; //
+  chatId: string; //
+  name: string; //
+  dp: string; //
+  createdAt: string; //
+  status: string; //
+  files?: FileType | null; //
+  type?: string; //
+  unreads?: Unread[]; //
 };
 
 export type Message = {
@@ -114,7 +114,7 @@ export type Message = {
   senderName?: string;
   senderInfo?: SenderInfoType;
   receiverId?: string;
-  content: string;
+  content: MessageContentType;
   type?: string;
   userId?: string;
   isTyping?: boolean;
@@ -136,7 +136,7 @@ export type ChatsType = {
   email: string;
   lastMessageId?: string;
   dp: string;
-  lastMessage: string;
+  lastMessage: MessageContentType;
   type?: string;
   senderId?: string;
   files?: FileType;
@@ -189,9 +189,15 @@ export type ParticipantsType = {
   userName: string;
   userDp: string;
 };
-
-export type LastMessageGroup = {
+export type MessageContentType = {
+  url: string;
+  format: string;
+  name: string;
   message: string;
+  public_id: string;
+};
+export type LastMessageGroup = {
+  message: MessageContentType;
   name: string;
 };
 export type SenderInfoType = {
@@ -209,7 +215,7 @@ export type GroupMessage = {
   chatId: string;
   senderInfo: SenderInfoType;
   unreads: Unread[];
-  content: string;
+  content: MessageContentType;
   status: string;
   message?: string;
   seenBy?: SeenByType[];

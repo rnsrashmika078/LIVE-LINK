@@ -3,8 +3,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   IoCheckmark,
-  IoCheckmarkDone,
-  IoCheckmarkDoneSharp,
 } from "react-icons/io5";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import React, { useEffect, useState } from "react";
@@ -12,7 +10,6 @@ import {
   TbRelationManyToMany,
   TbRelationManyToManyFilled,
 } from "react-icons/tb";
-import { SeenByType } from "../types";
 
 export function OnMessageSeen(
   condition: boolean,
@@ -67,6 +64,15 @@ export const SenderNameStyle = React.memo(({ name }: Props) => {
     switch (letter.toLowerCase()) {
       case "r":
         setStyle("text-red-500");
+        break;
+      case "a":
+        setStyle("text-white-500");
+        break;
+      case "b":
+        setStyle("text-orange-500");
+        break;
+      case "c":
+        setStyle("text-purple-500");
         break;
       default:
         setStyle("text-green-500");

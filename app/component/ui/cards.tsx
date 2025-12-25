@@ -216,17 +216,14 @@ export const UserChatCard = ({
     unreadCount,
     chatId,
     senderId,
-    receiverId,
     lastMessage,
     status,
-    useFor,
   },
   handleClick,
 }: UCDInterface) => {
-  const { authUser, typingUsers, activeChat } = useSelector(
+  const { authUser, typingUsers } = useSelector(
     (store: PusherChatState) => ({
       authUser: store.chat.authUser,
-      activeChat: store.chat.activeChat,
       typingUsers: store.chat.typingUsers,
     }),
     shallowEqual
@@ -258,7 +255,6 @@ export const UserChatCard = ({
               {name}
             </h1>
             <p className="text-xs">
-              {" "}
               {updatedAt
                 ? new Date(updatedAt).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -280,7 +276,11 @@ export const UserChatCard = ({
                 )}
               </div>
               {!isUserTyping &&
-                OnMessageSeen(senderId === authUser?.uid, status as string)}
+                OnMessageSeen(
+                  senderId === authUser?.uid,
+                  status as string,
+                  "Individual"
+                )}
             </div>
             {unreads ? (
               <div className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
@@ -359,7 +359,7 @@ export const UserGroupCard = ({
                     <strong className="">
                       {lastMessage?.name?.split(" ")[0]}:{" "}
                     </strong>
-                    {modifiedMessage(lastMessage.message ?? "")}
+                    {modifiedMessage(lastMessage.message)}
                   </p>
                 )}
               </div>

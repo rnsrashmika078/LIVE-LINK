@@ -58,11 +58,7 @@ const MessageFormat = React.memo(
           );
         }
         // VIDEO
-        if (
-          type.includes("mp4") ||
-          type.includes("ogg") ||
-          type.includes("webm")
-        ) {
+        if (type.includes("mp4") || type.includes("ogg")) {
           return (
             <>
               <video
@@ -73,6 +69,20 @@ const MessageFormat = React.memo(
                 onClick={openFile}
                 height={250}
               ></video>
+              <p className="mt-1 w-fit font-extralight">
+                {info ? info : message}
+              </p>
+            </>
+          );
+        }
+        if (type.includes("webm")) {
+          return (
+            <>
+              <audio
+                src={url}
+                controls
+                className="object-contain h-[40px] cursor-pointer"
+              ></audio>
               <p className="mt-1 w-fit font-extralight">
                 {info ? info : message}
               </p>
@@ -97,7 +107,11 @@ const MessageFormat = React.memo(
         return <p className="text-gray-400 text-sm">Unsupported file</p>;
       }
 
-      return <p className=" w-fit font-extralight">{info ? info : message}</p>;
+      return (
+        <p className=" w-fit font-extralight">
+          {info ? info : !message ? null : message}
+        </p>
+      );
     };
     return (
       <div className="">

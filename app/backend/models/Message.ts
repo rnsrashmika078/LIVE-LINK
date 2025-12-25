@@ -17,8 +17,11 @@ const MessageSchema = new mongoose.Schema(
       required: true,
     },
     content: {
-      type: String,
-      required: true,
+      url: { type: String, required: false },
+      format: { type: String, required: false },
+      message: { type: String, required: false },
+      name: { type: String, required: false },
+      public_id: { type: String, required: false },
     },
     status: {
       type: String,

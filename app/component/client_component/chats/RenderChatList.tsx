@@ -28,11 +28,7 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
     chatsArray,
     messageSeen,
     liveMessagesArray,
-    debounce,
-    unreads,
-    typingUsers,
     deletedMessages,
-    onlineUsers,
   } = useSelector(
     (store: PusherChatState) => ({
       authUser: store.chat.authUser,
@@ -40,11 +36,7 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
       chatsArray: store.chat.chatArray,
       messageSeen: store.chat.messageSeen,
       liveMessagesArray: store.chat.messagesArray,
-      debounce: store.chat.debouncedText,
-      unreads: store.chat.unreads,
-      typingUsers: store.chat.typingUsers,
       deletedMessages: store.chat.deletedMessage,
-      onlineUsers: store.friends.OnlineUsers,
     }),
     shallowEqual
   );

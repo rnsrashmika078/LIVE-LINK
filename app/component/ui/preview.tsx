@@ -6,7 +6,7 @@ import React from "react";
 interface FileShareProp {
   isDragging: boolean;
   preview: PreviewDataType | null;
-  setFile: React.Dispatch<React.SetStateAction<File | null>>;
+  setFile: React.Dispatch<React.SetStateAction<File | Blob | null>>;
   setPreview: React.Dispatch<React.SetStateAction<PreviewDataType | null>>;
 }
 export const FileShare = React.memo(

@@ -3,28 +3,23 @@
 import {
   ChatsType,
   Message,
-  PusherChatDispatch,
   PusherChatState,
 } from "@/app/types";
 import { useEffect, useMemo, useRef } from "react";
-import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 import { useInView } from "framer-motion";
 import React from "react";
-import Spinner from "@/app/component/ui/spinner";
 import { MessageUI } from "@/app/component/ui/message";
 import { MdArrowDropDown } from "react-icons/md";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { useMessageSeenAPI } from "@/app/hooks/CustomHooks/messageEffectHooks";
-import { useSocket } from "../../util_component/SocketProvider";
-import { setActiveChat } from "@/app/lib/redux/chatslicer";
 
 interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: Message[];
 }
 function MessageViewArea({ messages, ...props }: ViewAreaProps) {
   //states
-  const { setId, countRef } = useLiveLink();
-  const dispatch = useDispatch<PusherChatDispatch>();
+  const { setId } = useLiveLink();
 
   const { activeChat, authUser } = useSelector(
     (store: PusherChatState) => ({
@@ -51,7 +46,6 @@ function MessageViewArea({ messages, ...props }: ViewAreaProps) {
     }
   }, [messages]);
 
-  
   return (
     <div className="p-5 relative custom-scrollbar-y h-full w-full" {...props}>
       {messages

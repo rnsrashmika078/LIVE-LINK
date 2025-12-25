@@ -4,14 +4,6 @@ import MessageFormat from "../../ui/format";
 import { MessageVsUsers } from "../../ui/cards";
 
 const MessageInfo = ({ msg }: { msg: Message }) => {
-  let content = null;
-  try {
-    if (msg) {
-      content = JSON.parse(msg.content);
-    }
-  } catch (err) {
-    console.log(err);
-  }
   if (!msg) return null;
   return (
     <div className="flex flex-col">
@@ -19,9 +11,9 @@ const MessageInfo = ({ msg }: { msg: Message }) => {
       <div className="">
         <div className="flex justify-between items-center">
           <MessageFormat
-            format={content?.format}
-            message={content?.message}
-            url={content?.url}
+            format={msg.content?.format}
+            message={msg.content?.message}
+            url={msg.content?.url}
           />
           <p className="text-xs">
             {msg?.createdAt && new Date(msg.createdAt).toLocaleTimeString()}

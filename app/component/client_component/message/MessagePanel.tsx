@@ -8,6 +8,7 @@ import {
   ChatsType,
   FileType,
   Message,
+  MessageContentType,
   PusherChatDispatch,
   PusherChatState,
 } from "@/app/types";
@@ -16,7 +17,6 @@ import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { setUnreads } from "@/app/lib/redux/chatslicer";
 import { TextArea } from "@/app/component/ui/textarea";
-import { handleImageUpload } from "@/app/util/util";
 import { FileShare } from "@/app/component/ui/preview";
 import { TypingIndicator } from "@/app/component/ui/typingIndicator";
 import {
@@ -30,10 +30,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useDragDropHook } from "@/app/hooks/useDragDropHook";
 import Spinner from "../../ui/spinner";
-import {
-  usePusherSubscribe,
-  useUpdateMessageSeen,
-} from "@/app/hooks/CustomHooks/messageEffectHooks";
+import { useUpdateMessageSeen } from "@/app/hooks/CustomHooks/messageEffectHooks";
 import { useDeleteMessage } from "@/app/hooks/CommonEffectHooks";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import OutGoingCall from "../../ui/communications/OutGoingCall";
@@ -48,18 +45,25 @@ import {
   featureActivation,
 } from "@/app/helper/helper";
 import ActiveFeature from "../../modal/ActiveFeature";
+import VoiceRecorder from "../../ui/communications/Voice";
+import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const MessagePanel = () => {
-  // --------------------------------------------------------------------------use states --------------------------------------------------------------------------------
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
-  const [isUploading, setIsUploading] = useState<boolean>(false);
   const [lastSeen, setLastSeen] = useState<string>("Offline");
-  const { setClickedIcon, clickedIcon, setActionMenuSelection } = useLiveLink();
-  // -------------------------------------------------------------------------refs states --------------------------------------------------------------------------------
+  const [activeFeature, setActiveFeature] = useState<string>(""); // for reference
+
+  const {
+    setClickedIcon,
+    clickedIcon,
+    setActionMenuSelection,
+    setFeatureActive,
+    featureActive,
+  } = useLiveLink();
+  const { blobRef } = useVoiceMessage();
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // -------------------------------------------------------------------------- Redux states ---------------------------------------------------------------------------------
   const {
     activeChat,
     typingUsers,
@@ -81,7 +85,6 @@ const MessagePanel = () => {
   const liveMessages = useSelector(
     (store: PusherChatState) => store.chat.messages
   );
-  // -------------------------------------------------------------------------- useHooks ---------------------------------------------------------------------------------
   const QueryClient = useQueryClient();
   //redux dispatcher
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -125,7 +128,6 @@ const MessagePanel = () => {
     handleDrop,
   } = useDragDropHook();
 
-  // ----------------------------------------------------------------------- memoized logics --------------------------------------------------------------------------------
   const chatId = useMemo(
     () => [authUser?.uid, activeChat?.uid].sort().join("-"),
     [authUser?.uid, activeChat?.uid]
@@ -142,7 +144,6 @@ const MessagePanel = () => {
     [activeChat.chatId, activeChat?.uid, typingUsers]
   );
 
-  // -------------------------------------------------------------------------- tanstack --------------------------------------------------------------------------------
   const { data, isPending, refetch } = useGetMessages(chatId);
   const { data: lastSeenUpdate } = useGetLastSeen(activeChat?.uid ?? "");
   const { mutate: lastSeenMutate } = useUpdateLastSeen((result) => {
@@ -160,7 +161,6 @@ const MessagePanel = () => {
       }
     }
   });
-  // -------------------------------------------------------------------------- use Effect --------------------------------------------------------------------------------
 
   //use Effect: make messages empty initially
   useEffect(() => {
@@ -184,7 +184,7 @@ const MessagePanel = () => {
   //use Effect: merge lives messages ( pusher ) with current Message
   useEffect(() => {
     if (!liveMessages) return;
-    const lastMessage = messages?.at(-1)?.content.includes("dummy");
+    const lastMessage = messages?.at(-1)?.content?.url?.includes("dummy");
     if (lastMessage) {
       setMessages((prev) => prev.filter((m) => m.customId !== "dummy_001"));
       setMessages((prev) => [...prev, liveMessages]);
@@ -205,20 +205,26 @@ const MessagePanel = () => {
   }, [lastSeenUpdate]);
   // -------------------------------------------------------------------------- Additional functions  --------------------------------------------------------------------------------
   //save message calling actually happen here
-  const sendMessage = async (message: string, fileMeta: FileType | null) => {
+  const sendMessage = async (
+    message: MessageContentType,
+    fileMeta: FileType | null
+  ) => {
     const date = new Date();
     const customId = uuidv4();
+    const name = authUser?.name ?? "";
+    const senderId = authUser?.uid ?? "";
+    const receiverId = activeChat?.uid ?? "";
 
     try {
       const payload = {
         customId,
         content: message,
         files: fileMeta,
-        senderId: authUser?.uid ?? "",
-        receiverId: activeChat?.uid ?? "",
+        senderId,
+        receiverId,
         chatId: chatId,
         type: "Individual",
-        name: authUser?.name ?? "",
+        name,
         dp: authUser?.dp ?? "",
         createdAt: date.toISOString(),
         status: presence === "Online" ? "delivered" : "sent",
@@ -239,18 +245,24 @@ const MessagePanel = () => {
 
   // use Effect:  update the user last seen when presence changes ( listening to the presence changes )
 
-  const handleMessageSend = (item: string) => {
+  const handleButtonClick = (item: string) => {
     const refinedPrompt = featureActive
       ? input.replace("LIVELINK AI: ", "")
       : undefined; //this if ai feature active
+
+    let blob;
+    if (blobRef.current) {
+      blob = blobRef.current;
+    }
     switch (item) {
       case "send":
       case "enter":
         buildMessageStructure(
-          file,
+          file || blob,
           input,
           sendMessage,
           setFile,
+          blobRef,
           featureActive,
           refinedPrompt
         );
@@ -263,11 +275,11 @@ const MessagePanel = () => {
           );
         }
         setPreview(null);
+        setFeatureActive(false);
         setInput("");
         break;
     }
   };
-  const [featureActive, setFeatureActive] = useState<boolean>(false); // use : to toggle between features
 
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
@@ -332,25 +344,39 @@ const MessagePanel = () => {
               }
             />
             <div className="flex w-full gap-2 place-items-center">
-              <TextArea
-                ref={textAreaRef}
-                value={input}
-                placeholder={
-                  preview?.url
-                    ? `Enter caption to the ${preview.type}`
-                    : `Enter your message`
-                }
-                onChange={(e) => {
-                  setInput(e.currentTarget.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleMessageSend("enter");
+              {!activeFeature.toLowerCase().includes("voice") ? (
+                <TextArea
+                  ref={textAreaRef}
+                  value={input}
+                  text={debounce}
+                  preview={preview?.type}
+                  placeholder={
+                    preview?.url
+                      ? `Enter caption to the ${preview.type}`
+                      : `Enter your message`
                   }
-                }}
-                onClickButton={(input) => handleMessageSend(input)}
-              />
+                  onChange={(e) => {
+                    setInput(e.currentTarget.value);
+                  }}
+                  // onKeyDown={(e) => {
+                  //   if (e.key === "Enter") {
+                  //     e.preventDefault();
+                  //     handleMessageSend("enter");
+                  //   }
+                  // }}
+                  onClickButton={(input) => {
+                    setActiveFeature(input as string);
+                    handleButtonClick(input);
+                  }}
+                />
+              ) : (
+                <VoiceRecorder
+                  setActiveFeature={setActiveFeature}
+                  onClick={(input) => {
+                    if (blobRef.current) handleButtonClick(input.toLowerCase());
+                  }}
+                />
+              )}
             </div>
           </div>
         </>

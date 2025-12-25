@@ -3,7 +3,7 @@ import { PreviewDataType } from "../types";
 
 export function useDragDropHook() {
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | Blob | null>(null);
   const [preview, setPreview] = useState<PreviewDataType | null>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
