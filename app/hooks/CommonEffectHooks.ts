@@ -17,7 +17,7 @@ export const useDeleteMessage = (
 
       if (useFor === "Chat") {
         callback((prev: ChatsType[]) =>
-          prev.map((m) => {
+          prev?.map((m) => {
             const key = `${m.lastMessageId}_${m.chatId}`;
             if (!deleteMap.has(key)) return m;
 

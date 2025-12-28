@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SessionInfo } from "@/app/types";
+import { SeenByUserType, SeenType, SessionInfo, StatusType } from "@/app/types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Server as IOServer } from "socket.io";
 
@@ -124,9 +124,31 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       socket.on("connect-to-chat", (data: any) => {
         io.to(`chat-${data.chatId}`).emit("connected-to-chat", data);
       });
+
+      //update status
+      socket.on("update-status", (data: StatusType) => {
+        data?.myFriends?.forEach((fr) => {
+          io.to(`user-${fr}`).emit("updated-status", data);
+        });
+      });
+
+      //status delete
+      socket.on("delete-status", (data: any) => {
+        data?.myFriends?.forEach((fr: any) => {
+          io.to(`user-${fr}`).emit("deleted-status", data);
+        });
+      });
+
+      //status seen
+      socket.on("status-seen", (data: SeenByUserType) => {
+        io.to(`user-${data.uidO}`).emit("status-has-seen", data);
+      });
+
+      //disconnect from chat
       socket.on("disconnect-from-chat", (data: any) => {
         io.to(`chat-${data.chatId}`).emit("disconnected-from-chat", data);
       });
+
       socket.on("disconnect", () => {});
       socket.on("disconnect", () => {});
     });

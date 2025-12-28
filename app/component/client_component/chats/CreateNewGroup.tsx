@@ -15,7 +15,7 @@ import { AddUser, Users } from "../../ui/cards";
 import { RxArrowRight } from "react-icons/rx";
 import Image from "next/image";
 import { useCreateGroup } from "@/app/lib/tanstack/groupQuery";
-import { } from "@/app/util/util";
+import { handleFileUpload } from "@/app/util/util";
 import { setNotification } from "@/app/lib/redux/notificationSlicer";
 import Spinner from "../../ui/spinner";
 import { v4 as uuidv4 } from "uuid";
@@ -77,7 +77,7 @@ export const CreateNewGroup = React.memo(() => {
   const createGroup = async () => {
     let result = null;
     if (file && dp) {
-      result = await handleImageUpload(file);
+      result = await handleFileUpload(file);
     }
     if (authUser && authUser.uid) {
       const updatedList = [...list, authUser].map((p) => ({
@@ -201,6 +201,7 @@ export const CreateNewGroup = React.memo(() => {
               src={dp ?? "/group_avatar.png"}
               alt="group dp"
               width={250}
+              priority
               className="mt-5 w-[250px] h-[250px] border-2 border-green-500 shadow-md
             rounded-full bg-gray-300 flex-shrink-0"
               height={250}

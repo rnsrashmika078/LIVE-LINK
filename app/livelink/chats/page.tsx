@@ -20,7 +20,7 @@ const ChatPage = async () => {
 
   return (
     <>
-      <Suspense fallback={<Skeleton version="sidebar" />}>
+      <Suspense fallback={<Skeleton version="chat" />}>
         <ChatListClient chats={chats} groupChats={groupChats} />
       </Suspense>
     </>

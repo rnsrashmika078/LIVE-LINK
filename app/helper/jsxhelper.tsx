@@ -1,22 +1,22 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/purity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  IoCheckmark,
-} from "react-icons/io5";
+import { IoCheckmark } from "react-icons/io5";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import React, { useEffect, useState } from "react";
 import {
   TbRelationManyToMany,
   TbRelationManyToManyFilled,
 } from "react-icons/tb";
+import { TypingIndicator } from "../component/ui/typingIndicator";
+import { modifiedMessage } from "./helper";
+import { Message, MessageContentType, TypingUser } from "../types";
 
 export function OnMessageSeen(
   condition: boolean,
   status: string,
-  type?: string,
+  type?: string
 ) {
-
   if (condition) {
     return (
       <>
@@ -83,3 +83,77 @@ export const SenderNameStyle = React.memo(({ name }: Props) => {
 });
 
 SenderNameStyle.displayName = "SenderNameStyle";
+
+interface CardHeaderProps {
+  name: string;
+  updatedAt?: string | undefined;
+  isUserTyping?: any | undefined;
+  lastMessage?: any | undefined;
+  senderId?: string | undefined;
+  userId?: string | undefined;
+  unreads?: any | undefined;
+  unreadCount?: number | undefined;
+  status?: string | undefined;
+}
+export const CardHeader = ({ props }: { props: CardHeaderProps }) => {
+  return (
+    <div className="flex flex-col w-full  items-center space-y-1 min-w-5">
+      <div className="bg-blue-500 flex justify-between w-full  items-center">
+        <h1 className="w-56 bg-yellow-500 truncate text-sm font-bold  ">
+          {props.name}
+        </h1>
+        <p className="text-xs w-16">
+          {props.updatedAt
+            ? new Date(props.updatedAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : ""}
+        </p>
+      </div>
+      <div className="flex justify-between w-full items-center bg-red-500">
+        <div className="flex  min-w-0 ">
+          <div className="flex w-72 text-[var(--pattern_4)] truncate flex-shrink items-center text-xs">
+            {props.isUserTyping ? (
+              <TypingIndicator
+                UserTyping={props.isUserTyping as TypingUser}
+                version="2"
+              />
+            ) : (
+              <>
+                {props.lastMessage.message && (
+                  <p>
+                    <strong className="">
+                      {props.lastMessage?.name?.split(" ")[0]}:{" "}
+                    </strong>
+                    {/* {modifiedMessage(props.lastMessage.message)} */}
+                  </p>
+                )}
+                {modifiedMessage(
+                  props.lastMessage ?? props.lastMessage?.message
+                )}
+              </>
+            )}
+          </div>
+          {!props.isUserTyping &&
+            OnMessageSeen(
+              props.senderId === props.userId,
+              props.status as string,
+              "Individual"
+            )}
+        </div>
+        {props.unreads !== undefined ? (
+          <div className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
+            {props.unreads?.count}
+          </div>
+        ) : null}
+
+        {props.unreadCount !== undefined && props.unreadCount !== 0 ? (
+          <div className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
+            {props.unreadCount}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+};

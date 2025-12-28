@@ -2,15 +2,17 @@ import Image from "next/image";
 import { Button } from "./button";
 import { PreviewDataType } from "@/app/types";
 import React from "react";
+import { useStatusContext } from "@/app/context/StatusContext";
 
 interface FileShareProp {
-  isDragging: boolean;
+  isDragging?: boolean;
   preview: PreviewDataType | null;
-  setFile: React.Dispatch<React.SetStateAction<File | Blob | null>>;
-  setPreview: React.Dispatch<React.SetStateAction<PreviewDataType | null>>;
+  setFile?: React.Dispatch<React.SetStateAction<File | Blob | null>>;
+  setPreview?: React.Dispatch<React.SetStateAction<PreviewDataType | null>>;
 }
 export const FileShare = React.memo(
   ({ isDragging, preview, setPreview, setFile }: FileShareProp) => {
+    const { setCurrentState } = useStatusContext();
     return (
       <div
         className={` ${
@@ -62,8 +64,9 @@ export const FileShare = React.memo(
                 variant="danger"
                 radius="md"
                 onClick={() => {
-                  setPreview(null);
-                  setFile(null);
+                  setCurrentState("idle");
+                  setPreview?.(null);
+                  setFile?.(null);
                 }}
               >
                 X

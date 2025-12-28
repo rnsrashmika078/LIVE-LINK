@@ -1,7 +1,9 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/refs */
 "use client";
-import { PusherChatState } from "@/app/types";
+import { setFriends } from "@/app/lib/redux/friendsSlicer";
+import { useGetFriends } from "@/app/lib/tanstack/friendsQuery";
+import { PusherChatDispatch, PusherChatState } from "@/app/types";
 import Pusher from "pusher-js";
 import {
   createContext,
@@ -10,12 +12,21 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const PusherContext = createContext<Pusher | null>(null);
 export const PusherProvider = ({ children }: { children: ReactNode }) => {
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
+  const dispatch = useDispatch<PusherChatDispatch>();
   const [pusher, setPusher] = useState<Pusher | null>(null);
+
+  const { data: result, isPending } = useGetFriends(authUser?.uid ?? "");
+
+  useEffect(() => {
+    if (result?.friends) {
+      dispatch(setFriends(result?.friends));
+    }
+  }, [result?.friends]);
 
   useEffect(() => {
     if (!authUser?.uid) return;
@@ -39,7 +50,6 @@ export const PusherProvider = ({ children }: { children: ReactNode }) => {
       pusher?.disconnect();
     };
   }, [pusher]);
-
 
   return (
     <PusherContext.Provider value={pusher}>{children}</PusherContext.Provider>

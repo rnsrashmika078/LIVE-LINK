@@ -134,7 +134,7 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
 
   return (
     <div className="px-5 flex w-full flex-col justify-start items-start">
-      <h1 className="text-start w-full text-[#6c6c6c] text-xs">Groups</h1>
+      <p className="sub-styles">Groups</p>
       {filteredGroup && filteredGroup?.length > 0 ? (
         filteredGroup.map((group: GroupType, i: number) => {
           return (

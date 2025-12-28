@@ -6,19 +6,21 @@ const Avatar = React.memo(
     image,
     width = 10,
     height = 10,
+    border,
   }: {
     width?: number;
     height?: number;
     image: string;
+    border?: string;
   }) => {
-    const dynamicClass = `bg-[var(--pattern_5)] border border-[var(--pattern_4)] object-cover rounded-full shadow-0`;
+    const dynamicClass = `flex-shrink-0 bg-[var(--pattern_5)] border border-[var(--pattern_4)] object-cover rounded-full shadow-0`;
 
     return (
       <Image
         src={image || "/no_avatar2.png"}
         alt="profile image"
         width={width * 4}
-        className={dynamicClass}
+        className={`${dynamicClass} ${border}`}
         height={height * 4}
         style={{
           width: `${width * 4}px`,

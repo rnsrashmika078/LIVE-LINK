@@ -1,20 +1,28 @@
 import React from "react";
 import { FaFilePdf } from "react-icons/fa6";
 import Image from "next/image";
-import { SeenByType, SenderInfoType } from "@/app/types";
+import { SenderInfoType } from "@/app/types";
 import { SenderNameStyle } from "@/app/helper/jsxhelper";
 import clsx from "clsx";
 
 interface FormatProps {
-  id?: string;
-  url: string;
-  format: string;
-  info?: string;
+  id?: string | undefined;
+  url: string | undefined;
+  format: string | undefined;
+  info?: string | undefined;
   message: string;
   senderInfo?: SenderInfoType;
+  size?: string;
 }
 const MessageFormat = React.memo(
-  ({ info, url, format, message, senderInfo }: FormatProps) => {
+  ({
+    info,
+    url,
+    format,
+    message,
+    senderInfo,
+    size = "w-[250px] h-[250px]",
+  }: FormatProps) => {
     const openFile = () => {
       if (url) window.open(url, "_blank");
     };
@@ -33,8 +41,8 @@ const MessageFormat = React.memo(
           if (isDummy) {
             return (
               <div
-                className={clsx("place-items-start", {
-                  "w-[200px] h-[200px] bg-gray-700  grayscale transition-all animate-pulse":
+                className={clsx(`${size} place-items-start`, {
+                  " bg-gray-700  grayscale transition-all animate-pulse":
                     isDummy,
                   grayscale: !isDummy,
                 })}
@@ -43,14 +51,16 @@ const MessageFormat = React.memo(
           }
           return (
             <div className="place-items-start">
-              <Image
-                src={url}
-                alt="uploaded image"
-                width={200}
-                onClick={openFile}
-                height={200}
-                className={`object-contain w-[200px]  h-[200px] cursor-pointer`}
-              />
+              {url && (
+                <Image
+                  src={url}
+                  alt="uploaded image"
+                  width={200}
+                  onClick={openFile}
+                  height={200}
+                  className={`object-contain ${size} cursor-pointer`}
+                />
+              )}
               <p className="mt-1 w-fit font-extralight">
                 {info ? info : message}
               </p>
@@ -64,7 +74,7 @@ const MessageFormat = React.memo(
               <video
                 src={url}
                 controls
-                className="object-contain w-[250px] h-[250px] cursor-pointer"
+                className={`object-contain ${size} cursor-pointer`}
                 width={250}
                 onClick={openFile}
                 height={250}

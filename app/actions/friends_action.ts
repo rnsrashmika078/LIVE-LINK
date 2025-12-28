@@ -12,6 +12,8 @@ export async function addFriend(user: AuthUser, friend: AuthUser) {
       friend,
     };
     const res = await apiFetch("/api/friends/add-new-friend", "POST", payload);
+    if (!res) return;
+
     return res.json();
   } catch (err) {
     console.log(err);
@@ -25,6 +27,8 @@ export async function findFriend(searchParam: string, userId: string) {
       `/api/friends/search-friend/${searchParam}/${userId}`,
       "GET"
     );
+    if (!res) return;
+
     return res.json();
   } catch (err) {
     console.log(err);
@@ -43,6 +47,7 @@ export async function sendRequest(
       requestReceiver,
     };
     const res = await apiFetch(`/api/friends/send-request`, "POST", payload);
+    if (!res) return;
 
     return res.json();
   } catch (err) {
@@ -58,6 +63,7 @@ export async function getSendRequests(userId: string) {
       `/api/friends/get-send-request/${userId}`,
       "GET"
     );
+    if (!res) return;
 
     return res.json();
   } catch (err) {
@@ -72,6 +78,7 @@ export async function getReceivedRequests(userId: string) {
       `/api/friends/get-received-request/${userId}`,
       "GET"
     );
+    if (!res) return;
 
     return res.json();
   } catch (err) {
@@ -83,8 +90,14 @@ export async function getUserFriends(userId: string) {
   try {
     if (!userId) return [];
 
-    const res = await apiFetch(`/api/friends/get-friends/${userId}`, "GET");
-
+    const res = await apiFetch(
+      `/api/friends/get-friends/${userId}`,
+      "GET",
+      null,
+      "NATIVE",
+      "no-cache"
+    );
+    if (!res) return;
     return res.json();
   } catch (err) {
     console.log(err);
@@ -95,6 +108,7 @@ export async function getLastSeenUpdate(uid: string) {
     if (!uid) return;
 
     const res = await apiFetch(`/api/friends/get-last-seen/${uid}`, "GET");
+    if (!res) return;
 
     return res.json();
   } catch (err) {
@@ -114,6 +128,7 @@ export async function lastSeenUpdate(uid: string, lastSeen: string) {
       "POST",
       payload
     );
+    if (!res) return;
 
     return res.json();
   } catch (err) {

@@ -9,16 +9,19 @@ import {
   ParticipantsType,
   PusherChatState,
   SeenByType,
+  SeenByUserType,
+  StatusType,
   TypingUser,
   Unread,
 } from "@/app/types";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { modifiedMessage } from "@/app/helper/helper";
 import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import { TypingIndicator } from "./typingIndicator";
 import { CgClose } from "react-icons/cg";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
+import Select, { SelectItem } from "./select";
 
 interface UserCardProps {
   avatar?: string;
@@ -476,6 +479,103 @@ export const AddUser = ({ friends, handleClick }: UserProps) => {
           </div>
         </div>
       ))}
+    </>
+  );
+};
+
+interface StatusCardProps {
+  users: StatusType[];
+  handleClick: (user: StatusType) => void;
+  children?: ReactNode;
+  authId?: string;
+  type?: "MY" | "OTHERS";
+}
+export const StatusCard = ({
+  type = "MY",
+  authId,
+  users,
+  handleClick,
+  children,
+}: StatusCardProps) => {
+  return (
+    <>
+      {type === "OTHERS" &&
+        users?.map((u: StatusType, i: number) => {
+          const IsSeenBefore = u?.seenBy?.some((u) =>
+            u.uid === authId ? u.statusId : null
+          );
+          return (
+            <div
+              key={i}
+              onClick={(e) => {
+                // e.stopPropagation();
+                handleClick(u);
+              }}
+              className="relative hover:bg-gray-800 cursor-pointer transition-all p-2 rounded-xl flex items-center gap-2 w-full"
+            >
+              <Avatar
+                image={u.dp || "/no_avatar2.png"}
+                border={
+                  IsSeenBefore
+                    ? ""
+                    : "border-3 border-green-600  border-gray-200"
+                }
+              />
+              <div className="">
+                <h1 className="text-sm">{u.name || "name unavailable"}</h1>
+                <p className="sub-styles">
+                  {new Date(u.createdAt ?? "").toLocaleTimeString()}
+                </p>
+                {children}
+              </div>
+            </div>
+          );
+        })}
+
+      {type === "MY" && (
+        <div
+          onClick={(e) => {
+            // e.stopPropagation();
+            handleClick(users[0]);
+          }}
+          className=" relative hover:bg-gray-800 cursor-pointer transition-all p-2 rounded-xl flex items-center gap-2 w-full"
+        >
+          <Avatar image={users[0]?.dp || "/add.png"} />
+          <div className="">
+            <h1 className="text-md">{users[0]?.name || "My Status"}</h1>
+            <p className="text-xs text-gray-400">
+              {users[0]?.createdAt
+                ? new Date(users[0]?.createdAt ?? "").toLocaleTimeString()
+                : "Tap to add status update"}
+            </p>
+            {children}
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+interface ViewerCard {
+  viewers: SeenByUserType;
+}
+export const Viewer = ({ viewers }: ViewerCard) => {
+  return (
+    <>
+      <div
+        onClick={(e) => {}}
+        className=" relative hover:bg-gray-800 cursor-pointer transition-all p-2 rounded-xl flex items-center gap-2 w-full"
+      >
+        <Avatar image={viewers?.dp} />
+        <div className="">
+          <h1 className="text-md">{viewers?.name}</h1>
+          <p className="text-xs text-gray-400">
+            {viewers?.createdAt
+              ? new Date(viewers?.createdAt ?? "").toLocaleTimeString()
+              : "Tap to add status update"}
+          </p>
+        </div>
+      </div>
     </>
   );
 };

@@ -5,11 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { PusherChatDispatch, PusherChatState } from "../../types";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { setActiveChat } from "@/app/lib/redux/chatslicer";
-import { useClickFocus, usePathName } from "@/app/hooks/useHooks";
+import { usePathName } from "@/app/hooks/useHooks";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
-import UserSettings from "@/app/component/modal/UserSettings";
 
 // one hydration error occur in this component that needed be solve
 const Sidebar = React.memo(() => {
@@ -40,14 +39,6 @@ const Sidebar = React.memo(() => {
     if (!path) return;
     setCurrentTab(path.split("/")[2]);
   }, []);
-  // const divRef = useRef<HTMLDivElement | null>(null);
-  // const focus = useClickFocus(divRef);
-
-  // useEffect(() => {
-  //   if (currentTab !== "users") {
-  //     setCurrentTab("chats");
-  //   }
-  // }, [focus]);
 
   const dummy_chat = {
     chatId: "",
@@ -60,10 +51,10 @@ const Sidebar = React.memo(() => {
   };
   return (
     <div
-      className="bg-[var(--pattern_1)] relative w-14 h-full flex flex-col justify-between py-2 px-1"
+      className="bg-[var(--pattern_1)] z-[99] relative w-14 h-full flex flex-col justify-between py-2 px-1"
       // ref={divRef}
     >
-      <div className="flex flex-col justify-center">
+      <div className="flex flex-col justify-center ">
         {StartItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -102,7 +93,7 @@ const Sidebar = React.memo(() => {
         X
       </Button>
 
-      <div className="flex flex-col justify-center">
+      <div className="flex flex-col justify-center ">
         {MiddleItems.map((item) => {
           const Icon = item.icon;
           return (

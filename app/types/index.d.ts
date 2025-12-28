@@ -63,6 +63,7 @@ export type FileType = {
   public_id: string;
 };
 export type PreviewDataType = {
+  file?: File | null;
   url: string;
   type: string;
   name: string;
@@ -90,6 +91,34 @@ export type AuthUser = {
   type?: string;
   createdAt?: string;
   useFor?: string;
+};
+export type CaptionType = {
+  caption?: string;
+  color?: string;
+};
+export type StatusContent = {
+  file: FileType | null;
+  caption?: CaptionType;
+};
+export type SeenByUserType = {
+  dp: string;
+  name: string;
+  uid: string;
+  uidO?: string;
+  createdAt?: string;
+  statusId?: string;
+};
+export type StatusType = {
+  id?: string;
+  statusId: string;
+  uid: string;
+  email?: string;
+  dp: string;
+  name: string;
+  content: StatusContent;
+  createdAt?: string;
+  seenBy?: SeenByUserType[];
+  myFriends?: string[];
 };
 
 export type MessagePayload = {

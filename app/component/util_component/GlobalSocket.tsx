@@ -11,12 +11,18 @@ import {
   ActiveUsersType,
   PusherChatDispatch,
   PusherChatState,
+  StatusType,
   TypingUser,
 } from "@/app/types";
 import { useEffect } from "react";
 import { useSocket } from "./SocketProvider";
 import { useDispatch, useSelector } from "react-redux";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
+import {
+  addNewStatus,
+  setDeleteStatus,
+  setStatusSeenUser,
+} from "@/app/lib/redux/statusSlicer";
 
 const GlobalSocket = () => {
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -27,6 +33,14 @@ const GlobalSocket = () => {
   useEffect(() => {
     if (!socket || !authUser?.uid) return;
 
+    const SeenStatusHandler = (data: StatusType) => {
+      const id = Date.now.toString();
+      const notify = "Your status seen by " + data.name;
+      dispatch(setNotification({ id, notify }));
+      dispatch(setStatusSeenUser(data));
+    };
+
+    
     const connectToChat = (data: ActiveUsersType) => {
       dispatch(connectUser(data));
       // this is for group chats only
@@ -48,6 +62,25 @@ const GlobalSocket = () => {
         if (data.userId === authUser?.uid) return;
         dispatch(setTypingUsers(data));
       }
+    };
+
+    const updateStatusHandler = (data: StatusType) => {
+      dispatch(
+        setNotification({
+          id: Date.now.toString(),
+          notify: "YOU HAVE STATUS" + data.name,
+        })
+      );
+      dispatch(addNewStatus(data));
+    };
+    const deleteStatusHandler = (data: StatusType) => {
+      dispatch(setDeleteStatus(data.statusId));
+      // dispatch(
+      //   setNotification({
+      //     id: Date.now.toString(),
+      //     notify: "YOU HAVe deleted" + data.statusId,
+      //   })
+      // );
     };
 
     const messageSeenHandler = (data: any) => {
@@ -75,11 +108,17 @@ const GlobalSocket = () => {
     socket.on("send-group-notification", notificationHandler);
     socket.on("connected-to-chat", connectToChat);
     socket.on("disconnected-from-chat", disconnectFromChat);
+    socket.on("updated-status", updateStatusHandler);
+    socket.on("status-has-seen", SeenStatusHandler);
+    socket.on("deleted-status", deleteStatusHandler);
 
     return () => {
       socket.off("send-group-notification", notificationHandler);
       socket.off("typing-status", typingHandler);
       socket.off("seen-success", messageSeenHandler);
+      socket.on("deleted-status", deleteStatusHandler);
+      socket.off("status-has-sene", SeenStatusHandler);
+      socket.off("updated-status", updateStatusHandler);
     };
   }, [authUser?.uid, , socket]);
 

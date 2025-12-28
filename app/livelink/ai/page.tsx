@@ -1,12 +1,4 @@
-import ImageGen from "@/app/component/ui/ai/image/ImageGen";
-import React from "react";
-
 const page = () => {
-  return (
-    <div>
-      {/* <ImageGen /> */}
-    </div>
-  );
+  return <div>TEST</div>;
 };
-
 export default page;

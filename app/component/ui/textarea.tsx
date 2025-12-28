@@ -14,11 +14,21 @@ type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   type?: string;
   text?: string;
   preview?: string;
+  support?: "only-message" | "message-voice";
   onClickButton?: (button: string) => void;
 };
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  ({ onClickButton, text, preview, ...props }: TextAreaProps, ref) => {
+  (
+    {
+      onClickButton,
+      support = "message-voice",
+      text,
+      preview,
+      ...props
+    }: TextAreaProps,
+    ref
+  ) => {
     const [selection, setSelection] = useState<string | null>(null);
     const [row, setRow] = useState<number>(1);
     const size = 20;
@@ -67,21 +77,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             />
           </div>
         </>
-        {/* ) : (
-            // flip side : if selection is voice
-            <>
-              <div
-                className="flex justify-center items-center outline-none focus-ring-0 pl-15 pr-15 w-full h-[50px] border border-[var(--pattern_2)] p-2 rounded-xl custom-scrollbar-y"
-              >
-                <p className="text-center text-[var(--muted-text)] mt-1">
-                  Recording...
-                </p>
-              </div>
-            </>
-          )}
-        </> */}
         <div className="flex gap-2 absolute bottom-2.5 right-2">
-          {!text && !preview ? (
+          {support !== "only-message" && !text && !preview ? (
             <BiMicrophone
               size={size}
               className={iconStyles}

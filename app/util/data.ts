@@ -90,3 +90,4 @@ export const NewChatModalItem = [
     title: "Add Friend",
   },
 ];
+export const EmojiList = ["❤️", "👍", "😂", "😢", "😮", "😡", "🎉"];

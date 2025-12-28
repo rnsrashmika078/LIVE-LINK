@@ -33,11 +33,11 @@
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE, Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
 }
 .no-scrollbar::-webkit-scrollbar {
-  display: none;             /* Chrome, Safari */
+  display: none; /* Chrome, Safari */
 }
 @theme inline {
   --color-background: var(--background);
@@ -88,6 +88,11 @@ body {
 .pattern_7 {
   background-color: #1b4301;
 }
-.pattern_8{
+.pattern_8 {
   background-color: #0b0e2faf;
+}
+
+.sub-styles {
+  color: rgb(116, 116, 121);
+  font-size: small;
 }

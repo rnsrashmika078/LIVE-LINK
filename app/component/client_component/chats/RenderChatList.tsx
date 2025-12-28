@@ -103,9 +103,9 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
   
   return (
     <div className="px-5 flex w-full flex-col justify-start items-start ">
-      <h1 className="text-start w-full text-[#6c6c6c] text-xs">
+      <p className="sub-styles">
         Individual Chats
-      </h1>
+      </p>
       {filteredChats && filteredChats?.length > 0 ? (
         filteredChats.map((chat: ChatsType, i: number) => {
           return (

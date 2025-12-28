@@ -1,5 +1,4 @@
-import { BsImage } from "react-icons/bs";
-import { FileType, Message, MessageContentType } from "../types";
+import { FileType, Message, MessageContentType, StatusType } from "../types";
 import { handleAudioUpload, handleFileUpload } from "../util/util";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -32,7 +31,6 @@ export async function apiFetch(
         body: body ? JSON.stringify(body) : undefined,
       });
     }
-
     return res;
   } catch (err) {
     console.log(err);
@@ -187,4 +185,21 @@ export function featureActivation(debounce: string): boolean {
     return false;
   }
   return false;
+}
+export function onViewDestruct(onViewStatus: StatusType | null) {
+  if (onViewStatus == null) return;
+
+  let file: FileType | undefined;
+  let statusId: string | undefined;
+  let caption: string | undefined;
+  let color: string | undefined;
+
+  if (onViewStatus) {
+    file = onViewStatus.content.file!;
+    statusId = onViewStatus?.statusId ?? "";
+    caption = onViewStatus?.content?.caption?.caption ?? "";
+    color = onViewStatus?.content?.caption?.color ?? "";
+  }
+
+  return { file, statusId, caption, color };
 }

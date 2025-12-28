@@ -15,6 +15,7 @@ type ActionMenuSelectionType = {
 interface LiveLinkContextType {
   openModal: boolean;
   setOpenModal: (state: boolean) => void;
+
   actionMenuSelection: { selection: string; message: Message | null };
   setActionMenuSelection: (data: ActionMenuSelectionType) => void;
   currentTab: string;
@@ -66,6 +67,7 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
   const [featureActive, setFeatureActive] = useState<boolean>(false);
   const [internalClickState, setInternalClickState] = useState<string>("chats");
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
+
   const [relativePosition, setRelativePosition] =
     useState<RelativePositionType>({ top: 0, left: 0 });
   const [connectionState, setConnectionState] = useState<boolean>(
@@ -112,7 +114,7 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         sdpRef,
         currentPC,
         audioRef,
-        countRef, // this use to keep track of the unreads count
+        countRef, // this use to keep track of the unread count
 
         //incoming call status
         setSessionInfo,
@@ -144,6 +146,7 @@ export const useLiveLink = () => {
   const context = useContext(LiveLinkContext);
   if (!context) {
     throw new Error("Must be use in under the LiveLink Layout");
+    // console.log("younger the soul...tighter the hole!");
   }
   return context;
 };

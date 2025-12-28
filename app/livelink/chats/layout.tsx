@@ -1,7 +1,5 @@
-export default function ChatLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <div className="">{children}</div>;
+import ChatLayout from "@/app/component/client_component/chats/ChatLayout";
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <ChatLayout>{children}</ChatLayout>;
 }
