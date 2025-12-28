@@ -1,9 +1,13 @@
 
 //TODOS:
-remove UseEffects as possible 
+remove UseEffects as possible - halfway there!
 
 //TODOS:
 implement message delete functionality in group chats
 
 //TODOS:
-message structure must change from string to JSON
+message structure must change from string to JSON -> finished
+
+//TODOS:
+User cards need to clean up  ( Ui )
+lazy load skeleton ( suspense ) 
