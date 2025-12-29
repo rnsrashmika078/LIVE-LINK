@@ -1,12 +1,8 @@
-import React, { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getChats } from "@/app/actions/chats_actions";
-const ChatListClient = React.lazy(
-  () => import("@/app/component/client_component/chats/ChatListClient")
-);
+import ChatListClient from "@/app/component/client_component/chats/ChatListClient";
 import { getGroups } from "@/app/actions/group_action";
-import Skeleton from "@/app/component/ui/skeleton";
 
 const ChatPage = async () => {
   const cookieStore = cookies();
@@ -18,13 +14,7 @@ const ChatPage = async () => {
     getGroups(uid ?? ""),
   ]);
 
-  return (
-    <>
-      <Suspense fallback={<Skeleton version="chat" />}>
-        <ChatListClient chats={chats} groupChats={groupChats} />
-      </Suspense>
-    </>
-  );
+  return <ChatListClient chats={chats} groupChats={groupChats} />;
 };
 
 export default ChatPage;

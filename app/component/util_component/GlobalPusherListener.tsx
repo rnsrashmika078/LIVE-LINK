@@ -19,7 +19,6 @@ import {
 import {
   setChats,
   setChatsArray,
-  setGroupMessageSeen,
   setMessageSeen,
 } from "@/app/lib/redux/chatslicer";
 import { usePusher } from "./PusherProvider";
@@ -27,22 +26,22 @@ import { usePusher } from "./PusherProvider";
 export default function GlobalPusherListener() {
   const dispatch = useDispatch<PusherChatDispatch>();
 
-  const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
-  const activeChat = useSelector(
-    (store: PusherChatState) => store.chat.activeChat
+  const uid = useSelector((store: PusherChatState) => store.chat.authUser?.uid);
+  const chatId = useSelector(
+    (store: PusherChatState) => store.chat.activeChat?.chatId
   );
   const pusher = usePusher();
 
   useEffect(() => {
-    if (!activeChat?.chatId || !pusher) return;
+    if (!chatId || !pusher) return;
 
-    const channelName = `private-message-seen-${activeChat?.chatId}`;
+    const channelName = `private-message-seen-${chatId}`;
 
     if (!pusher.channel(channelName)) {
       const channel = pusher.subscribe(channelName);
 
       channel.bind("message-seen", (data: any) => {
-        if (data.receiverId === authUser?.uid) {
+        if (data.receiverId === uid) {
           return;
         }
         const id = new Date().getTime().toString();
@@ -62,12 +61,12 @@ export default function GlobalPusherListener() {
         pusher.unsubscribe(channelName);
       }
     };
-  }, [activeChat?.chatId, authUser?.uid, pusher]);
+  }, [chatId, uid, pusher]);
 
   useEffect(() => {
-    if (!authUser?.uid || !pusher) return;
+    if (!uid || !pusher) return;
 
-    const notifyName = `private-notify-${authUser.uid}`;
+    const notifyName = `private-notify-${uid}`;
     const presenceName = `presence-global`;
 
     const notify = pusher.channel(notifyName) || pusher.subscribe(notifyName);
@@ -113,7 +112,7 @@ export default function GlobalPusherListener() {
       if (pusher.channel(notifyName)) pusher.unsubscribe(notifyName);
       if (pusher.channel(presenceName)) pusher.unsubscribe(presenceName);
     };
-  }, [authUser?.uid, dispatch, pusher]);
+  }, [uid, dispatch, pusher]);
 
   return null;
 }

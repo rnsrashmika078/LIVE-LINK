@@ -9,6 +9,9 @@ import IncomingCall from "../ui/communications/IncomingCall";
 import InfoLayout from "./info/InfoLayout";
 
 const MessagePanel = React.lazy(() => import("./message/MessagePanel"));
+const AgentMessagePanel = React.lazy(
+  () => import("./message/AgentMessagePanel")
+);
 const GroupMessagePanel = React.lazy(
   () => import("./message/GroupMessagePanel")
 );
@@ -20,6 +23,7 @@ const MainLayout = () => {
   return (
     <>
       <Suspense fallback={<Skeleton version="chat" />}>
+        {activeChat?.type === "Agent" && <AgentMessagePanel />}
         {activeChat?.type === "Individual" && <MessagePanel />}
         {activeChat?.type === "Group" && <GroupMessagePanel />}
         {!activeChat?.type && <MainPanel />}

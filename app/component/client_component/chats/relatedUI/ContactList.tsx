@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { AuthUser, PusherChatDispatch, PusherChatState } from "@/app/types";
-import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setActiveChat } from "@/app/lib/redux/chatslicer";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import Spinner from "@/app/component/ui/spinner";
@@ -13,11 +13,8 @@ const ContactList = ({
   friends: AuthUser[];
   loading: boolean;
 }) => {
-  const authUser = useSelector(
-    (store: PusherChatState) => store.chat.authUser,
-    shallowEqual
-  );
-  const { setClickedIcon } = useLiveLink();
+  const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
+  const { setClickedIcon, setInternalClickState } = useLiveLink();
 
   const dispatch = useDispatch<PusherChatDispatch>();
   const handleOpenChat = useCallback(
@@ -32,8 +29,9 @@ const ContactList = ({
         name: fr?.name ?? "",
         email: fr?.email ?? "",
         dp: fr?.dp ?? "",
-        type:"Individual"
+        type: "Individual",
       };
+      //@ts-expect-error:type error- > lastMessage type is different here from the original type
       dispatch(setActiveChat(newActiveChat));
     },
     [authUser?.uid, dispatch, setClickedIcon]
@@ -51,8 +49,10 @@ const ContactList = ({
               avatar={fr.dp}
               key={i}
               name={fr.name}
-              handleClick={() => handleOpenChat(fr)}
-              useFor="chat"
+              handleClick={() => {
+                setInternalClickState("chats");
+                handleOpenChat(fr);
+              }}
             />
           ))}
       </div>

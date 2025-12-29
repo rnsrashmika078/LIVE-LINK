@@ -22,7 +22,6 @@ const StatusFileViewPanel = ({
     caption = onViewStatus?.content?.caption?.caption ?? "";
   }
 
-  console.log("file", file);
   const uid = useSelector((store: PusherChatState) => store.chat.authUser?.uid);
   return (
     <>

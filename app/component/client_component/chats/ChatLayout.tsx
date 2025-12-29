@@ -7,22 +7,18 @@ import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { BiArrowBack, BiSync } from "react-icons/bi";
 import { useRouter } from "next/navigation";
 import UserSettings from "../../modal/UserSettings";
-import { PusherChatState } from "@/app/types";
-import { useSelector } from "react-redux";
 
 const ChatLayout = React.memo(({ children }: { children: ReactNode }) => {
-  const { internalClickState, setInternalClickState } = useLiveLink();
+  const { internalClickState, setInternalClickState, dynamic } = useLiveLink();
   const handleOnSearch = (value: string) => {};
   const router = useRouter();
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const activeChat = useSelector(
-    (store: PusherChatState) => store.chat.activeChat
-  );
+
   const [back, setBack] = useState<boolean>(true);
 
   useEffect(() => {
     setBack((prev) => !prev);
-  }, [activeChat]);
+  }, [dynamic]);
 
   const style = back
     ? "w-0 sm:w-[500px]"
@@ -33,7 +29,12 @@ const ChatLayout = React.memo(({ children }: { children: ReactNode }) => {
       className={`${style} absolute sm:relative left-14 sm:left-0  z-[90] h-full`}
     >
       <div className="p-5 mt-20 absolute">
-        <BiArrowBack onClick={() => setBack((prev) => !prev)} />
+        <BiArrowBack
+          onClick={() => {
+            setBack((prev) => !prev);
+            // dispatch(setActiveChat(null));
+          }}
+        />
       </div>
       <div
         className={`z-50 transition-all bg-[var(--pattern_2)] h-full w-full custom-scrollbar-y `}

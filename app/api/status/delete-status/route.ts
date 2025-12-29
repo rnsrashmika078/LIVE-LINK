@@ -6,7 +6,6 @@ export async function DELETE(req: NextRequest) {
   try {
     const { statusId, public_id } = await req.json();
 
-    console.log("public_id", public_id);
     if (!statusId && !public_id)
       return NextResponse.json(
         {

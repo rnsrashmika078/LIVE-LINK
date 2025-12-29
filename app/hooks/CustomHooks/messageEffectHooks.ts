@@ -100,6 +100,7 @@ export function useMessageSeenAPI(
     if (type?.includes("Group")) {
       socket?.emit("message-seen", payload);
     }
+    if (!res) return;
     const result = await res.json();
     if (result && result.success) {
     }

@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
-import { ChatsType, GroupType, PusherChatState } from "@/app/types";
-import { useSelector } from "react-redux";
+import { ChatsType, GroupType,} from "@/app/types";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { NewChat } from "./NewChat";
 import CreateNewGroup from "./CreateNewGroup";

@@ -255,6 +255,13 @@ export type GroupMessage = {
 export type SectionType = {
   section: string;
 };
+
+//agentics
+export type AgentType = {
+  type: string;
+  message: string;
+};
+
 //redux types
 export type PusherChatState = ReturnType<typeof store.getState>;
 export type PusherChatDispatch = typeof store.dispatch;

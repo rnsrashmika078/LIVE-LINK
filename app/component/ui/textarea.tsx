@@ -4,6 +4,7 @@ import {
   forwardRef,
   TextareaHTMLAttributes,
   useCallback,
+  useRef,
   useState,
 } from "react";
 import { MdOutlineEmojiEmotions } from "react-icons/md";
@@ -30,27 +31,27 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     ref
   ) => {
     const [selection, setSelection] = useState<string | null>(null);
+    const [length, setLength] = useState<number>(1);
     const [row, setRow] = useState<number>(1);
     const size = 20;
     const iconStyles = `hover:text-green-400 transition-all hover:scale-120 cursor-pointer`;
-    const rows = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-      const length = e.target.value.length;
 
-      setRow((prev) => {
-        if (length > 50) {
-          if (prev >= 10) return prev;
-          return prev + 2;
-        } else {
-          return 1;
-        }
-      });
+    const lenRef = useRef<number>(0);
+    const rows = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+      const len = e.target.value.length;
+
+      if (len > 80) {
+        setRow((prev) => prev);
+        return;
+      }
+
+      const calc = Math.max(1, Math.floor(len / 10));
+      setRow(calc);
     }, []);
 
     return (
       <div className="flex relative w-full">
         <>
-          {/* {selection !== "voice" || !selection ? ( */}
-          {/* <> */}
           <textarea
             ref={ref}
             {...props}

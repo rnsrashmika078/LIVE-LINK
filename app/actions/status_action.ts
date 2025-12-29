@@ -25,7 +25,6 @@ export async function setStatus(payload: StatusType) {
     if (payload === null) {
       return [];
     }
-    console.log("payload", payload);
     const res = await apiFetch(`/api/status/add-status`, "POST", payload);
 
     if (!res) return [];
@@ -42,7 +41,6 @@ export async function updateStatus(payload: SeenByUserType) {
     if (payload === null) {
       return [];
     }
-    console.log("payload", payload);
     const res = await apiFetch(`/api/status/update-status`, "POST", payload);
 
     if (!res) return [];
@@ -73,7 +71,6 @@ export async function deleteStatus(payload: {
   public_id?: string | undefined;
 }) {
   try {
-    console.log("payload", payload);
     const res = await apiFetch(`/api/status/delete-status/`, "DELETE", payload);
 
     if (!res) return [];

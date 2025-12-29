@@ -3,8 +3,8 @@
 /* eslint-disable react-hooks/refs */
 import React, { useEffect, useState } from "react";
 import Avatar from "../avatar";
-import { shallowEqual, useSelector } from "react-redux";
-import { PusherChatState } from "@/app/types";
+import { useSelector } from "react-redux";
+import { ChatsType, PusherChatState } from "@/app/types";
 import { MdCallEnd } from "react-icons/md";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { useSocket } from "../../util_component/SocketProvider";
@@ -27,13 +27,10 @@ const OutGoingCall = () => {
   const [mute, setMute] = useState<boolean>(false);
   const socket = useSocket();
 
-  const { activeChat, authUser } = useSelector(
-    (store: PusherChatState) => ({
-      activeChat: store.chat.activeChat,
-      authUser: store.chat.authUser,
-    }),
-    shallowEqual
+  const activeChat = useSelector(
+    (store: PusherChatState) => store.chat.activeChat as ChatsType
   );
+  const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
 
   useEffect(() => {
     const handleStartCall = async () => {

@@ -6,7 +6,7 @@ import IdleView from "./status/IdleView";
 import StatusTextPreviewPanel from "./status/preview/StatusTextPreviewPanel";
 import StatusFilePreviewPanel from "./status/preview/StatusFilePreviewPanel";
 import StatusTextViewPanel from "./status/view/StatusTextViewPanel";
-import StatusFileViewPanel from "./status/view/StatusFileViewPanel";
+import WelcomeSub from "./WelcomeSub";
 const MainPanel = () => {
   const onViewStatus = useSelector(
     (store: PusherChatState) => store.status.onViewStatus
@@ -18,14 +18,18 @@ const MainPanel = () => {
     <div className="flex flex-col w-full h-full relative overflow-hidden">
       {currentTab === "status" ? (
         <>
-          {currentState === "viewing-text" && <StatusTextViewPanel onViewStatus={onViewStatus}/>}
+          {currentState === "viewing-text" && (
+            <StatusTextViewPanel onViewStatus={onViewStatus} />
+          )}
           {/* {currentState === "viewing-photo" && <StatusFileViewPanel onViewStatus={onViewStatus}/>} */}
           {currentState === "updating-photo" && <StatusFilePreviewPanel />}
           {currentState === "updating-text" && <StatusTextPreviewPanel />}
           {currentState === "idle" && <IdleView />}
         </>
       ) : (
-        <div>WELCOME TO LIVE LINK</div>
+        <>
+          <WelcomeSub />
+        </>
       )}
     </div>
   );

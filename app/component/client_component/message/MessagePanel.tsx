@@ -47,6 +47,7 @@ import {
 import ActiveFeature from "../../modal/ActiveFeature";
 import VoiceRecorder from "../../ui/communications/Voice";
 import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
+import Skeleton from "../../ui/skeleton";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const MessagePanel = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -173,6 +174,7 @@ const MessagePanel = () => {
   }, [activeChat?.chatId]);
 
   useEffect(() => {
+    if (presence === "Offline") return;
     const seenTime = new Date().toString();
     lastSeenMutate({
       uid: activeChat?.uid ?? "",
@@ -311,7 +313,7 @@ const MessagePanel = () => {
             <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
           </div>
 
-          <Suspense fallback={<Spinner />}>
+          <Suspense fallback={<Skeleton version="chats" />}>
             <MessageViewArea
               messages={messages}
               onDrop={handleDrop}

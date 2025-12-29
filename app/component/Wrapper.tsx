@@ -5,7 +5,6 @@ const Wrapper = ({ children }: { children: ReactNode }) => {
     <div
       onClick={(e) => {
         e.stopPropagation();
-        alert("YES");
       }}
     >
       {children}

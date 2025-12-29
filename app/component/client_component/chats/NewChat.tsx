@@ -1,33 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, {
-  ReactNode,
-  Suspense,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import SearchArea from "../../ui/searcharea";
 import Avatar from "../../ui/avatar";
-import { UserCard } from "../../ui/cards";
-import { RxCross1 } from "react-icons/rx";
-import { AuthUser, PusherChatDispatch, PusherChatState } from "@/app/types";
+import { PusherChatDispatch, PusherChatState } from "@/app/types";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import Spinner from "../../ui/spinner";
-import { setActiveChat } from "@/app/lib/redux/chatslicer";
 import { useGetFriends } from "@/app/lib/tanstack/friendsQuery";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
-import { AddNewFriend } from "./AddNewFriend";
 import TopBar from "./relatedUI/TopBar";
 import { NewChatModalItem } from "@/app/util/data";
-import CreateNewGroup from "./CreateNewGroup";
-
-import { setFriendRequest, setFriends } from "@/app/lib/redux/friendsSlicer";
 import FrequentContact from "./relatedUI/FrequentContact";
 import ContactList from "./relatedUI/ContactList";
-
-interface AddNewFriend {
-  setSelection: React.Dispatch<React.SetStateAction<string>>;
-}
+import { setFriends } from "@/app/lib/redux/friendsSlicer";
 
 export const NewChat = React.memo(() => {
   const { setInternalClickState } = useLiveLink();
@@ -46,9 +29,8 @@ export const NewChat = React.memo(() => {
   const { data: result, isPending } = useGetFriends(authUser?.uid ?? "");
 
   useEffect(() => {
-    if (result?.friends) {
-      dispatch(setFriends(result?.friends));
-    }
+    if (!result?.friends) return;
+    dispatch(setFriends(result?.friends));
   }, [result?.friends]);
 
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -77,7 +59,7 @@ export const NewChat = React.memo(() => {
               <div
                 key={i}
                 onClick={() => setInternalClickState(t.title)}
-                className="flex justify-start items-center gap-2 w-full hover:bg-[var(--pattern_5)]  p-2 rounded-xl "
+                className="flex justify-start items-center gap-2 w-full hover:bg-[var(--pattern_5)] space-y-2 p-2 rounded-xl"
               >
                 <Avatar image={t.image} width={10} height={10} />
                 <h1 className="">{t.title}</h1>

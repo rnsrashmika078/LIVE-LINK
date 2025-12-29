@@ -1,7 +1,6 @@
 import {
   BiArchive,
   BiEdit,
-  BiFilter,
   BiMessage,
   BiPhoneCall,
   BiSearch,
@@ -15,7 +14,7 @@ import {
   IoCheckmarkDone,
   IoCheckmarkDoneSharp,
 } from "react-icons/io5";
-import { IconArrayType } from "../types";
+import { ChatsType, IconArrayType } from "../types";
 
 //side bar items array
 export const StartItems = [
@@ -91,3 +90,18 @@ export const NewChatModalItem = [
   },
 ];
 export const EmojiList = ["❤️", "👍", "😂", "😢", "😮", "😡", "🎉"];
+
+export const agent = [
+  {
+    name: "Live Link Agent",
+    dp: "/agent.png",
+    updatedAt: new Date().toISOString(),
+    unreadCount: [],
+    type: "Agent",
+    chatId: "ll-agent-v2",
+    senderId: "",
+    // lastMessage: "Welcome to the Live Link agent",
+    status: "seen",
+    // chat,
+  },
+];

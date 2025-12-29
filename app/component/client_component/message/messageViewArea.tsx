@@ -39,7 +39,8 @@ function MessageViewArea({ messages, ...props }: ViewAreaProps) {
     activeChat,
     activeChat.type
   );
-
+  
+  
   useEffect(() => {
     if (messages) {
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { UserChatCard } from "@/app/component/ui/cards";
 import { ChatsType, PusherChatDispatch, PusherChatState } from "@/app/types";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
@@ -13,13 +13,13 @@ import {
   useUpdateMessageSeenInChat,
 } from "@/app/hooks/CustomHooks/chatEffectHook";
 import { useDeleteMessage } from "@/app/hooks/CommonEffectHooks";
-
-
+import { agent } from "@/app/util/data";
+import { v4 as uuid } from "uuid";
 const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
   const [chatState, setChatState] = useState<ChatsType[]>(initialChats);
 
   //use hooks
-  const { connectionState,  } = useLiveLink();
+  const { connectionState, setDynamic, chatRefs } = useLiveLink();
 
   //redux states
   const {
@@ -100,19 +100,40 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
     });
   }, [chatState]);
 
-  
   return (
     <div className="px-5 flex w-full flex-col justify-start items-start ">
-      <p className="sub-styles">
-        Individual Chats
-      </p>
+      <p className="sub-styles">Live Link Agent</p>
+      {agent.map((a) => (
+        <UserChatCard
+          key={a.chatId}
+          // ref={(el) => {
+          //   chatRefs.current[a.chatId] = el; // assign ref // now retunr void ( explitiy )
+          // }}
+          //@ts-expect-error:type issue ignored
+          chat={a}
+          handleClick={() => {
+            const id = uuid();
+            setDynamic(id);
+            //@ts-expect-error:type issue ignored
+            dispatch(setActiveChat(a));
+          }}
+        />
+      ))}
+
+      <p className="sub-styles">Individual Chats</p>
       {filteredChats && filteredChats?.length > 0 ? (
         filteredChats.map((chat: ChatsType, i: number) => {
+          console.log("Chatid ", chat.chatId);
           return (
             <UserChatCard
               key={i}
+              ref={(el) => {
+                chatRefs.current[chat.chatId] = el; // assign ref // now retunr void ( explitiy )
+              }}
               chat={chat}
               handleClick={() => {
+                const id = uuid();
+                setDynamic(id);
                 dispatch(setActiveChat(chat));
               }}
             />

@@ -5,7 +5,6 @@ export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
 
-    console.log("data", data);
     if (data == null)
       return NextResponse.json(
         {

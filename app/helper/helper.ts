@@ -203,3 +203,7 @@ export function onViewDestruct(onViewStatus: StatusType | null) {
 
   return { file, statusId, caption, color };
 }
+
+export async function Agent(){
+  
+}

@@ -36,6 +36,12 @@ interface LiveLinkContextType {
   setRelativePosition: (relativePosition: RelativePositionType) => void;
   setIsActive: (state: string) => void;
   isActive: string;
+  dynamic: string;
+  setDynamic: React.Dispatch<React.SetStateAction<string>>;
+
+  //agent task
+  agentTask: string;
+  setAgentTask: React.Dispatch<React.SetStateAction<string>>;
 
   //refs
   localAudioRef: React.RefObject<HTMLAudioElement | null>;
@@ -47,7 +53,7 @@ interface LiveLinkContextType {
   currentPC: React.RefObject<RTCPeerConnection | null>;
   audioRef: React.RefObject<HTMLAudioElement | null>;
   countRef: React.RefObject<Record<string, number>>;
-
+  chatRefs: React.RefObject<Record<string, HTMLDivElement | null>>;
   //has incoming call
   setSessionInfo: (data: SessionInfo | null) => void;
   sessionInfo: SessionInfo | null;
@@ -67,6 +73,8 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
   const [featureActive, setFeatureActive] = useState<boolean>(false);
   const [internalClickState, setInternalClickState] = useState<string>("chats");
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
+  const [dynamic, setDynamic] = useState<string>("");
+  const [agentTask, setAgentTask] = useState<string>("");
 
   const [relativePosition, setRelativePosition] =
     useState<RelativePositionType>({ top: 0, left: 0 });
@@ -85,7 +93,7 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
   const sdpRef = useRef<RTCSessionDescriptionInit | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const countRef = useRef<Record<string, number>>({});
-
+  const chatRefs = useRef<Record<string, HTMLDivElement | null>>({});
   return (
     <LiveLinkContext.Provider
       value={{
@@ -103,6 +111,7 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         setClickedIcon,
         setInternalClickState,
         internalClickState,
+
         //global icon click setter for message panel ( audio , video )
 
         //refs
@@ -115,6 +124,9 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         currentPC,
         audioRef,
         countRef, // this use to keep track of the unread count
+
+        //agent refs
+        chatRefs,
 
         //incoming call status
         setSessionInfo,
@@ -135,18 +147,24 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         //action menu selection
         setActionMenuSelection,
         actionMenuSelection,
+
+        //use to go back and forth in chats  (open close -> )
+        dynamic,
+        setDynamic,
+
+        //perform agent tasks
+        agentTask,
+        setAgentTask,
       }}
     >
       {children}
     </LiveLinkContext.Provider>
   );
 };
-
 export const useLiveLink = () => {
   const context = useContext(LiveLinkContext);
   if (!context) {
     throw new Error("Must be use in under the LiveLink Layout");
-    // console.log("younger the soul...tighter the hole!");
   }
   return context;
 };

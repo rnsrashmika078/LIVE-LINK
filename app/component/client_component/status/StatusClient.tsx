@@ -132,7 +132,6 @@ const StatusClient = ({ status }: { status: StatusType[] }) => {
     if (val.uid !== authUser?.uid) {
       socket.emit("status-seen", payload);
       const is = IsSeenBefore(payload);
-      console.log("is seen before ", is);
       if (!is) {
         markedAsSeen(payload);
         mutate({ payload });
@@ -165,7 +164,6 @@ const StatusClient = ({ status }: { status: StatusType[] }) => {
 
     // return false;
   };
-  console.log("states", statusState);
   return (
     <>
       <input

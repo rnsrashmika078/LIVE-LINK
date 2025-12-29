@@ -11,6 +11,7 @@ import LiveLink from "@/app/context/LiveLinkContext";
 import { SocketProvider } from "./SocketProvider";
 import GlobalSocket from "./GlobalSocket";
 import { VoiceMessageProvider } from "@/app/context/VoiceMessageContext";
+import AgentTask from "./AgentTask";
 
 const AppProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
                 <GlobalPusherListener />
                 <GlobalSocket />
                 <PusherListenerPresence />
+                <AgentTask />
                 <Communication />
                 {children}
               </PusherProvider>
