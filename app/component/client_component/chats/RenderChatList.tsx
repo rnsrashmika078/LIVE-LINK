@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { UserChatCard } from "@/app/component/ui/cards";
+import { AgentCard, UserChatCard } from "@/app/component/ui/cards";
 import { ChatsType, PusherChatDispatch, PusherChatState } from "@/app/types";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import React from "react";
@@ -103,22 +103,16 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
   return (
     <div className="px-5 flex w-full flex-col justify-start items-start ">
       <p className="sub-styles">Live Link Agent</p>
-      {agent.map((a) => (
-        <UserChatCard
-          key={a.chatId}
-          // ref={(el) => {
-          //   chatRefs.current[a.chatId] = el; // assign ref // now retunr void ( explitiy )
-          // }}
+
+      <AgentCard
+        agent={agent}
+        handleClick={() => {
+          const id = uuid();
+          setDynamic(id);
           //@ts-expect-error:type issue ignored
-          chat={a}
-          handleClick={() => {
-            const id = uuid();
-            setDynamic(id);
-            //@ts-expect-error:type issue ignored
-            dispatch(setActiveChat(a));
-          }}
-        />
-      ))}
+          dispatch(setActiveChat({ type: agent.type }));
+        }}
+      />
 
       <p className="sub-styles">Individual Chats</p>
       {filteredChats && filteredChats?.length > 0 ? (

@@ -14,7 +14,7 @@ import {
   IoCheckmarkDone,
   IoCheckmarkDoneSharp,
 } from "react-icons/io5";
-import { ChatsType, IconArrayType } from "../types";
+import { Agent, ChatsType, IconArrayType } from "../types";
 
 //side bar items array
 export const StartItems = [
@@ -91,17 +91,13 @@ export const NewChatModalItem = [
 ];
 export const EmojiList = ["❤️", "👍", "😂", "😢", "😮", "😡", "🎉"];
 
-export const agent = [
-  {
-    name: "Live Link Agent",
-    dp: "/agent.png",
-    updatedAt: new Date().toISOString(),
-    unreadCount: [],
-    type: "Agent",
-    chatId: "ll-agent-v2",
-    senderId: "",
-    // lastMessage: "Welcome to the Live Link agent",
-    status: "seen",
-    // chat,
-  },
-];
+export const agent: Agent = {
+  name: "Live Link Agent",
+  dp: "/agent.png",
+  updatedAt: new Date().toISOString(),
+  unreadCount: [],
+  type: "Agent",
+  chatId: "ll-agent-v2",
+  senderId: "",
+  status: "seen",
+};

@@ -19,10 +19,9 @@ import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 import Skeleton from "../../ui/skeleton";
 import AgentMessage from "../../agent_component/AgentMessage";
 import { useAgent } from "@/app/lib/tanstack/agentQuery";
-import DropDown, { DropDownItem } from "../../ui/dropdown";
 import { useAgentContext } from "@/app/context/AgentContext";
-const AgentMessagePanel = () => {
- const { messages, setMessages } = useAgentContext();
+const MiniAgentPanel = () => {
+  const { messages, setMessages } = useAgentContext();
   const [input, setInput] = useState<string>("");
   const [activeFeature, setActiveFeature] = useState<string>(""); // fo
   const [model, setModel] = useState<string>("llama3.2:latest");
@@ -32,15 +31,11 @@ const AgentMessagePanel = () => {
   const { blobRef } = useVoiceMessage();
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const { activeChat, authUser } = useSelector(
-    (store: PusherChatState) => ({
-      activeChat: store.chat.activeChat as ChatsType,
-      authUser: store.chat.authUser,
-    }),
-    shallowEqual
+  const activeChat = useSelector(
+    (store: PusherChatState) => store.chat.activeChat as ChatsType
   );
-
   const debounce = useDebounce(input, 200);
+  console.log("message", messages.at(-1));
   const { mutate } = useAgent((message) => {
     if (message) {
       setAgentTask(message);
@@ -74,7 +69,7 @@ const AgentMessagePanel = () => {
     const history = messages?.map((m) => m.message).join("\n") ?? "";
 
     const prompt = `
-    You are an AI chatbot.
+    You are an AI chatbot for chat application..
     
     STRICT OUTPUT RULES:
     - Respond ONLY to the user's query.
@@ -88,6 +83,10 @@ const AgentMessagePanel = () => {
     {
       "title": "<short descriptive title>",
       "answer": "<full reply in Markdown>"
+       "function": {
+          "title": "open-chat",
+          "chatId": "<ID selected from chatList that best matches the user's request>"
+        }
     }
     
     CONDITIONAL FUNCTION RULE:
@@ -95,11 +94,6 @@ const AgentMessagePanel = () => {
       such as: "open chat", "open this chat", "go to chat", "switch chat".
     - If the user does NOT request an action, DO NOT include the "function" key at all.
     
-    FUNCTION FORMAT (WHEN INCLUDED):
-    "function": {
-      "title": "open-chat",
-      "chatId": "<ID selected from chatList that best matches the user's request>"
-    }
     
     FUNCTION CONSTRAINTS:
     - "function" MUST be a JSON object, never a string.
@@ -136,28 +130,30 @@ const AgentMessagePanel = () => {
   };
 
   return (
-    <div className="flex flex-col w-full h-full relative overflow-hidden">
-      {activeChat && (
-        <>
-          <div className=" flex p-5  justify-between w-full bg-[var(--pattern_3)] items-center  sticky top-0">
-            <div
-              className=" flex items-center gap-3 "
-              onClick={() =>
-                setActionMenuSelection({
-                  selection: "message-Info",
-                  message: null,
-                })
-              }
-            >
-              <Avatar image={agent?.dp || "/no_avatar2.png"} />
-              <div className="w-full">
-                <h1 className="">{agent?.name}</h1>
-                <p className="text-xs text-[var(--pattern_4)]">Online</p>
-              </div>
+    <div className="absolute border bottom-32 right-0 h-[400px]  z-[999] w-[350px] flex flex-col">
+      <div className="flex flex-col w-full h-full ">
+        {/* top bar */}
+        <div className="flex p-5 justify-between w-full bg-[var(--pattern_3)] items-center sticky top-0">
+          <div
+            className=" flex items-center gap-3 "
+            onClick={() =>
+              setActionMenuSelection({
+                selection: "message-Info",
+                message: null,
+              })
+            }
+          >
+            <Avatar image={agent?.dp || "/no_avatar2.png"} />
+            <div className="w-full">
+              <h1 className="">{agent?.name}</h1>
+              <p className="text-xs text-[var(--pattern_4)]">Online</p>
             </div>
-            <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
           </div>
+          <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
+        </div>
 
+        <div className="overflow-y-auto h-full w-full">
+          {/* message area  */}
           <Suspense fallback={<Skeleton version="chats" />}>
             <AgentMessage
               messages={messages}
@@ -166,68 +162,44 @@ const AgentMessagePanel = () => {
               onDragLeave={onDragLeave}
             />
           </Suspense>
-
-          {/* Communication Component */}
-          {clickedIcon === "search" && (
-            <div className="">
-              <SearchArea />
-            </div>
-          )}
-
-          <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
-            {/* <TypingIndicator UserTyping={UserTyping!} version="1" /> */}
-            <FileShare
-              isDragging={isDragging}
-              preview={preview}
-              setPreview={setPreview}
-              setFile={setFile}
+        </div>
+        {/* message type area */}
+        {!activeFeature.toLowerCase().includes("voice") ? (
+          <div className="flex w-full gap-2 justify-end items-end h-full">
+            <TextArea
+              ref={textAreaRef}
+              value={input}
+              text={debounce}
+              preview={preview?.type}
+              placeholder={
+                preview?.url
+                  ? `Enter caption to the ${preview.type}`
+                  : `Enter your message`
+              }
+              onChange={(e) => {
+                setInput(e.currentTarget.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleButtonClick("enter");
+                }
+              }}
+              onClickButton={(input) => {
+                handleButtonClick(input);
+              }}
             />
-
-            <div className="flex w-full gap-2 place-items-center">
-              {!activeFeature.toLowerCase().includes("voice") ? (
-                <div className="flex w-full gap-2">
-                  <TextArea
-                    ref={textAreaRef}
-                    value={input}
-                    text={debounce}
-                    preview={preview?.type}
-                    placeholder={
-                      preview?.url
-                        ? `Enter caption to the ${preview.type}`
-                        : `Enter your message`
-                    }
-                    onChange={(e) => {
-                      setInput(e.currentTarget.value);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleButtonClick("enter");
-                      }
-                    }}
-                    onClickButton={(input) => {
-                      handleButtonClick(input);
-                    }}
-                  />
-                  <DropDown onSelect={(val) => setModel(val)}>
-                    <DropDownItem value="llama3.2:latest"></DropDownItem>
-                    <DropDownItem value="Gemini 2.5-flash" />
-                    <DropDownItem value="Qwen-B3" selectDefault={true} />
-                  </DropDown>
-                </div>
-              ) : (
-                <VoiceRecorder
-                  setActiveFeature={setActiveFeature}
-                  onClick={(input) => {
-                    if (blobRef.current) handleButtonClick(input.toLowerCase());
-                  }}
-                />
-              )}
-            </div>
           </div>
-        </>
-      )}
+        ) : (
+          <VoiceRecorder
+            setActiveFeature={setActiveFeature}
+            onClick={(input) => {
+              if (blobRef.current) handleButtonClick(input.toLowerCase());
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };
-export default AgentMessagePanel;
+export default MiniAgentPanel;

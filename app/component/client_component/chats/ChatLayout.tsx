@@ -7,6 +7,8 @@ import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { BiArrowBack, BiSync } from "react-icons/bi";
 import { useRouter } from "next/navigation";
 import UserSettings from "../../modal/UserSettings";
+import { Button } from "../../ui/button";
+import { MdOutlineScheduleSend, MdSchedule } from "react-icons/md";
 
 const ChatLayout = React.memo(({ children }: { children: ReactNode }) => {
   const { internalClickState, setInternalClickState, dynamic } = useLiveLink();
@@ -49,20 +51,23 @@ const ChatLayout = React.memo(({ children }: { children: ReactNode }) => {
               route=""
               callback={setInternalClickState}
             />
+
             <SearchArea
               placeholder="Search or start a new chat"
               onSearch={handleOnSearch}
             />
-            <BiSync
-              className={`${isSyncing ? "animate-spin" : ""}`}
-              size={20}
-              onClick={async () => {
-                setIsSyncing(true);
-                router.push(`/livelink/chats`);
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-                setIsSyncing(false);
-              }}
-            />
+            {/* <div className="flex justify-between">
+              <BiSync
+                className={`${isSyncing ? "animate-spin" : ""}`}
+                size={20}
+                onClick={async () => {
+                  setIsSyncing(true);
+                  router.push(`/livelink/chats`);
+                  await new Promise((resolve) => setTimeout(resolve, 2000));
+                  setIsSyncing(false);
+                }}
+              />
+            </div> */}
           </div>
         )}
         {internalClickState === "users" && (

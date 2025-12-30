@@ -26,19 +26,15 @@ export async function agentCall(prompt: string, model: string) {
         message: "prompt not provided!",
       };
 
-    const res = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: model ?? "llama3.2:latest",
-        prompt,
-        stream: false,
-      }),
-    });
+
+
+    const res = await apiFetch("/api/agent/", "POST", prompt);
+
+    if (!res) return;
 
     const data = await res.json();
-    const text = data.response;
-    return text;
+    console.log("Answer", data.output);
+    return data.output;
   } catch (error) {
     return {
       error: true,

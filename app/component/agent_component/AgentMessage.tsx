@@ -114,7 +114,7 @@ function MessageViewArea({ messages, ...props }: ViewAreaProps) {
           </div>
         );
       })}
-      <div ref={scrollRef}></div>
+      <div ref={scrollRef} className=""></div>
     </div>
   );
 }

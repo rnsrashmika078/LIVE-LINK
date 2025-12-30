@@ -16,6 +16,14 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    scheduleTime: {
+      type: Date,
+      required: false,
+    },
+    isSchedule: {
+      type: Boolean,
+      required: false,
+    },
     content: {
       url: { type: String, required: false },
       format: { type: String, required: false },

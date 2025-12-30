@@ -33,6 +33,7 @@ export default function PusherListenerPresence() {
   const pusher = usePusher();
 
   const handler = (data: any) => {
+    const id = Date.now().toString();
     if (data.useFor === "typing") {
       if (data.senderId === authUser?.uid) return;
       const typeData = {
@@ -46,6 +47,12 @@ export default function PusherListenerPresence() {
       dispatch(setDeletedMessage(data as DeletedMessage));
     } else {
       //receiving real time message
+      dispatch(
+        setNotification({
+          id,
+          notify: "You have new message" + data?.content?.message,
+        })
+      );
       dispatch(setMessages(data as Message)); //store last message
       dispatch(setMessagesArray(data as Message)); //store and update whole session messages as array
     }

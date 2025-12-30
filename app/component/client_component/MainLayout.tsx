@@ -15,6 +15,8 @@ const AgentMessagePanel = React.lazy(
 const GroupMessagePanel = React.lazy(
   () => import("./message/GroupMessagePanel")
 );
+import MiniAgentPanel from "../client_component/message/MiniAgentPanel";
+
 const MainLayout = () => {
   const activeChat = useSelector(
     (store: PusherChatState) => store.chat.activeChat
@@ -22,6 +24,8 @@ const MainLayout = () => {
   const { actionMenuSelection } = useLiveLink();
   return (
     <>
+      <MiniAgentPanel />
+
       <Suspense fallback={<Skeleton version="chat" />}>
         {activeChat?.type === "Agent" && <AgentMessagePanel />}
         {activeChat?.type === "Individual" && <MessagePanel />}

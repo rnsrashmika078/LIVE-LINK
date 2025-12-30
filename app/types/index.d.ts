@@ -129,8 +129,10 @@ export type MessagePayload = {
   chatId: string; //
   name: string; //
   dp: string; //
+  scheduleTime?: Date;
   createdAt: string; //
   status: string; //
+  isSchedule?: boolean;
   files?: FileType | null; //
   type?: string; //
   unreads?: Unread[]; //
@@ -147,6 +149,8 @@ export type Message = {
   type?: string;
   userId?: string;
   isTyping?: boolean;
+  isSchedule?: boolean;
+  scheduleTime?: string;
   seenBy?: SeenByType[];
   status?: "sent" | "delivered" | "seen";
   createdAt?: string;
@@ -260,6 +264,27 @@ export type SectionType = {
 export type AgentType = {
   type: string;
   message: string;
+};
+export type Agent = {
+  name: string;
+  dp: string;
+  updatedAt: string;
+  unreadCount: [];
+  type: string;
+  chatId: string;
+  senderId: string;
+  status: string;
+};
+
+export type ScheduleMessage = {
+  customId: string;
+  chatId: string;
+  senderId: string;
+  sendAt: string;
+  sent: boolean;
+  receiverId: string;
+  content: MessageContentType;
+  status: string;
 };
 
 //redux types

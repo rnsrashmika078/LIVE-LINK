@@ -38,6 +38,8 @@ interface LiveLinkContextType {
   isActive: string;
   dynamic: string;
   setDynamic: React.Dispatch<React.SetStateAction<string>>;
+  scheduleActivate: boolean;
+  setScheduleActivate: React.Dispatch<React.SetStateAction<boolean>>;
 
   //agent task
   agentTask: string;
@@ -75,6 +77,7 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
   const [dynamic, setDynamic] = useState<string>("");
   const [agentTask, setAgentTask] = useState<string>("");
+  const [scheduleActivate, setScheduleActivate] = useState<boolean>(false);
 
   const [relativePosition, setRelativePosition] =
     useState<RelativePositionType>({ top: 0, left: 0 });
@@ -111,6 +114,8 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         setClickedIcon,
         setInternalClickState,
         internalClickState,
+        scheduleActivate,
+        setScheduleActivate,
 
         //global icon click setter for message panel ( audio , video )
 

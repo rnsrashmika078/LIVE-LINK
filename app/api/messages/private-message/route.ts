@@ -25,8 +25,10 @@ export async function POST(req: Request) {
       name,
       createdAt,
       status,
+      isSchedule,
       files,
       unreads,
+      scheduleTime,
       type,
     } = await req.json();
 
@@ -47,6 +49,8 @@ export async function POST(req: Request) {
       content,
       receiverId,
       status,
+      scheduleTime,
+      isSchedule,
       senderId,
     };
     const newChatPayload = {
@@ -64,12 +68,14 @@ export async function POST(req: Request) {
       useFor: "create_initial_chat",
       message: "You have New Message",
     };
+    if (!scheduleTime) {
+      await pusher.trigger(
+        `private-message-${chatId}`,
+        "client-message",
+        pusherMessagePayload
+      );
+    }
 
-    await pusher.trigger(
-      `private-message-${chatId}`,
-      "client-message",
-      pusherMessagePayload
-    );
     const [_, existChat] = await Promise.all([
       connectDB(),
       Chat.findOne({ chatId }).lean(),
@@ -81,7 +87,9 @@ export async function POST(req: Request) {
         lastMessageId: customId,
         status,
         senderId,
+        scheduleTime,
         createdAt,
+        isSchedule,
         unreadCount: unreads,
         type,
       };

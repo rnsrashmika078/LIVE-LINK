@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Avatar from "./avatar";
 import {
+  Agent,
+  AgentType,
   AuthUser,
   ChatsType,
   GroupType,
@@ -432,3 +434,39 @@ export const Viewer = ({ viewers }: ViewerCard) => {
     </>
   );
 };
+interface AgentInterface {
+  agent: Agent;
+  handleClick?: () => void;
+}
+export const AgentCard = forwardRef<HTMLDivElement, AgentInterface>(
+  ({ agent, handleClick }, ref) => {
+    return (
+      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
+        <div
+          className="w-full flex items-center gap-2 p-2"
+          ref={ref}
+          onClick={handleClick && handleClick}
+        >
+          <Avatar image={agent?.dp || "/no_avatar2.png"} />
+          <div className="flex flex-col w-full  items-center space-y-1 min-w-5">
+            <div className="flex justify-between w-full  items-center">
+              <h1 className="w-60 sm:w-50 truncate font-bold flex-shrink ">
+                {agent.name}
+              </h1>
+              <p className="text-xs">
+                {agent.updatedAt
+                  ? new Date(agent.updatedAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : ""}
+              </p>
+            </div>
+            <div className="flex justify-between w-full items-center "></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+);
+AgentCard.displayName = "AgentCard";

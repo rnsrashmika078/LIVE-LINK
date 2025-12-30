@@ -12,6 +12,7 @@ import { SocketProvider } from "./SocketProvider";
 import GlobalSocket from "./GlobalSocket";
 import { VoiceMessageProvider } from "@/app/context/VoiceMessageContext";
 import AgentTask from "./AgentTask";
+import { StatusProvider } from "@/app/context/StatusContext";
 
 const AppProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = new QueryClient();
@@ -21,14 +22,16 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
         <LiveLink>
           <VoiceMessageProvider>
             <SocketProvider>
-              <PusherProvider>
-                <GlobalPusherListener />
-                <GlobalSocket />
-                <PusherListenerPresence />
-                <AgentTask />
-                <Communication />
-                {children}
-              </PusherProvider>
+              <StatusProvider>
+                <PusherProvider>
+                  <GlobalPusherListener />
+                  <GlobalSocket />
+                  <PusherListenerPresence />
+                  <AgentTask />
+                  <Communication />
+                  {children}
+                </PusherProvider>
+              </StatusProvider>
             </SocketProvider>
           </VoiceMessageProvider>
         </LiveLink>

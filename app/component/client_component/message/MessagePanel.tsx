@@ -48,6 +48,8 @@ import ActiveFeature from "../../modal/ActiveFeature";
 import VoiceRecorder from "../../ui/communications/Voice";
 import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 import Skeleton from "../../ui/skeleton";
+import ScheduleMessage from "../../modal/ScheduleMessage";
+import { AnimatePresence } from "framer-motion";
 const MessageViewArea = React.lazy(() => import("./messageViewArea"));
 const MessagePanel = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -61,9 +63,11 @@ const MessagePanel = () => {
     setActionMenuSelection,
     setFeatureActive,
     featureActive,
+    scheduleActivate,
   } = useLiveLink();
   const { blobRef } = useVoiceMessage();
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [time, setTime] = useState<Date>();
 
   const {
     activeChat,
@@ -227,6 +231,8 @@ const MessagePanel = () => {
         chatId: chatId,
         type: "Individual",
         name,
+        scheduleTime: time,
+        isSchedule: false,
         dp: authUser?.dp ?? "",
         createdAt: date.toISOString(),
         status: presence === "Online" ? "delivered" : "sent",
@@ -237,7 +243,10 @@ const MessagePanel = () => {
           },
         ],
       };
+      // if (scheduleActivate) {
+      // } else {
       mutate({ message: payload });
+      // }
     } catch (err) {
       console.error("Invalid JSON:", message, err);
     }
@@ -269,12 +278,14 @@ const MessagePanel = () => {
           refinedPrompt
         );
         if (featureActive || file) {
-          addDummyData(
-            activeChat.chatId!,
-            authUser?.uid ?? "", // this never undefined at this stage
-            authUser?.name ?? "", // this never undefined at this stage
-            setMessages
-          );
+          if (!scheduleActivate) {
+            addDummyData(
+              activeChat.chatId!,
+              authUser?.uid ?? "", // this never undefined at this stage
+              authUser?.name ?? "", // this never undefined at this stage
+              setMessages
+            );
+          }
         }
         setPreview(null);
         setFeatureActive(false);
@@ -283,6 +294,7 @@ const MessagePanel = () => {
     }
   };
 
+  console.log("activeFeature", activeFeature);
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
       {activeChat && (
@@ -346,6 +358,11 @@ const MessagePanel = () => {
               }
             />
             <div className="flex w-full gap-2 place-items-center">
+              <AnimatePresence>
+                {/* @ts-expect-error:date invalid error: will fix later */}
+                {scheduleActivate && <ScheduleMessage setTime={setTime} />}
+              </AnimatePresence>
+
               {!activeFeature.toLowerCase().includes("voice") ? (
                 <TextArea
                   ref={textAreaRef}

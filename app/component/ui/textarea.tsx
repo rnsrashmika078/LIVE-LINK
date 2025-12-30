@@ -7,9 +7,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { MdOutlineEmojiEmotions } from "react-icons/md";
+import { MdOutlineEmojiEmotions, MdOutlineSchedule } from "react-icons/md";
 import { CgAttachment } from "react-icons/cg";
 import { BiMicrophone, BiSend } from "react-icons/bi";
+import { useLiveLink } from "@/app/context/LiveLinkContext";
 
 type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   type?: string;
@@ -31,6 +32,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     ref
   ) => {
     const [selection, setSelection] = useState<string | null>(null);
+    const [activate, setActivate] = useState<boolean>(false);
+
+    const {scheduleActivate,setScheduleActivate} = useLiveLink();
     const [row, setRow] = useState<number>(1);
     const size = 20;
     const iconStyles = `hover:text-green-400 transition-all hover:scale-120 cursor-pointer`;
@@ -55,7 +59,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             {...props}
             rows={row}
             onInput={rows}
-            className="outline-none focus-ring-0 pl-15 pr-15 w-full border border-[var(--pattern_2)] p-2 rounded-xl custom-scrollbar-y"
+            className="outline-none focus-ring-0 pl-24 pr-15 w-full border border-[var(--pattern_2)] p-2 rounded-xl custom-scrollbar-y"
           ></textarea>
           <div className="flex gap-2 absolute bottom-2.5 left-2">
             <MdOutlineEmojiEmotions
@@ -72,6 +76,17 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               onClick={() => {
                 setSelection("attachment");
                 onClickButton?.("attachment");
+              }}
+            />
+            <MdOutlineSchedule
+              size={size}
+              className={`${iconStyles} ${
+                scheduleActivate ? "text-red-500 animate-pulse" : " "
+              }`}
+              onClick={() => {
+                setScheduleActivate((prev) => !prev);
+                // setSelection(activate ? "schedule" : "");
+                // onClickButton?.(activate ? "schedule" : "");
               }}
             />
           </div>
