@@ -31,12 +31,10 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     ref
   ) => {
     const [selection, setSelection] = useState<string | null>(null);
-    const [length, setLength] = useState<number>(1);
     const [row, setRow] = useState<number>(1);
     const size = 20;
     const iconStyles = `hover:text-green-400 transition-all hover:scale-120 cursor-pointer`;
 
-    const lenRef = useRef<number>(0);
     const rows = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
       const len = e.target.value.length;
 

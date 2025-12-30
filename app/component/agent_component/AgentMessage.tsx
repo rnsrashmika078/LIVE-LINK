@@ -36,14 +36,18 @@ function MessageViewArea({ messages, ...props }: ViewAreaProps) {
       {messages.map((msg, index) => {
         let message;
         if (msg.type === "agent") {
-          const data = parse(msg?.message);
-          if (!data) return;
-          const { answer, title } = data;
+          try {
+            const data = parse(msg?.message);
+            if (!data) return;
+            const { answer, title } = data;
 
-          if (answer) {
-            message = answer;
-          } else {
-            message = msg.message;
+            if (answer) {
+              message = answer;
+            } else {
+              message = msg.message;
+            }
+          } catch (err) {
+            console.log(err);
           }
         } else {
           message = msg.message;
@@ -53,9 +57,7 @@ function MessageViewArea({ messages, ...props }: ViewAreaProps) {
           <div
             key={index}
             className={`flex  ${
-              msg?.type === "user"
-                ? "justify-end "
-                : "justify-start"
+              msg?.type === "user" ? "justify-end " : "justify-start"
             }`}
           >
             <div

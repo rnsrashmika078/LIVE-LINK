@@ -19,10 +19,12 @@ import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 import Skeleton from "../../ui/skeleton";
 import AgentMessage from "../../agent_component/AgentMessage";
 import { useAgent } from "@/app/lib/tanstack/agentQuery";
-import MiniAgentPanel from "./MiniAgentPanel";
+import DropDown, { DropDownItem } from "../../ui/dropdown";
 const AgentMessagePanel = () => {
   const [messages, setMessages] = useState<AgentType[]>([]);
   const [input, setInput] = useState<string>("");
+  const [activeFeature, setActiveFeature] = useState<string>(""); // fo
+  const [model, setModel] = useState<string>("llama3.2:latest");
 
   const { setClickedIcon, clickedIcon, setActionMenuSelection, setAgentTask } =
     useLiveLink();
@@ -40,7 +42,7 @@ const AgentMessagePanel = () => {
   const debounce = useDebounce(input, 200);
   const { mutate } = useAgent((message) => {
     if (message) {
-      alert(message);
+      alert(JSON.stringify(message));
       setAgentTask(message);
       setMessages((prev) => [...prev, { type: "agent", message: message }]);
     }
@@ -77,7 +79,7 @@ const AgentMessagePanel = () => {
     
     - ALWAYS return a single-line, valid JSON object.
     - Use this exact format:
-      {"title":"<short descriptive title>","answer":"<full reply content in Markdown>" , "function": "<{title: "glow-button",chatId:"<id from the chatList match the users prompt>"}
+      {"title":"<short descriptive title>","answer":"<full reply content in Markdown>" , "function": "<{title: "open-chat",chatId:"<id from the chatList match the users prompt>"}
     - function key's pairs are another json object as above mentioned
     - that function key use to trigger the open chat according to the user input
     - chatList : ["IZzoL4eNf5fprlpLp5Up59XwlPC2-Vc5pftz3lmXNSZvHoQy5HmAowb53","IZzoL4eNf5fprlpLp5Up59XwlPC2-Mjq7j4WY1hWsQ7lJ8bqfI3h8zI93",]
@@ -87,7 +89,7 @@ const AgentMessagePanel = () => {
     User query: "${latestMessage}"
     `;
 
-    mutate({ prompt: prompt });
+    mutate({ prompt: prompt, model });
     setInput("");
   };
 
@@ -99,7 +101,7 @@ const AgentMessagePanel = () => {
         break;
     }
   };
-  const [activeFeature, setActiveFeature] = useState<string>(""); // fo
+
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
       {activeChat && (
@@ -147,31 +149,39 @@ const AgentMessagePanel = () => {
               setPreview={setPreview}
               setFile={setFile}
             />
+
             <div className="flex w-full gap-2 place-items-center">
               {!activeFeature.toLowerCase().includes("voice") ? (
-                <TextArea
-                  ref={textAreaRef}
-                  value={input}
-                  text={debounce}
-                  preview={preview?.type}
-                  placeholder={
-                    preview?.url
-                      ? `Enter caption to the ${preview.type}`
-                      : `Enter your message`
-                  }
-                  onChange={(e) => {
-                    setInput(e.currentTarget.value);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleButtonClick("enter");
+                <div className="flex w-full gap-2">
+                  <TextArea
+                    ref={textAreaRef}
+                    value={input}
+                    text={debounce}
+                    preview={preview?.type}
+                    placeholder={
+                      preview?.url
+                        ? `Enter caption to the ${preview.type}`
+                        : `Enter your message`
                     }
-                  }}
-                  onClickButton={(input) => {
-                    handleButtonClick(input);
-                  }}
-                />
+                    onChange={(e) => {
+                      setInput(e.currentTarget.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleButtonClick("enter");
+                      }
+                    }}
+                    onClickButton={(input) => {
+                      handleButtonClick(input);
+                    }}
+                  />
+                  <DropDown onSelect={(val) => setModel(val)}>
+                    <DropDownItem value="llama3.2:latest"></DropDownItem>
+                    <DropDownItem value="Gemini 2.5-flash" />
+                    <DropDownItem value="Qwen-B3" selectDefault={true} />
+                  </DropDown>
+                </div>
               ) : (
                 <VoiceRecorder
                   setActiveFeature={setActiveFeature}

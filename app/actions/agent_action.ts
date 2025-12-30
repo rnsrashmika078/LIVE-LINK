@@ -17,7 +17,8 @@ export async function openAIAgent(prompt: string) {
 
   return res.choices[0].message.content;
 }
-export async function agentCall(prompt: string) {
+export async function agentCall(prompt: string, model: string) {
+  console.log("model", model);
   try {
     if (!prompt)
       return {
@@ -29,15 +30,15 @@ export async function agentCall(prompt: string) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "llama3.2:latest",
+        model: model ?? "llama3.2:latest",
         prompt,
         stream: false,
       }),
     });
 
     const data = await res.json();
-    console.log("data", data.response);
-    return { error: false, message: data.response };
+    const text = data.response;
+    return text;
   } catch (error) {
     return {
       error: true,
@@ -48,6 +49,7 @@ export async function agentCall(prompt: string) {
 }
 
 export async function geminiAgent(prompt: string) {
+  console.log("Call gemini");
   const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
   });

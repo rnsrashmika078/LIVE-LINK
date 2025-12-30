@@ -23,7 +23,7 @@ type SelectContextType = {
 const DropDownContext = createContext<SelectContextType | null>(null);
 const DropDown = ({ children, onSelect }: SelectProps) => {
   const [open, setOpen] = useState<boolean>(false);
-  const [selection, setSelection] = useState<string | null>(null);
+  const [selection, setSelection] = useState<string | null>("Llama3.2");
   const focusRef = useRef<HTMLDivElement | null>(null);
   const focus = useClickFocus(focusRef).toLowerCase();
 
@@ -52,10 +52,9 @@ const DropDown = ({ children, onSelect }: SelectProps) => {
         onClick={() => {
           setOpen((prev) => !prev);
         }}
-        className={`border border-gray-500 shadow-xl  bg-gradient-to-br from-dark to-black/70 p-2 rounded-xl`}
+        className={`w-fit border text-sm border-gray-500 shadow-xl  bg-gradient-to-br from-dark to-black/70 p-2 rounded-xl`}
       >
         {selection}
-        {focus}
         {open && children}
       </div>
     </DropDownContext.Provider>
@@ -64,22 +63,27 @@ const DropDown = ({ children, onSelect }: SelectProps) => {
 
 export const DropDownItem = ({
   value,
-  children,
+  selectDefault,
 }: {
   value: string;
-  children: ReactNode;
+  selectDefault?: boolean;
 }) => {
   const { setOpen, setSelection } = useSelectContext();
+
+  useEffect(() => {
+    if (!selectDefault) return;
+    setSelection(value);
+  }, [selectDefault, value]);
+
   return (
     <div
-      className="text-sm gap-3 hover:bg-[#323131] px-2 py-1 rounded-md flex items-center"
+      className="text-xs gap-3 w-full hover:bg-[#323131] px-2 py-1 rounded-md flex items-center"
       onClick={(e) => {
         e.stopPropagation();
         setSelection(value);
         setOpen(false);
       }}
     >
-      {children}
       {value}
     </div>
   );
