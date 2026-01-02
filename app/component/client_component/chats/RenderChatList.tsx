@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
+'use client'
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AgentCard, UserChatCard } from "@/app/component/ui/cards";
 import { ChatsType, PusherChatDispatch, PusherChatState } from "@/app/types";
@@ -117,7 +118,6 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
       <p className="sub-styles">Individual Chats</p>
       {filteredChats && filteredChats?.length > 0 ? (
         filteredChats.map((chat: ChatsType, i: number) => {
-          console.log("Chatid ", chat.chatId);
           return (
             <UserChatCard
               key={i}

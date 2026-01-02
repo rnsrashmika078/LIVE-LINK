@@ -27,7 +27,8 @@ import { modifiedMessage } from "@/app/helper/helper";
 import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import { TypingIndicator } from "./typingIndicator";
 import { CgClose } from "react-icons/cg";
-
+import { useAgentContext } from "@/app/context/AgentContext";
+import parse from "jsonc-parser";
 interface UserCardProps {
   avatar?: string;
   name?: string;
@@ -440,6 +441,9 @@ interface AgentInterface {
 }
 export const AgentCard = forwardRef<HTMLDivElement, AgentInterface>(
   ({ agent, handleClick }, ref) => {
+    const { messages } = useAgentContext();
+
+ 
     return (
       <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
         <div
@@ -462,7 +466,12 @@ export const AgentCard = forwardRef<HTMLDivElement, AgentInterface>(
                   : ""}
               </p>
             </div>
-            <div className="flex justify-between w-full items-center "></div>
+            <div className="flex justify-between w-full items-center ">
+              {/* <p className="text-xs text-[var(--pattern_4)]">
+                {messages.at(-1)?.type.toUpperCase() === "USER" &&
+                  messages.at(-1)?.message}
+              </p> */}
+            </div>
           </div>
         </div>
       </div>

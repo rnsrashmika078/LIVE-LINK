@@ -17,8 +17,7 @@ export async function openAIAgent(prompt: string) {
 
   return res.choices[0].message.content;
 }
-export async function agentCall(prompt: string, model: string) {
-  console.log("model", model);
+export async function agentCall(prompt: string) {
   try {
     if (!prompt)
       return {
@@ -26,14 +25,11 @@ export async function agentCall(prompt: string, model: string) {
         message: "prompt not provided!",
       };
 
-
-
     const res = await apiFetch("/api/agent/", "POST", prompt);
 
     if (!res) return;
 
     const data = await res.json();
-    console.log("Answer", data.output);
     return data.output;
   } catch (error) {
     return {
@@ -45,7 +41,6 @@ export async function agentCall(prompt: string, model: string) {
 }
 
 export async function geminiAgent(prompt: string) {
-  console.log("Call gemini");
   const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
   });
@@ -56,7 +51,6 @@ export async function geminiAgent(prompt: string) {
 
   if (!response) return;
   const text = response.text;
-  console.log(text);
 
   return text;
 }

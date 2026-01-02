@@ -1,4 +1,6 @@
 /* eslint-disable react-hooks/immutability */
+
+'use client'
 import React, { useRef, useState } from "react";
 import TopBar from "./relatedUI/TopBar";
 import SearchArea from "../../ui/searcharea";

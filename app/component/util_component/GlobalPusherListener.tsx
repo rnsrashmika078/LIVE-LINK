@@ -74,8 +74,6 @@ export default function GlobalPusherListener() {
       pusher.channel(presenceName) || pusher.subscribe(presenceName);
 
     notify.bind("notify", (data: AuthUser | ChatsType) => {
-      const id = new Date().toLocaleTimeString();
-      dispatch(setNotification({ notify: data.message || "", id }));
       if (data.useFor === "friend_request") {
         const id = new Date().toLocaleTimeString();
         dispatch(setNotification({ notify: data.message || "", id }));

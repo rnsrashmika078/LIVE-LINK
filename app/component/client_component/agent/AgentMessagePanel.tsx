@@ -3,13 +3,10 @@
 "use client";
 import Avatar from "@/app/component/ui/avatar";
 import { useDebounce } from "@/app/hooks/useHooks";
-
-import { AgentType, ChatsType, Message, PusherChatState } from "@/app/types";
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import { ChatsType, PusherChatState } from "@/app/types";
+import React, { Suspense, useEffect, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { TextArea } from "@/app/component/ui/textarea";
-import { FileShare } from "@/app/component/ui/preview";
-import { useDragDropHook } from "@/app/hooks/useDragDropHook";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import SearchArea from "../../ui/searcharea";
 import AppIcons from "../../ui/icons";
@@ -19,58 +16,50 @@ import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 import Skeleton from "../../ui/skeleton";
 import AgentMessage from "../../agent_component/AgentMessage";
 import { useAgent } from "@/app/lib/tanstack/agentQuery";
-import DropDown, { DropDownItem } from "../../ui/dropdown";
 import { useAgentContext } from "@/app/context/AgentContext";
+import { v4 as uuid } from "uuid";
 const AgentMessagePanel = () => {
- const { messages, setMessages } = useAgentContext();
+  const { messages, setMessages, setAgentIsOpen } = useAgentContext();
   const [input, setInput] = useState<string>("");
   const [activeFeature, setActiveFeature] = useState<string>(""); // fo
-  const [model, setModel] = useState<string>("llama3.2:latest");
 
   const { setClickedIcon, clickedIcon, setActionMenuSelection, setAgentTask } =
     useLiveLink();
   const { blobRef } = useVoiceMessage();
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const { activeChat, authUser } = useSelector(
+  const { activeChat } = useSelector(
     (store: PusherChatState) => ({
-      activeChat: store.chat.activeChat as ChatsType,
-      authUser: store.chat.authUser,
+      activeChat: store.chat.activeChat,
     }),
     shallowEqual
+  );
+
+  const authUserName = useSelector(
+    (store: PusherChatState) => store.chat.authUser?.name
   );
 
   const debounce = useDebounce(input, 200);
   const { mutate } = useAgent((message) => {
     if (message) {
       setAgentTask(message);
-      setMessages((prev) => [...prev, { type: "agent", message: message }]);
+      setMessages((prev) =>
+        prev.map((i) => {
+          const exist = i.id === "dummy-01";
+          if (!exist) return i;
+          return { ...i, id: uuid(), message, type: "assistant" };
+        })
+      );
     }
   });
-
-  const {
-    isDragging,
-    file,
-    setFile,
-    preview,
-    setPreview,
-    handleDragOver,
-    onDragLeave,
-    handleDrop,
-  } = useDragDropHook();
-
-  // useEffect(() => {
-  //   setMessages([]);
-  //   setInput("");
-  //   // debounce = "";
-  //   if (textAreaRef.current) {
-  //     textAreaRef.current.value = "";
-  //   }
-  // }, [activeChat?.chatId]);
-
   const sendMessage = () => {
-    setMessages((prev) => [...prev, { type: "user", message: debounce }]);
-    const latestMessage = debounce.replace(/[\r\n]+/g, " ");
+    const message = `{"title":"loading", "answer":"Working on it.."`;
+
+    setMessages((prev) => [
+      ...prev,
+      { id: uuid(), type: "user", message: debounce },
+      { id: "dummy-01", type: "assistant", message },
+    ]);
+    const latestMessage = debounce;
     const history = messages?.map((m) => m.message).join("\n") ?? "";
 
     const prompt = `
@@ -119,10 +108,11 @@ const AgentMessagePanel = () => {
     - Ensure Markdown remains valid JSON (escape quotes properly).
     
     USER QUERY:
-    "${latestMessage}"
+    "${latestMessage}" 
+    CHAT HISTORY : ${history}
     `;
 
-    mutate({ prompt: prompt, model });
+    mutate({ prompt: prompt });
     setInput("");
   };
 
@@ -134,6 +124,27 @@ const AgentMessagePanel = () => {
         break;
     }
   };
+
+  useEffect(() => {
+    setAgentIsOpen(true);
+
+    return () => {
+      setAgentIsOpen(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (messages.length !== 0) return;
+    const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! Welcome to LiveLink. What do you want to do with me🤗?"`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: uuid(),
+        message: message,
+        type: "assistant",
+      },
+    ]);
+  }, [messages, authUserName]);
 
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
@@ -159,12 +170,7 @@ const AgentMessagePanel = () => {
           </div>
 
           <Suspense fallback={<Skeleton version="chats" />}>
-            <AgentMessage
-              messages={messages}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={onDragLeave}
-            />
+            <AgentMessage messages={messages} />
           </Suspense>
 
           {/* Communication Component */}
@@ -175,27 +181,12 @@ const AgentMessagePanel = () => {
           )}
 
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
-            {/* <TypingIndicator UserTyping={UserTyping!} version="1" /> */}
-            <FileShare
-              isDragging={isDragging}
-              preview={preview}
-              setPreview={setPreview}
-              setFile={setFile}
-            />
-
             <div className="flex w-full gap-2 place-items-center">
               {!activeFeature.toLowerCase().includes("voice") ? (
                 <div className="flex w-full gap-2">
                   <TextArea
-                    ref={textAreaRef}
                     value={input}
-                    text={debounce}
-                    preview={preview?.type}
-                    placeholder={
-                      preview?.url
-                        ? `Enter caption to the ${preview.type}`
-                        : `Enter your message`
-                    }
+                    placeholder={`Enter your message`}
                     onChange={(e) => {
                       setInput(e.currentTarget.value);
                     }}
@@ -209,11 +200,6 @@ const AgentMessagePanel = () => {
                       handleButtonClick(input);
                     }}
                   />
-                  <DropDown onSelect={(val) => setModel(val)}>
-                    <DropDownItem value="llama3.2:latest"></DropDownItem>
-                    <DropDownItem value="Gemini 2.5-flash" />
-                    <DropDownItem value="Qwen-B3" selectDefault={true} />
-                  </DropDown>
                 </div>
               ) : (
                 <VoiceRecorder

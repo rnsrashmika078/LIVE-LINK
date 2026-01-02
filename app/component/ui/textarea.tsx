@@ -1,7 +1,5 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import {
   ChangeEvent,
-  forwardRef,
   TextareaHTMLAttributes,
   useCallback,
   useRef,
@@ -14,70 +12,83 @@ import { useLiveLink } from "@/app/context/LiveLinkContext";
 
 type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   type?: string;
-  text?: string;
   preview?: string;
+  visible?: boolean;
   support?: "only-message" | "message-voice";
   onClickButton?: (button: string) => void;
 };
 
-export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  (
-    {
-      onClickButton,
-      support = "message-voice",
-      text,
-      preview,
-      ...props
-    }: TextAreaProps,
-    ref
-  ) => {
-    const [selection, setSelection] = useState<string | null>(null);
-    const [activate, setActivate] = useState<boolean>(false);
+export const TextArea = ({
+  onClickButton,
+  support = "message-voice",
+  preview,
+  visible = true,
+  ...props
+}: TextAreaProps) => {
+  const [selection, setSelection] = useState<string | null>(null);
+  const { scheduleActivate, setScheduleActivate } = useLiveLink();
+  const size = 20;
+  const iconStyles = `hover:text-green-400 transition-all hover:scale-120 cursor-pointer`;
+  const [searchText, setSearchText] = useState<string>("");
 
-    const {scheduleActivate,setScheduleActivate} = useLiveLink();
-    const [row, setRow] = useState<number>(1);
-    const size = 20;
-    const iconStyles = `hover:text-green-400 transition-all hover:scale-120 cursor-pointer`;
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const handleSearch = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setSearchText(val);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      const scrollHeight = textareaRef.current.scrollHeight;
 
-    const rows = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-      const len = e.target.value.length;
+      const maxHeight = 200;
 
-      if (len > 80) {
-        setRow((prev) => prev);
-        return;
-      }
+      textareaRef.current.style.height =
+        Math.min(scrollHeight, maxHeight) + "px";
 
-      const calc = Math.max(1, Math.floor(len / 10));
-      setRow(calc);
-    }, []);
+      textareaRef.current.style.overflowY =
+        scrollHeight > maxHeight ? "auto" : "hidden";
+    }
+  };
 
-    return (
-      <div className="flex relative w-full">
-        <>
-          <textarea
-            ref={ref}
-            {...props}
-            rows={row}
-            onInput={rows}
-            className="outline-none focus-ring-0 pl-24 pr-15 w-full border border-[var(--pattern_2)] p-2 rounded-xl custom-scrollbar-y"
-          ></textarea>
-          <div className="flex gap-2 absolute bottom-2.5 left-2">
-            <MdOutlineEmojiEmotions
-              size={size}
-              className={iconStyles}
-              onClick={() => {
-                setSelection("emojis");
-                onClickButton?.("emojis");
-              }}
-            />
-            <CgAttachment
-              size={size}
-              className={iconStyles}
-              onClick={() => {
-                setSelection("attachment");
-                onClickButton?.("attachment");
-              }}
-            />
+  return (
+    <div className="flex relative w-full">
+      <>
+        <textarea
+          ref={textareaRef}
+          {...props}
+          rows={1}
+          value={props.value}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setSearchText("");
+              props.onKeyDown?.(e);
+            }
+          }}
+          onChange={(e) => {
+            props.onChange?.(e);
+            handleSearch(e);
+          }}
+          className={`resize-none  outline-none focus-ring-0 ${
+            visible ? "pl-24" : "pl-16"
+          } pr-15 w-full border border-[var(--pattern_2)] p-2 rounded-xl custom-scrollbar-y`}
+        />
+        <div className="flex gap-2 absolute bottom-2.5 left-2">
+          <MdOutlineEmojiEmotions
+            size={size}
+            className={iconStyles}
+            onClick={() => {
+              setSelection("emojis");
+              onClickButton?.("emojis");
+            }}
+          />
+          <CgAttachment
+            size={size}
+            className={iconStyles}
+            onClick={() => {
+              setSelection("attachment");
+              onClickButton?.("attachment");
+            }}
+          />
+          {visible && (
             <MdOutlineSchedule
               size={size}
               className={`${iconStyles} ${
@@ -89,32 +100,32 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
                 // onClickButton?.(activate ? "schedule" : "");
               }}
             />
-          </div>
-        </>
-        <div className="flex gap-2 absolute bottom-2.5 right-2">
-          {support !== "only-message" && !text && !preview ? (
-            <BiMicrophone
-              size={size}
-              className={iconStyles}
-              onClick={() => {
-                setSelection("voice");
-                onClickButton?.("voice");
-              }}
-            />
-          ) : (
-            <BiSend
-              size={size}
-              className={iconStyles}
-              onClick={() => {
-                setSelection("send");
-                onClickButton?.("send");
-              }}
-            />
           )}
         </div>
+      </>
+      <div className="flex gap-2 absolute bottom-2.5 right-2">
+        {support !== "only-message" && !searchText && !preview ? (
+          <BiMicrophone
+            size={size}
+            className={iconStyles}
+            onClick={() => {
+              setSelection("voice");
+              onClickButton?.("voice");
+            }}
+          />
+        ) : (
+          <BiSend
+            size={size}
+            className={iconStyles}
+            onClick={() => {
+              setSelection("send");
+              onClickButton?.("send");
+              setSearchText("");
+            }}
+          />
+        )}
       </div>
-    );
-  }
-);
-
+    </div>
+  );
+};
 TextArea.displayName = "TextArea";

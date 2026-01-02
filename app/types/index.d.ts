@@ -262,6 +262,7 @@ export type SectionType = {
 
 //agentics
 export type AgentType = {
+  id: string;
   type: string;
   message: string;
 };

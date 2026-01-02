@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-render */
 /* eslint-disable react-hooks/set-state-in-effect */
+'use client'
 import { useEffect, useMemo, useState } from "react";
 import { UserGroupCard } from "@/app/component/ui/cards";
 import { GroupType, PusherChatDispatch, PusherChatState } from "@/app/types";

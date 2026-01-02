@@ -1,10 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
-import {
-  ChatsType,
-  Message,
-  PusherChatState,
-} from "@/app/types";
+import { ChatsType, Message, PusherChatState } from "@/app/types";
 import { useEffect, useMemo, useRef } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { useInView } from "framer-motion";
@@ -39,8 +35,7 @@ function MessageViewArea({ messages, ...props }: ViewAreaProps) {
     activeChat,
     activeChat.type
   );
-  
-  
+
   useEffect(() => {
     if (messages) {
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -334,9 +334,9 @@ const GroupMessagePanel = () => {
             <div className="flex w-full gap-2 place-items-center">
               {!activeFeature.toLowerCase().includes("voice") ? (
                 <TextArea
-                  ref={textAreaRef}
+                  // ref={textAreaRef}
                   value={input}
-                  text={debounce}
+                  // text={debounce}
                   preview={preview?.type}
                   placeholder={
                     preview?.url

@@ -1,4 +1,11 @@
-import { FileType, Message, MessageContentType, StatusType } from "../types";
+import { parse } from "jsonc-parser";
+import {
+  AgentType,
+  FileType,
+  Message,
+  MessageContentType,
+  StatusType,
+} from "../types";
 import { handleAudioUpload, handleFileUpload } from "../util/util";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -204,6 +211,39 @@ export function onViewDestruct(onViewStatus: StatusType | null) {
   return { file, statusId, caption, color };
 }
 
-export async function Agent(){
-  
+export function safeParse(msg: AgentType) {
+  let message;
+  if (msg.type === "assistant") {
+    try {
+      const data = parse(msg?.message);
+      if (!data) return message;
+      const { answer } = data;
+
+      if (answer) {
+        return (message = answer);
+      } else {
+        return (message = msg.message);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  } else {
+    return (message = msg.message);
+  }
+  return message;
+}
+export function streamingEffect(
+  message: string,
+  onUpdate: (msg: string) => void
+) {
+  let curr = 0;
+
+  const interval = setInterval(() => {
+    onUpdate(message.slice(0, curr + 1));
+    curr++;
+
+    if (curr > message.length) {
+      clearInterval(interval);
+    }
+  }, 10);
 }

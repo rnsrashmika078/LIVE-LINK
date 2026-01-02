@@ -1,60 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import Bytez from "bytez.js";
+import OpenAI from "openai";
 
 export async function POST(req: NextRequest) {
   try {
     const prompt = await req.json();
 
-    const key = "ce5d679a11217de713cba56714d3a03d";
-    const sdk = new Bytez(key);
+    console.log("prompt", prompt);
+    if (!prompt) return NextResponse.json({ message: "prompt not found" });
+    const client = new OpenAI({
+      baseURL: "https://router.huggingface.co/v1",
+      apiKey: process.env.HF_TOKEN,
+    });
 
-    // choose Phi-3-mini-4k-instruct
-    const model = sdk.model("microsoft/Phi-3-mini-4k-instruct");
+    const chatCompletion = await client.chat.completions.create({
+      model: "zai-org/GLM-4.7:novita",
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    });
 
-    // send input to model
-    const { error, output } = await model.run([
-      {
-        role: "user",
-        content: prompt,
-      },
-    ]);
-    console.log("output", output.content);
+    // const text = output.content;
+    const text = chatCompletion.choices[0].message.content;
 
     return NextResponse.json({
-      error,
-      output: output.content,
+      message: "success",
+      output: text,
     });
   } catch (err) {
     console.log(err);
+    return NextResponse.json({
+      message: err,
+    });
   }
 }
-
-//   const res = await fetch("http://localhost:11434/api/generate", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({
-//       model: "llama3.2:latest",
-//       prompt,
-//     }),
-//   });
-//   const data = await res.json();
-
-//   if (!res.ok) {
-//     const errorData = await res.json().catch(() => ({}));
-//     return {
-//       error: true,
-//       status: res.status,
-//       message: errorData?.error?.message || "Request failed",
-//     };
-//   }
-
-//   const text = data.response;
-//   return { error: false, message: text || "No reply received" };
-// } catch (error) {
-//   return {
-//     error: true,
-//     message:
-//       error instanceof Error ? error.message : "Unknown error occurred",
-//   };
-
-// }

@@ -5,9 +5,7 @@ const ScheduleMessage = ({
 }: {
   setTime: React.Dispatch<React.SetStateAction<Date>>;
 }) => {
-  //   const [date, setDate] = useState<string>(null);
-  // const [time, setTime] = useState<string | null>(null);
-  //   console.log("Data", date);
+ 
   return (
     <motion.div
       initial={{ y: 10, x: 0, opacity: 100 }}

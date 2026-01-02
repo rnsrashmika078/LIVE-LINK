@@ -29,7 +29,6 @@ import {
 } from "@/app/lib/tanstack/friendsQuery";
 import { v4 as uuidv4 } from "uuid";
 import { useDragDropHook } from "@/app/hooks/useDragDropHook";
-import Spinner from "../../ui/spinner";
 import { useUpdateMessageSeen } from "@/app/hooks/CustomHooks/messageEffectHooks";
 import { useDeleteMessage } from "@/app/hooks/CommonEffectHooks";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
@@ -294,7 +293,6 @@ const MessagePanel = () => {
     }
   };
 
-  console.log("activeFeature", activeFeature);
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
       {activeChat && (
@@ -365,9 +363,7 @@ const MessagePanel = () => {
 
               {!activeFeature.toLowerCase().includes("voice") ? (
                 <TextArea
-                  ref={textAreaRef}
                   value={input}
-                  text={debounce}
                   preview={preview?.type}
                   placeholder={
                     preview?.url

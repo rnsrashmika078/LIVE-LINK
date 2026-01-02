@@ -19,7 +19,7 @@ export function Toast() {
       {/* <button onClick={() => toast.info("Hello from Toastify!")}>
         Show Toast
       </button> */}
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={3000} theme="dark"/>
     </div>
   );
 }

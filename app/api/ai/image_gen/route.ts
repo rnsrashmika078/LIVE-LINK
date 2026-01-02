@@ -6,8 +6,7 @@ const sdk = new Bytez(key);
 const stable_diffusion = sdk.model(
   "stable-diffusion-v1-5/stable-diffusion-v1-5"
 );
-const zb_tech = sdk.model("ZB-Tech/Text-to-Image");
-const video = sdk.model("Revanthraja/Text_to_Vision")
+
 export async function POST(req: NextRequest) {
   try {
     const prompt = await req.json();
@@ -26,15 +25,12 @@ export async function POST(req: NextRequest) {
   }
 }
 // send input to model
-/*
-  npm i bytez.js || yarn add bytez.js
-*/
-/*
-  npm i bytez.js || yarn add bytez.js
-*/
+// const prompt = await req.json();
+// if (!prompt)
+//   return NextResponse.json({
+//     error: "Prompt required",
+//   });
 
+// const model = sdk.model("stabilityai/stable-diffusion-xl-base-1.0")
 
-// choose Text_to_Vision
-
-
-// send input to model
+// const { error, output } = await model.run(prompt)

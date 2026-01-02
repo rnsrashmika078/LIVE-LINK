@@ -9,13 +9,13 @@ import IncomingCall from "../ui/communications/IncomingCall";
 import InfoLayout from "./info/InfoLayout";
 
 const MessagePanel = React.lazy(() => import("./message/MessagePanel"));
-const AgentMessagePanel = React.lazy(
-  () => import("./message/AgentMessagePanel")
-);
+const AgentMessagePanel = React.lazy(() => import("./agent/AgentMessagePanel"));
 const GroupMessagePanel = React.lazy(
   () => import("./message/GroupMessagePanel")
 );
-import MiniAgentPanel from "../client_component/message/MiniAgentPanel";
+import { AnimatePresence } from "framer-motion";
+import MiniAgentPanel from "./agent/MiniAgentPanel";
+import AgentWrapper from "./agent/AgentWrapper";
 
 const MainLayout = () => {
   const activeChat = useSelector(
@@ -24,7 +24,9 @@ const MainLayout = () => {
   const { actionMenuSelection } = useLiveLink();
   return (
     <>
-      <MiniAgentPanel />
+      <AgentWrapper>
+        <MiniAgentPanel />
+      </AgentWrapper>
 
       <Suspense fallback={<Skeleton version="chat" />}>
         {activeChat?.type === "Agent" && <AgentMessagePanel />}

@@ -1,3 +1,4 @@
+'use client'
 import { AuthUser, PusherChatState } from "@/app/types";
 import Spinner from "../../ui/spinner";
 import { UserCard } from "../../ui/cards";
@@ -74,7 +75,6 @@ export const AddNewFriend = React.memo(() => {
                 <UserCard
                   avatar={user.dp}
                   key={i}
-                  useFor="send-req"
                   name={user.name}
                   handleClick={() => handleButtonClick(user)}
                 />

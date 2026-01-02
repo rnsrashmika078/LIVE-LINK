@@ -5,17 +5,22 @@ import { AgentType } from "../types";
 type AgentContextType = {
   messages: AgentType[];
   setMessages: React.Dispatch<React.SetStateAction<AgentType[]>>;
+  agentIsOpen: boolean;
+  setAgentIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 const AgentContext = createContext<AgentContextType | null>(null);
 
 export const AgentProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<AgentType[]>([]);
+  const [agentIsOpen, setAgentIsOpen] = useState<boolean>(false);
 
   return (
     <AgentContext.Provider
       value={{
         messages,
         setMessages,
+        agentIsOpen,
+        setAgentIsOpen,
       }}
     >
       {children}

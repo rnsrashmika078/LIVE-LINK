@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+'use client'
 import React, { useCallback, useEffect, useState } from "react";
 import SearchArea from "../../ui/searcharea";
 import Avatar from "../../ui/avatar";
