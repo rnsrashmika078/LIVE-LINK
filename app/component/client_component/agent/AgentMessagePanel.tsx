@@ -3,14 +3,14 @@
 "use client";
 import Avatar from "@/app/component/ui/avatar";
 import { useDebounce } from "@/app/hooks/useHooks";
-import { ChatsType, PusherChatState } from "@/app/types";
+import { ChatsType, GroupType, PusherChatState } from "@/app/types";
 import React, { Suspense, useEffect, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { TextArea } from "@/app/component/ui/textarea";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import SearchArea from "../../ui/searcharea";
 import AppIcons from "../../ui/icons";
-import { agent, MessagePanelIcons } from "@/app/util/data";
+import { agent, MessagePanelIcons, refinePrompt } from "@/app/util/data";
 import VoiceRecorder from "../../ui/communications/Voice";
 import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 import Skeleton from "../../ui/skeleton";
@@ -34,8 +34,14 @@ const AgentMessagePanel = () => {
     shallowEqual
   );
 
+  const groupChats = useSelector(
+    (store: PusherChatState) => store.chat.groupChats as GroupType[]
+  );
   const authUserName = useSelector(
     (store: PusherChatState) => store.chat.authUser?.name
+  );
+  const indChats = useSelector(
+    (store: PusherChatState) => store.chat.chats as ChatsType[]
   );
 
   const debounce = useDebounce(input, 200);
@@ -60,57 +66,24 @@ const AgentMessagePanel = () => {
       { id: "dummy-01", type: "assistant", message },
     ]);
     const latestMessage = debounce;
-    const history = messages?.map((m) => m.message).join("\n") ?? "";
 
-    const prompt = `
-    You are an AI chatbot.
-    
-    STRICT OUTPUT RULES:
-    - Respond ONLY to the user's query.
-    - Be concise and clear.
-    - NO reasoning, NO explanations, NO extra text.
-    - NEVER return an empty response.
-    - Return exactly ONE line of VALID JSON.
-    - Do NOT wrap the JSON in code blocks.
-    
-    BASE JSON FORMAT (ALWAYS):
-    {
-      "title": "<short descriptive title>",
-      "answer": "<full reply in Markdown>"
-    }
-    
-    CONDITIONAL FUNCTION RULE:
-    - Add the "function" key ONLY IF the user explicitly asks to perform an action
-      such as: "open chat", "open this chat", "go to chat", "switch chat".
-    - If the user does NOT request an action, DO NOT include the "function" key at all.
-    
-    FUNCTION FORMAT (WHEN INCLUDED):
-    "function": {
-      "title": "open-chat",
-      "chatId": "<ID selected from chatList that best matches the user's request>"
-    }
-    
-    FUNCTION CONSTRAINTS:
-    - "function" MUST be a JSON object, never a string.
-    - "title" inside "function" MUST always be "open-chat".
-    - "chatId" MUST be selected ONLY from the chatList below.
-    - NEVER invent, modify, or guess chatId values.
-    - Choose the most relevant chatId based on user intent.
-    
-    CHAT LIST:
-    [
-      "IZzoL4eNf5fprlpLp5Up59XwlPC2-Vc5pftz3lmXNSZvHoQy5HmAowb53",
-      "IZzoL4eNf5fprlpLp5Up59XwlPC2-Mjq7j4WY1hWsQ7lJ8bqfI3h8zI93"
-    ]
-    
-    MARKDOWN RULES:
-    - The "answer" field MUST preserve valid Markdown.
-    - Ensure Markdown remains valid JSON (escape quotes properly).
-    
-    USER QUERY:
-    "${latestMessage}" 
-    CHAT HISTORY : ${history}
-    `;
+    const chatsData = indChats.map((i) => ({
+      chatId: i.chatId,
+      name: i.name,
+    }));
+    const groupData = groupChats.map((g) => ({
+      chatId: g.chatId,
+      groupName: g.groupName,
+    }));
+
+    const prompt = `${refinePrompt}
+     USER QUERY:
+     "${latestMessage}" 
+     CHAT HISTORY : ${JSON.stringify(messages)}
+     INDIVIDUAL CHATS LIST : ${JSON.stringify(chatsData)}
+     GROUP CHATS LIST : ${JSON.stringify(groupData)}
+     
+     `;
 
     mutate({ prompt: prompt });
     setInput("");
@@ -166,7 +139,7 @@ const AgentMessagePanel = () => {
                 <p className="text-xs text-[var(--pattern_4)]">Online</p>
               </div>
             </div>
-            <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
+            {/* <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} /> */}
           </div>
 
           <Suspense fallback={<Skeleton version="chats" />}>

@@ -69,5 +69,6 @@ const ChatSchema = new mongoose.Schema(
 );
 
 const Chat = mongoose.models.Chat || mongoose.model("Chat", ChatSchema);
+ChatSchema.index({ chatId: 1 });
 
 export default Chat;

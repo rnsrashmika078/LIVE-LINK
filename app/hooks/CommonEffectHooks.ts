@@ -14,17 +14,19 @@ export const useDeleteMessage = (
   useEffect(() => {
     try {
       if (!useFor) return;
-
+      if (deleteMessages.length === 0) return;
       if (useFor === "Chat") {
-        callback((prev: ChatsType[]) =>
-          prev?.map((m) => {
-            const key = `${m.lastMessageId}_${m.chatId}`;
-            if (!deleteMap.has(key)) return m;
+        callback(
+          (prev: ChatsType[]) =>
+            prev &&
+            prev?.map((m) => {
+              const key = `${m.lastMessageId}_${m.chatId}`;
+              if (!deleteMap.has(key)) return m;
 
-            const message_structure = `{"url": "","message": "🚫This message was deleted","name": "","format": "","public_id": ""}`;
+              const message_structure = `{"url": "","message": "🚫This message was deleted","name": "","format": "","public_id": ""}`;
 
-            return { ...m, lastMessage: message_structure };
-          })
+              return { ...m, lastMessage: message_structure };
+            })
         );
       } else if (useFor === "Message") {
         callback((prev: Message[]) =>

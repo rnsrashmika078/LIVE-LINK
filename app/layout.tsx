@@ -24,7 +24,7 @@ export default function RootLayout({
           <Toast />
           <ListenerForAuth />
           <Connection />
-          <Analyzer />
+          {/* <Analyzer /> */}
           {children}
         </AppProvider>
       </body>

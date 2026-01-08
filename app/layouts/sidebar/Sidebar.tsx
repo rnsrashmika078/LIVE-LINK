@@ -38,17 +38,8 @@ const Sidebar = React.memo(() => {
   useEffect(() => {
     if (!path) return;
     setCurrentTab(path.split("/")[2]);
-  }, []);
+  }, [path]);
 
-  const dummy_chat = {
-    chatId: "",
-    uid: "",
-    name: "",
-    email: "",
-    lastMessageId: "",
-    dp: "",
-    lastMessage: "",
-  };
   return (
     <div
       className="bg-[var(--pattern_1)] z-[99] relative w-14 h-full flex flex-col justify-between py-2 px-1"
@@ -89,10 +80,9 @@ const Sidebar = React.memo(() => {
           );
         })}
       </div>
-      <Button size="xs" onClick={deletefunction}>
+      {/* <Button size="xs" onClick={deletefunction}>
         X
-      </Button>
-
+      </Button> */}
       <div className="flex flex-col justify-center ">
         {MiddleItems.map((item) => {
           const Icon = item.icon;

@@ -1,3 +1,4 @@
+'use client'
 import { Message } from "@/app/types";
 import React from "react";
 import MessageFormat from "../../ui/format";

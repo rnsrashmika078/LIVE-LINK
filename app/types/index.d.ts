@@ -129,8 +129,8 @@ export type MessagePayload = {
   chatId: string; //
   name: string; //
   dp: string; //
-  scheduleTime?: Date;
-  createdAt: string; //
+  scheduleTime?: Date | null;
+  createdAt: string | undefined; //
   status: string; //
   isSchedule?: boolean;
   files?: FileType | null; //

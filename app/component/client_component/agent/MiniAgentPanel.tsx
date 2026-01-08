@@ -56,16 +56,14 @@ const MiniAgentPanel = () => {
     }
   });
 
-
-
   const sendMessage = () => {
     const message = `{"title":"loading", "answer":"Working on it.."`;
 
     setMessages((prev) => [
-        ...prev,
-        { id: uuid(), type: "user", message: debounce },
-        { id: "dummy-01", type: "assistant", message },
-      ]);
+      ...prev,
+      { id: uuid(), type: "user", message: debounce },
+      { id: "dummy-01", type: "assistant", message },
+    ]);
     const latestMessage = debounce;
 
     const chatsData = indChats.map((i) => ({
@@ -100,17 +98,18 @@ const MiniAgentPanel = () => {
   };
 
   useEffect(() => {
-      if (messages.length !== 0) return;
-      const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! Welcome to LiveLink. What do you want to do with me🤗?"`;
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: uuid(),
-          message: message,
-          type: "assistant",
-        },
-      ]);
-    }, [messages, authUserName]);
+    if (messages.length !== 0) return;
+    const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! Welcome to LiveLink. What do you want to do with me🤗?"`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: uuid(),
+        message: message,
+        type: "assistant",
+      },
+    ]);
+  }, [messages, authUserName]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -137,7 +136,7 @@ const MiniAgentPanel = () => {
               <p className="text-xs text-[var(--pattern_4)]">Online</p>
             </div>
           </div>
-          <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} />
+          {/* <AppIcons usefor={"agent"} iconArray={MessagePanelIcons} callback={setClickedIcon} /> */}
         </div>
 
         <div className="overflow-y-auto h-full  w-full">

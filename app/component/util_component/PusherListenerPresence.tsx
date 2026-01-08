@@ -25,7 +25,7 @@ export default function PusherListenerPresence() {
   const { chats, groupChats, authUser } = useSelector(
     (store: PusherChatState) => ({
       authUser: store.chat.authUser,
-      chats: store.chat.chats, // this is individual chats
+      chats: store.chat.chats,
       groupChats: store.chat.groupChats,
     }),
     shallowEqual
@@ -46,13 +46,6 @@ export default function PusherListenerPresence() {
     } else if (data.useFor === "deleting") {
       dispatch(setDeletedMessage(data as DeletedMessage));
     } else {
-      //receiving real time message
-      dispatch(
-        setNotification({
-          id,
-          notify: "You have new message" + data?.content?.message,
-        })
-      );
       dispatch(setMessages(data as Message)); //store last message
       dispatch(setMessagesArray(data as Message)); //store and update whole session messages as array
     }
@@ -60,9 +53,7 @@ export default function PusherListenerPresence() {
 
   useEffect(() => {
     if (!pusher || !authUser?.uid) return;
-
     const chat_channels: Record<string, any> = {};
-
     [...groupChats, ...chats].forEach((chat) => {
       if (!chat.chatId) {
         return;
@@ -75,7 +66,6 @@ export default function PusherListenerPresence() {
       });
       chat_channels[chat.chatId] = channel;
     });
-
     return () => {
       Object.values(chat_channels).forEach((channel) => {
         channel.unbind_all();

@@ -6,7 +6,7 @@ export async function saveMessages(message: MessagePayload | null) {
   try {
     if (!message)
       return {
-        message: "Successfully getting messages!",
+        message: "error message not found!",
         messages: [],
         status: 200,
       };
@@ -17,7 +17,7 @@ export async function saveMessages(message: MessagePayload | null) {
       message
     );
 
-    return res.json();
+    return res && res.json();
   } catch (err) {
     console.log(err);
     return { message: "Error fetching messages", messages: [], status: 500 };

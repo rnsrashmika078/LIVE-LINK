@@ -8,8 +8,10 @@ import { IconType } from "react-icons/lib";
 const AppIcons = ({
   iconArray,
   callback,
+  usefor,
 }: {
   iconArray: IconArrayType;
+  usefor?: string,
   callback: (icon: string) => void;
 }) => {
   const { setRelativePosition } = useLiveLink();

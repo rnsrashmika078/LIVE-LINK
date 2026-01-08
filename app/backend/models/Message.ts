@@ -40,5 +40,6 @@ const MessageSchema = new mongoose.Schema(
 
 const Message =
   mongoose.models.Message || mongoose.model("Message", MessageSchema);
+MessageSchema.index({ scheduleTime: 1, isSchedule: 1 });
 
 export default Message;

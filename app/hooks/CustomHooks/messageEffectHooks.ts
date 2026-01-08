@@ -1,10 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
-
 import {
   AuthUser,
   ChatsType,
-  GroupMessage,
   GroupType,
   Message,
   PusherChatDispatch,
@@ -13,12 +11,7 @@ import {
 } from "@/app/types";
 import { useDispatch, useSelector } from "react-redux";
 import { usePusher } from "@/app/component/util_component/PusherProvider";
-import {
-  setChatsArray,
-  setGroupMessageSeen,
-  setTypingUsers,
-  setUnreads,
-} from "@/app/lib/redux/chatslicer";
+import { setGroupMessageSeen, setUnreads } from "@/app/lib/redux/chatslicer";
 import { apiFetch } from "@/app/helper/helper";
 import { useSocket } from "@/app/component/util_component/SocketProvider";
 import { useLiveLink } from "@/app/context/LiveLinkContext";

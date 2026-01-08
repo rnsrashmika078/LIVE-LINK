@@ -6,7 +6,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { safeParse, streamingEffect } from "@/app/helper/helper";
-import { parse } from "jsonc-parser";
+import { loadingStates } from "@/app/util/data";
 interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: AgentType[];
 }
@@ -30,6 +30,7 @@ function MessageViewArea({ messages, ...props }: ViewAreaProps) {
       streamingEffect(parsed, setStreamText);
     }
   }, [messages]);
+
   return (
     <div className="p-5 relative custom-scrollbar-y h-full w-full" {...props}>
       {messages.map((msg: AgentType, index: number) => {
@@ -52,9 +53,7 @@ function MessageViewArea({ messages, ...props }: ViewAreaProps) {
               {msg.type === "assistant" &&
                 index === lastIndex &&
                 streamText.startsWith("Working on it..") && (
-                  <div className="mb-2 text-sm text-gray-400">
-                    Working indicator...
-                  </div>
+                  <div className="mb-2 text-sm text-gray-400">Working...</div>
                 )}
 
               <ReactMarkdown

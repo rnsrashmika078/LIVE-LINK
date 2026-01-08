@@ -96,8 +96,7 @@ export const TextArea = ({
               }`}
               onClick={() => {
                 setScheduleActivate((prev) => !prev);
-                // setSelection(activate ? "schedule" : "");
-                // onClickButton?.(activate ? "schedule" : "");
+                onClickButton?.("schedule");
               }}
             />
           )}
@@ -118,6 +117,7 @@ export const TextArea = ({
             size={size}
             className={iconStyles}
             onClick={() => {
+              setScheduleActivate(false);
               setSelection("send");
               onClickButton?.("send");
               setSearchText("");

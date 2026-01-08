@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-render */
 /* eslint-disable react-hooks/set-state-in-effect */
-'use client'
+"use client";
 import { useEffect, useMemo, useState } from "react";
 import { UserGroupCard } from "@/app/component/ui/cards";
 import { GroupType, PusherChatDispatch, PusherChatState } from "@/app/types";
@@ -8,29 +8,27 @@ import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import React from "react";
 import { setActiveChat, setGroupChats } from "@/app/lib/redux/chatslicer";
 import { useSocket } from "../../util_component/SocketProvider";
+import { useLiveLink } from "@/app/context/LiveLinkContext";
 
 const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
   const [groups, setGroups] = useState<GroupType[]>(initialGroups ?? []);
 
+  const { chatRefs } = useLiveLink();
+
   //use hooks
 
   //redux states
-  const {
-    authUser,
-    activeChat,
-    liveMessagesArray,
-    groupChatsArray,
-    activeUsers,
-  } = useSelector(
-    (store: PusherChatState) => ({
-      authUser: store.chat.authUser,
-      activeChat: store.chat.activeChat,
-      liveMessagesArray: store.chat.messagesArray,
-      groupChatsArray: store.chat.groupChats,
-      activeUsers: store.chat.activeUsers,
-    }),
-    shallowEqual
-  );
+  const { authUser, activeChat, liveMessagesArray, groupChatsArray } =
+    useSelector(
+      (store: PusherChatState) => ({
+        authUser: store.chat.authUser,
+        activeChat: store.chat.activeChat,
+        liveMessagesArray: store.chat.messagesArray,
+        groupChatsArray: store.chat.groupChats,
+        activeUsers: store.chat.activeUsers,
+      }),
+      shallowEqual
+    );
 
   //redux dispatcher
   const dispatch = useDispatch<PusherChatDispatch>();
@@ -141,6 +139,9 @@ const RenderGroupList = ({ initialGroups }: { initialGroups: GroupType[] }) => {
           return (
             <UserGroupCard
               key={i}
+              ref={(el) => {
+                chatRefs.current[group.chatId] = el; // assign ref // now retunr void ( explitiy )
+              }}
               group={group}
               handleClick={() => handleJoinedChat(group)}
             />

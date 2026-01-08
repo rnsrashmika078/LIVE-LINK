@@ -9,12 +9,11 @@ import {
   GroupType,
   Message,
   MessageContentType,
-  PusherChatDispatch,
   PusherChatState,
   SeenByType,
 } from "@/app/types";
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 import { TextArea } from "@/app/component/ui/textarea";
 import { FileShare } from "@/app/component/ui/preview";
 import { TypingIndicator } from "@/app/component/ui/typingIndicator";
@@ -46,6 +45,7 @@ const GroupMessagePanel = () => {
   const [input, setInput] = useState<string>("");
   const [activeFeature, setActiveFeature] = useState<string>(""); // for reference
   const [messages, setMessages] = useState<Message[]>([]);
+  const [time, setTime] = useState<Date>();
 
   const {
     setClickedIcon,
@@ -62,7 +62,6 @@ const GroupMessagePanel = () => {
 
   const {
     activeChat,
-    messageSeen,
     authUser,
     typingUsers,
     onlineUsers,
@@ -103,9 +102,7 @@ const GroupMessagePanel = () => {
 
   // ----------------------------------------------------------------------- memoized logics --------------------------------------------------------------------------------
 
-  const { data: groupMessage, isPending: isMsgLoading } = useGetGroupMessage(
-    activeChat.chatId!
-  );
+  const { data: groupMessage } = useGetGroupMessage(activeChat.chatId!);
 
   const { mutate } = useSendGroupMessage();
   // -------------------------------------------------------------------------- use Effect --------------------------------------------------------------------------------
@@ -334,9 +331,8 @@ const GroupMessagePanel = () => {
             <div className="flex w-full gap-2 place-items-center">
               {!activeFeature.toLowerCase().includes("voice") ? (
                 <TextArea
-                  // ref={textAreaRef}
+                  visible={false}
                   value={input}
-                  // text={debounce}
                   preview={preview?.type}
                   placeholder={
                     preview?.url

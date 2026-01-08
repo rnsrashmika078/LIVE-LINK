@@ -210,6 +210,7 @@ const MessagePanel = () => {
   }, [lastSeenUpdate]);
   // -------------------------------------------------------------------------- Additional functions  --------------------------------------------------------------------------------
   //save message calling actually happen here
+
   const sendMessage = async (
     message: MessageContentType,
     fileMeta: FileType | null
@@ -230,10 +231,10 @@ const MessagePanel = () => {
         chatId: chatId,
         type: "Individual",
         name,
-        scheduleTime: time,
-        isSchedule: false,
+        scheduleTime: scheduleActivate ? time : null,
+        isSchedule: scheduleActivate,
         dp: authUser?.dp ?? "",
-        createdAt: date.toISOString(),
+        createdAt: scheduleActivate ? time?.toISOString() : date.toISOString(),
         status: presence === "Online" ? "delivered" : "sent",
         unreads: [
           {
@@ -242,18 +243,13 @@ const MessagePanel = () => {
           },
         ],
       };
-      // if (scheduleActivate) {
-      // } else {
       mutate({ message: payload });
-      // }
     } catch (err) {
       console.error("Invalid JSON:", message, err);
     }
 
     dispatch(setUnreads(unreads + 1));
   };
-
-  // use Effect:  update the user last seen when presence changes ( listening to the presence changes )
 
   const handleButtonClick = (item: string) => {
     const refinedPrompt = featureActive
@@ -277,14 +273,14 @@ const MessagePanel = () => {
           refinedPrompt
         );
         if (featureActive || file) {
-          if (!scheduleActivate) {
-            addDummyData(
-              activeChat.chatId!,
-              authUser?.uid ?? "", // this never undefined at this stage
-              authUser?.name ?? "", // this never undefined at this stage
-              setMessages
-            );
-          }
+          // if (!scheduleActivate) {
+          addDummyData(
+            activeChat.chatId!,
+            authUser?.uid ?? "", // this never undefined at this stage
+            authUser?.name ?? "", // this never undefined at this stage
+            setMessages
+          );
+          // }
         }
         setPreview(null);
         setFeatureActive(false);
@@ -292,7 +288,6 @@ const MessagePanel = () => {
         break;
     }
   };
-
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
       {activeChat && (
@@ -348,6 +343,7 @@ const MessagePanel = () => {
               setPreview={setPreview}
               setFile={setFile}
             />
+            {/* this is use for generate image */}
             <ActiveFeature
               active={featureActivation(debounce)}
               feature="image-gen-ll"

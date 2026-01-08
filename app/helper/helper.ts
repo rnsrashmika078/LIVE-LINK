@@ -53,13 +53,13 @@ function renderMsgIcon(format: string) {
     return "🖼️ Photo";
   }
   if (format.includes("mp4")) {
-    return "▶️ Voice Message";
+    return "▶️ Video";
   }
   if (format.includes("webm")) {
-    return "🎤 Voice Message";
+    return "🎤 Voice";
   }
   if (format.includes("pdf")) {
-    return "📑 Voice Message";
+    return "📑 Document";
   }
 }
 export function modifiedMessage(input: MessageContentType): string | null {

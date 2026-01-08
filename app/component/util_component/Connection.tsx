@@ -1,5 +1,6 @@
 "use client";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
+import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 
 const Connection = () => {
@@ -17,12 +18,27 @@ const Connection = () => {
     };
   }, []);
 
-  if (connectionState) return;
+  const variant = {
+    initial: { y: 0 },
+    animate: { y: 50 },
+    exit: { y: 0 },
+  };
   return (
-    <div className="text-4xl fixed top-0 left-0 h-full w-full pointer-events-none flex justify-center items-center z-[99999]">
-      <div>You are {connectionState ? "Online" : "Offline"}</div>
-    </div>
+    <AnimatePresence>
+      {!connectionState && (
+        <div className="text-sm fixed top-0 h-full w-full pointer-events-none flex justify-center z-[99999]">
+          <motion.div
+            className="border w-fit h-fit p-5 rounded-2xl border-red-500 shadow-2xl pattern_2"
+            variants={variant}
+            initial="initial"
+            exit={"exit"}
+            animate="animate"
+          >
+            You are {connectionState ? "back Online" : "Offline"}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
-
 export default Connection;

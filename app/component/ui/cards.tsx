@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 import Avatar from "./avatar";
 import {
   Agent,
@@ -28,7 +29,6 @@ import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import { TypingIndicator } from "./typingIndicator";
 import { CgClose } from "react-icons/cg";
 import { useAgentContext } from "@/app/context/AgentContext";
-import parse from "jsonc-parser";
 interface UserCardProps {
   avatar?: string;
   name?: string;
@@ -97,6 +97,16 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
       (u) => u.userId === authUser?.uid && u.count > 0
     );
 
+    const updateAt = useMemo(
+      () =>
+        updatedAt
+          ? new Date(updatedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "Offline",
+      [updatedAt]
+    );
     return (
       <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
         <div
@@ -110,14 +120,7 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
               <h1 className="w-60 sm:w-50 truncate font-bold flex-shrink ">
                 {name}
               </h1>
-              <p className="text-xs">
-                {updatedAt
-                  ? new Date(updatedAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : ""}
-              </p>
+              <p className="text-xs">{updateAt}</p>
             </div>
             <div className="flex justify-between w-full items-center ">
               <div className="flex  min-w-0 ">
@@ -157,85 +160,94 @@ interface UGDInterface {
   test?: string;
   handleClick?: () => void;
 }
-export const UserGroupCard = ({
-  group: { groupName, dp, updatedAt, unreads, chatId, lastMessage },
-  handleClick,
-}: UGDInterface) => {
-  const { authUser, typingUsers } = useSelector(
-    (store: PusherChatState) => ({
-      authUser: store.chat.authUser,
-      typingUsers: store.chat.typingUsers,
-    }),
-    shallowEqual
-  );
+export const UserGroupCard = forwardRef<HTMLDivElement, UGDInterface>(
+  (
+    {
+      group: { groupName, dp, updatedAt, unreads, chatId, lastMessage },
+      handleClick,
+    },
+    ref
+  ) => {
+    const { authUser, typingUsers } = useSelector(
+      (store: PusherChatState) => ({
+        authUser: store.chat.authUser,
+        typingUsers: store.chat.typingUsers,
+      }),
+      shallowEqual
+    );
 
-  const isUserTyping = useMemo(
-    () =>
-      typingUsers.find(
-        (u) => u.chatId === chatId && u.type === "Group" && u.isTyping
-      ),
-    [chatId, typingUsers]
-  );
+    const isUserTyping = useMemo(
+      () =>
+        typingUsers.find(
+          (u) => u.chatId === chatId && u.type === "Group" && u.isTyping
+        ),
+      [chatId, typingUsers]
+    );
 
-  const [unreadCount, setUnreadCount] = useState<number>(0);
+    const [unreadCount, setUnreadCount] = useState<number>(0);
 
-  useEffect(() => {
-    const unreadCountMatch = unreads?.find((u) => {
-      return u.userId === authUser?.uid ? u.count : 0;
-    });
-    setUnreadCount(unreadCountMatch?.count ?? 0);
-  }, [authUser?.uid, unreads]);
+    useEffect(() => {
+      const unreadCountMatch = unreads?.find((u) => {
+        return u.userId === authUser?.uid ? u.count : 0;
+      });
+      setUnreadCount(unreadCountMatch?.count ?? 0);
+    }, [authUser?.uid, unreads]);
 
-  return (
-    <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
-      <div
-        className="w-full flex items-center gap-2 p-2"
-        onClick={handleClick && handleClick}
-      >
-        <Avatar image={dp || "/no_avatar2.png"} />
-        <div className="flex flex-col w-full  items-center space-y-1 min-w-5">
-          <div className="flex justify-between w-full  items-center">
-            <h1 className="w-60 sm:w-50 truncate font-bold flex-shrink ">
-              {groupName}
-            </h1>
-            <p className="text-xs">
-              {" "}
-              {updatedAt
-                ? new Date(updatedAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : ""}
-            </p>
-          </div>
-          <div className="flex justify-between w-full items-center ">
-            <div className="flex  min-w-0 ">
-              <div className="flex w-72 text-[var(--pattern_4)] sm:w-56 truncate flex-shrink items-center text-xs">
-                {isUserTyping ? (
-                  <TypingIndicator UserTyping={isUserTyping} version="2" />
-                ) : (
-                  <p>
-                    <strong className="">
-                      {lastMessage?.name?.split(" ")[0]}:{" "}
-                    </strong>
-                    {modifiedMessage(lastMessage.message)}
-                  </p>
-                )}
-              </div>
-              {/* {!isUserTyping &&
-                OnMessageSeen(senderId === authUser?.uid, status as string)} */}
+    const updateAt = useMemo(
+      () =>
+        updatedAt
+          ? new Date(updatedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "Offline",
+      [updatedAt]
+    );
+    return (
+      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
+        <div
+          ref={ref}
+          className="w-full flex items-center gap-2 p-2"
+          onClick={handleClick && handleClick}
+        >
+          <Avatar image={dp || "/no_avatar2.png"} />
+          <div className="flex flex-col w-full  items-center space-y-1 min-w-5">
+            <div className="flex justify-between w-full  items-center">
+              <h1 className="w-60 sm:w-50 truncate font-bold flex-shrink ">
+                {groupName}
+              </h1>
+              <p className="text-xs">{updateAt}</p>
             </div>
-            {unreadCount !== 0 ? (
-              <div className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
-                {unreadCount}
+            <div className="flex justify-between w-full items-center ">
+              <div className="flex  min-w-0 ">
+                <div className="flex w-72 text-[var(--pattern_4)] sm:w-56 truncate flex-shrink items-center text-xs">
+                  {isUserTyping ? (
+                    <TypingIndicator UserTyping={isUserTyping} version="2" />
+                  ) : (
+                    <p>
+                      <strong className="">
+                        {lastMessage?.name?.split(" ")[0]}:{" "}
+                      </strong>
+                      {modifiedMessage(lastMessage.message)}
+                    </p>
+                  )}
+                </div>
+                {/* {!isUserTyping &&
+                OnMessageSeen(senderId === authUser?.uid, status as string)} */}
               </div>
-            ) : null}
+              {unreadCount !== 0 ? (
+                <div className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
+                  {unreadCount}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
+UserGroupCard.displayName = "UserGroupCard";
 
 interface UserProps {
   friends: AuthUser[];
@@ -443,7 +455,6 @@ export const AgentCard = forwardRef<HTMLDivElement, AgentInterface>(
   ({ agent, handleClick }, ref) => {
     const { messages } = useAgentContext();
 
- 
     return (
       <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
         <div

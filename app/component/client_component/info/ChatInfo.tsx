@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
+
 import { Message, ParticipantsType } from "@/app/types";
 import React from "react";
 import MessageFormat from "../../ui/format";
