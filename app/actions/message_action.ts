@@ -16,8 +16,9 @@ export async function saveMessages(message: MessagePayload | null) {
       "POST",
       message
     );
+    if (!res?.ok) return;
 
-    return res && res.json();
+    return res.json();
   } catch (err) {
     console.log(err);
     return { message: "Error fetching messages", messages: [], status: 500 };
@@ -28,6 +29,7 @@ export async function getMessages(chatId: string) {
     if (!chatId) return;
 
     const res = await apiFetch(`/api/messages/get-messages/${chatId}`, "GET");
+    if (!res?.ok) return;
 
     return res.json();
   } catch (err) {
@@ -56,6 +58,7 @@ export async function deleteMessage(
       payload
     );
 
+    if (!res?.ok) return;
     return res.json();
   } catch (err) {
     console.log(err);

@@ -6,7 +6,6 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { safeParse, streamingEffect } from "@/app/helper/helper";
-import { loadingStates } from "@/app/util/data";
 interface ViewAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   messages: AgentType[];
 }

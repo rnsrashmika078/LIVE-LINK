@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TypingUser } from "@/app/types";
-import { TiMessageTyping } from "react-icons/ti";
+import Loading from "./loading";
 
 type TypingIndicatorProps = {
   UserTyping: TypingUser | TypingUser[];
@@ -15,12 +15,9 @@ export const TypingIndicator = ({
     if (UserTyping?.isTyping) {
       /** user is typing */
       if (version === "1") {
-        return (
-          <p className="fixed bottom-16 animate-pulse italic p-2 flex gap-1 items-center bg-[var(--pattern_3)]  rounded-2xl">
-            <TiMessageTyping size={30} color="green" />
-            {UserTyping?.userName?.split(" ")[0] + " is typing..."}
-          </p>
-        );
+        return <Loading username={UserTyping.userName} />;
+      } else if (version === "3") {
+        return <Loading username={UserTyping.userName} version={version} />;
       } else if (version === "2") {
         return (
           <p className="flex font-bold  text-xs text-green-400 animate-pulse">
@@ -31,6 +28,5 @@ export const TypingIndicator = ({
         );
       }
     }
-    // single object
   }
 };

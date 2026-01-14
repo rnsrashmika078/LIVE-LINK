@@ -3,7 +3,6 @@ import "./globals.css";
 import AppProvider from "./component/util_component/AppProvider";
 import ListenerForAuth from "./component/util_component/ListenerForAuth";
 import { Toast } from "./component/ui/Toast";
-import Analyzer from "./component/ui/analyze/Analyzer";
 import Connection from "./component/util_component/Connection";
 import { geistMono, inter } from "@/fonts";
 

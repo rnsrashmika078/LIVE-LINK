@@ -35,8 +35,8 @@ const GlobalSocket = () => {
 
     const SeenStatusHandler = (data: StatusType) => {
       const id = Date.now.toString();
-      const notify = "Your status seen by " + data.name;
-      dispatch(setNotification({ id, notify }));
+      // const notify = "Your status seen by " + data.name;
+      // dispatch(setNotification({ id, notify }));
       dispatch(setStatusSeenUser(data));
     };
 
@@ -65,12 +65,12 @@ const GlobalSocket = () => {
     };
 
     const updateStatusHandler = (data: StatusType) => {
-      dispatch(
-        setNotification({
-          id: Date.now.toString(),
-          notify: "YOU HAVE STATUS" + data.name,
-        })
-      );
+      // dispatch(
+      //   setNotification({
+      //     id: Date.now.toString(),
+      //     notify: "YOU HAVE STATUS" + data.name,
+      //   })
+      // );
       dispatch(addNewStatus(data));
     };
     const deleteStatusHandler = (data: StatusType) => {

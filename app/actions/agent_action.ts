@@ -25,7 +25,7 @@ export async function agentCall(prompt: string) {
         message: "prompt not provided!",
       };
 
-    const res = await apiFetch("/api/agent/", "POST", prompt);
+    const res = await apiFetch("/api/ai/agent/", "POST", prompt);
 
     if (!res) return;
 
@@ -53,4 +53,21 @@ export async function geminiAgent(prompt: string) {
   const text = response.text;
 
   return text;
+}
+
+export async function grok(prompt: string) {
+  //grok
+  const client = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: "https://api.groq.com/openai/v1",
+  });
+
+  const response = await client.responses.create({
+    model: "openai/gpt-oss-20b",
+    input: prompt,
+  });
+  console.log("tokens", response.usage);
+  return response.output_text;
+
+  // console.log(response.output_text);
 }

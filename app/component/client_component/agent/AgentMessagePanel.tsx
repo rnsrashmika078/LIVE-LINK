@@ -108,7 +108,7 @@ const AgentMessagePanel = () => {
 
   useEffect(() => {
     if (messages.length !== 0) return;
-    const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! Welcome to LiveLink. What do you want to do with me🤗?"`;
+    const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! welcome to LiveLink. How can I help you today?`;
     setMessages((prev) => [
       ...prev,
       {

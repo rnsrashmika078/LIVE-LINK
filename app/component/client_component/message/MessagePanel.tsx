@@ -288,6 +288,8 @@ const MessagePanel = () => {
         break;
     }
   };
+
+  console.log("last message", messages.at(-1));
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
       {activeChat && (
@@ -308,7 +310,7 @@ const MessagePanel = () => {
                 <p className="text-xs text-[var(--pattern_4)]">
                   {presence === "Online"
                     ? "Online"
-                    : lastSeen
+                    : lastSeen && !isNaN(new Date(lastSeen).getTime())
                     ? "Last seen " + new Date(lastSeen).toLocaleTimeString() ||
                       "Offline"
                     : "Offline"}
@@ -336,7 +338,7 @@ const MessagePanel = () => {
           )}
 
           <div className="flex flex-col gap-5 mt-auto w-full p-2 place-items-start ">
-            <TypingIndicator UserTyping={UserTyping!} version="1" />
+            <TypingIndicator UserTyping={UserTyping!} version="3" />
             <FileShare
               isDragging={isDragging}
               preview={preview}

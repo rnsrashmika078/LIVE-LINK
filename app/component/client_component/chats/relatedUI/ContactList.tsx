@@ -40,7 +40,7 @@ const ContactList = ({
   if (loading) return <Spinner />;
 
   return (
-    <div className="py-4">
+    <div className="py-2">
       <p className="sub-header">All contact</p>
       <div className=" flex flex-col w-full justify-start items-center">
         {friends?.length > 0 &&

@@ -23,6 +23,7 @@ const MessageFormat = React.memo(
     senderInfo,
     size = "w-[250px] h-[250px]",
   }: FormatProps) => {
+    const isDummy = url ? url.includes("dummy") : "";
     const openFile = () => {
       if (url) window.open(url, "_blank");
     };
@@ -36,8 +37,6 @@ const MessageFormat = React.memo(
           type.includes("jpg") ||
           type.includes("avif")
         ) {
-          const isDummy = url.includes("dummy");
-
           if (isDummy) {
             return (
               <div
@@ -125,7 +124,7 @@ const MessageFormat = React.memo(
     };
     return (
       <div className="">
-        {senderInfo?.senderName && (
+        {senderInfo?.senderName && !isDummy && (
           <SenderNameStyle name={senderInfo?.senderName ?? ""} />
         )}
         {renderFile()}{" "}

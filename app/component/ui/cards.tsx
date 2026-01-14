@@ -108,7 +108,7 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
       [updatedAt]
     );
     return (
-      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
+      <div className={`hover:bg-[var(--pattern_5)] mt-1 transition-all w-full`}>
         <div
           className="w-full flex items-center gap-2 p-2"
           ref={ref}
@@ -120,7 +120,7 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
               <h1 className="w-60 sm:w-50 truncate font-bold flex-shrink ">
                 {name}
               </h1>
-              <p className="text-xs">{updateAt}</p>
+              <p className="text-xs w-13">{updateAt}</p>
             </div>
             <div className="flex justify-between w-full items-center ">
               <div className="flex  min-w-0 ">
@@ -204,7 +204,7 @@ export const UserGroupCard = forwardRef<HTMLDivElement, UGDInterface>(
       [updatedAt]
     );
     return (
-      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
+      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all w-full`}>
         <div
           ref={ref}
           className="w-full flex items-center gap-2 p-2"
@@ -216,7 +216,7 @@ export const UserGroupCard = forwardRef<HTMLDivElement, UGDInterface>(
               <h1 className="w-60 sm:w-50 truncate font-bold flex-shrink ">
                 {groupName}
               </h1>
-              <p className="text-xs">{updateAt}</p>
+              <p className="text-xs  w-13">{updateAt}</p>
             </div>
             <div className="flex justify-between w-full items-center ">
               <div className="flex  min-w-0 ">
@@ -232,8 +232,6 @@ export const UserGroupCard = forwardRef<HTMLDivElement, UGDInterface>(
                     </p>
                   )}
                 </div>
-                {/* {!isUserTyping &&
-                OnMessageSeen(senderId === authUser?.uid, status as string)} */}
               </div>
               {unreadCount !== 0 ? (
                 <div className=" font-bold w-5 h-5 flex justify-center bg-green-500 place-items-center rounded-full">
@@ -456,7 +454,7 @@ export const AgentCard = forwardRef<HTMLDivElement, AgentInterface>(
     const { messages } = useAgentContext();
 
     return (
-      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all`}>
+      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all w-full`}>
         <div
           className="w-full flex items-center gap-2 p-2"
           ref={ref}

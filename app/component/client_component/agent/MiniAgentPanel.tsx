@@ -6,8 +6,7 @@ import { useDebounce } from "@/app/hooks/useHooks";
 import React, { Suspense, useEffect, useState } from "react";
 import { TextArea } from "@/app/component/ui/textarea";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
-import AppIcons from "../../ui/icons";
-import { agent, MessagePanelIcons, refinePrompt } from "@/app/util/data";
+import { agent, refinePrompt } from "@/app/util/data";
 import VoiceRecorder from "../../ui/communications/Voice";
 import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 import Skeleton from "../../ui/skeleton";
@@ -99,7 +98,7 @@ const MiniAgentPanel = () => {
 
   useEffect(() => {
     if (messages.length !== 0) return;
-    const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! Welcome to LiveLink. What do you want to do with me🤗?"`;
+    const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! welcome to LiveLink. How can I help you today?`;
     setMessages((prev) => [
       ...prev,
       {
@@ -136,7 +135,6 @@ const MiniAgentPanel = () => {
               <p className="text-xs text-[var(--pattern_4)]">Online</p>
             </div>
           </div>
-          {/* <AppIcons usefor={"agent"} iconArray={MessagePanelIcons} callback={setClickedIcon} /> */}
         </div>
 
         <div className="overflow-y-auto h-full  w-full">

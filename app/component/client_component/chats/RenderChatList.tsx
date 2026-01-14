@@ -122,7 +122,7 @@ const RenderChatList = ({ initialChats }: { initialChats: ChatsType[] }) => {
             <UserChatCard
               key={i}
               ref={(el) => {
-                chatRefs.current[chat.chatId] = el; // assign ref // now retunr void ( explitiy )
+                chatRefs.current[chat.chatId] = el; 
               }}
               chat={chat}
               handleClick={() => {

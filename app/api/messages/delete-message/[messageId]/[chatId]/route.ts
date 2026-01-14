@@ -28,8 +28,12 @@ export async function DELETE(
     } catch (err) {
       public_id = undefined;
     }
-    const message_structure = `
-      {"url": "","message": "🚫This message was deleted","name": "","format": "","public_id": ""}`;
+    const message_structure = {
+      url: "",
+      message: "🚫This message was deleted",
+      format: "",
+      public_id: "",
+    };
 
     await Promise.all([
       Message.updateOne(
