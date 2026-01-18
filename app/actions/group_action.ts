@@ -6,6 +6,7 @@ export async function createGroup(groupData: GroupType) {
     if (!groupData) return;
 
     const res = await apiFetch(`/api/group/create-group`, "POST", groupData);
+    if (!res) return;
     return res.json();
   } catch (err) {
     console.log(err);
@@ -17,6 +18,7 @@ export async function getGroups(uid: string) {
       return;
     }
     const res = await apiFetch(`/api/group/get-groups/${uid}`, "GET");
+    if (!res) return;
     const result = await res.json();
     return result.groups;
   } catch (err) {
@@ -31,6 +33,7 @@ export async function sendMessage(message: GroupMessage) {
       "POST",
       message
     );
+    if (!res) return;
     return res.json();
   } catch (err) {
     console.log(err);
@@ -45,6 +48,7 @@ export async function getGroupMessages(chatId: string) {
       `/api/group/messages/get-messages/${chatId}`,
       "GET"
     );
+    if (!res) return;
     return res.json();
   } catch (err) {
     console.log(err);

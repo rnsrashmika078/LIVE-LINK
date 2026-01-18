@@ -15,7 +15,7 @@ const pusher = new Pusher({
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { messageId: string; chatId: string } }
+  { params }: { params: Promise<{ messageId: string; chatId: string }> }
 ) {
   try {
     await connectDB();

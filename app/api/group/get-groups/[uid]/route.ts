@@ -7,7 +7,7 @@ export async function GET(
   {
     params,
   }: {
-    params: { uid: string };
+    params: Promise<{ uid: string }>;
   }
 ) {
   try {

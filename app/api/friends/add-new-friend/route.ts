@@ -14,10 +14,9 @@ export async function POST(req: Request) {
     await connectDB();
 
     const { user, friend } = await req.json();
-    const { dp: rec_dp, email: rec_email, name: rec_name, uid: rec_uid } = user;
+    const { uid: rec_uid } = user;
     const {
-      dp: sen_dp,
-      email: sen_email,
+    
       name: sen_name,
       uid: sen_uid,
     } = friend;

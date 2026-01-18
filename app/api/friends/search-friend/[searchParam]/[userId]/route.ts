@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { searchParam: string; userId: string } }
+  { params }: { params: Promise<{ searchParam: string; userId: string }> }
 ) {
   try {
     await connectDB();

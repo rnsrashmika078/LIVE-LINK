@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Socket } from "socket.io-client";
 import { store } from "../lib/redux/store";
 import { IconType } from "react-icons/lib";
@@ -36,12 +35,6 @@ export type SessionInfoSerialize = {
   callStatus?: string | null;
   callEndBy?: string | null;
 };
-// export type CommunicationRefs = {
-//   localAudioRef: React.RefObject<HTMLAudioElement | null>;
-//   remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
-//   pcRef: React.RefObject<RTCPeerConnection | null>;
-//   channelRef: React.RefObject<any>;
-// };
 
 export type IconArrayType = {
   name: string;
@@ -188,11 +181,6 @@ type ClickedMessageType = {
   message: Message | null;
 };
 
-// export type GroupMembers = {
-//   userId: string;
-//   firstName: string;
-//   lastName: string;
-// };
 
 //group
 export type GroupType = {

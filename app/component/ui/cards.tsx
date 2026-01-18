@@ -4,7 +4,6 @@
 import Avatar from "./avatar";
 import {
   Agent,
-  AgentType,
   AuthUser,
   ChatsType,
   GroupType,
@@ -20,7 +19,6 @@ import React, {
   ReactNode,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { shallowEqual, useSelector } from "react-redux";

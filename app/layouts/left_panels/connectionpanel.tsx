@@ -3,15 +3,12 @@ import Spinner from "@/app/component/ui/spinner";
 import { UserCard } from "@/app/component/ui/cards";
 import {
   useAddFriend,
-  useGetFriends,
   useGetSendRequests,
   useReceivedRequest,
 } from "@/app/lib/tanstack/friendsQuery";
 import { AuthUser, PusherChatState } from "@/app/types";
-import { set } from "mongoose";
 import { useCallback, useEffect, useState } from "react";
 import { MdArrowDropDown } from "react-icons/md";
-import { RxReload } from "react-icons/rx";
 import { useSelector } from "react-redux";
 
 type ToggleStateType = {
@@ -19,8 +16,7 @@ type ToggleStateType = {
 };
 const ConnectionPanel = () => {
   //  useStates
-  const [id, setId] = useState<string | null>(null);
-  const [addedFriendUid, setAddedFriendUid] = useState<string | null>(null);
+  const [, setId] = useState<string | null>(null);
   const [requests, setRequests] = useState<AuthUser[]>([]);
 
   //redux
@@ -42,8 +38,6 @@ const ConnectionPanel = () => {
     mutate: AddFriendMutate,
     data: addFriend,
     isPending: isAddFriendPending,
-    isSuccess: isAddFriendSuccess,
-    error: addFriendError,
   } = useAddFriend();
 
   useEffect(() => {
@@ -114,13 +108,11 @@ const ConnectionPanel = () => {
 
           {/* friends status */}
           {isOpen["my-req"] &&
-            SendRequests?.sendRequests?.map((req: AuthUser, index: number) => (
+            SendRequests?.sendRequests?.map((req: AuthUser) => (
               <UserCard
                 key={req.uid}
                 avatar={req.dp || "/dog.png"}
                 name={req.name}
-                useFor="my-req"
-                // created_at={new Date().toLocaleTimeString().toString()}
               />
             ))}
         </div>
@@ -149,12 +141,11 @@ const ConnectionPanel = () => {
             }`}
           >
             {isOpen["friend-req"] &&
-              requests?.map((req: AuthUser, index: number) => (
+              requests?.map((req: AuthUser) => (
                 <UserCard
                   key={req.uid}
                   avatar={req.dp || "/dog.png"}
                   name={req.name}
-                  useFor="friend-req"
                   handleClick={() => {
                     AddFriendMutate(
                       {

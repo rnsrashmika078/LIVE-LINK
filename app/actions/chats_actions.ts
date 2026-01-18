@@ -9,6 +9,7 @@ export async function getChats(uid: string) {
     }
     const res = await apiFetch(`/api/chats/get-chats/${uid}`, "GET");
 
+    if (!res) return;
     const data = await res.json();
     return data.chats;
   } catch (err) {

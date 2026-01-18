@@ -55,7 +55,7 @@ export async function getStatusSeenUsers(statusId: string) {
     if (!statusId) {
       return [];
     }
-    const res = await apiFetch(`/api/status/get-seen-users/${statusId}`, "GET");
+    const res = await apiFetch(`/api/status/get-seen-users/${statusId}`, "GET",null,"NATIVE","no-cache");
 
     if (!res) return [];
     const result = await res.json();

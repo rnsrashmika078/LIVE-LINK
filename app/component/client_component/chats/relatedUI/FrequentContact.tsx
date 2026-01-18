@@ -11,7 +11,6 @@ const FrequentContact = () => {
           <UserCard
             avatar="/dog.png"
             // createdAt={}
-            useFor="chat"
             key={i}
             name="Kusal Perera"
           />
