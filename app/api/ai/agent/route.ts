@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     // // const text = output.content;
     // const text = chatCompletion.choices[0].message.content;
 
-    const key = "ce5d679a11217de713cba56714d3a03d";
+    const key = process.env.BYTEZ!;
     const sdk = new Bytez(key);
 
     // choose gpt-oss-20b
