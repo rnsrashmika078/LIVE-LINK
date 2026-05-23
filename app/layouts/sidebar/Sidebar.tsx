@@ -26,7 +26,7 @@ const Sidebar = React.memo(() => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const result = await res.json();
@@ -38,7 +38,7 @@ const Sidebar = React.memo(() => {
   useEffect(() => {
     if (!path) return;
     setCurrentTab(path.split("/")[2]);
-  }, [path]);
+  }, []);
 
   return (
     <div
