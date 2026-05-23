@@ -1,0 +1,143 @@
+import React from "react";
+import { FaFilePdf } from "react-icons/fa6";
+import Image from "next/image";
+import { SenderInfoType } from "@/app/types";
+import { SenderNameStyle } from "@/app/helper/jsxhelper";
+import clsx from "clsx";
+
+interface FormatProps {
+    id?: string | undefined;
+    url: string | undefined;
+    format: string | undefined;
+    info?: string | undefined;
+    message: string;
+    senderInfo?: SenderInfoType;
+    size?: string;
+}
+const MessageFormat = React.memo(
+    ({
+        info,
+        url,
+        format,
+        message,
+        senderInfo,
+        size = "w-[250px] h-[250px]",
+    }: FormatProps) => {
+        const isDummy = url ? url.includes("dummy") : "";
+        const openFile = () => {
+            if (url) window.open(url, "_blank");
+        };
+        const renderFile = () => {
+            if (url) {
+                const type = format?.toLowerCase() ?? "";
+                // IMAGE
+                if (
+                    type.includes("png") ||
+                    type.includes("jpeg") ||
+                    type.includes("jpg") ||
+                    type.includes("avif")
+                ) {
+                    if (isDummy) {
+                        return (
+                            <div
+                                className={clsx(`${size} place-items-start`, {
+                                    " bg-gray-700  grayscale transition-all animate-pulse":
+                                        isDummy,
+                                    grayscale: !isDummy,
+                                })}
+                            ></div>
+                        );
+                    }
+                    return (
+                        <div className="place-items-start">
+                            {url && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={url}
+                                    width={200}
+                                    height={200}
+                                    onClick={openFile}
+                                    alt="generated_image"
+                                    className={`object-contain ${size} cursor-pointer`}
+                                />
+                            )}
+                            <p className="mt-1 w-fit font-extralight">
+                                {info ? info : message}
+                            </p>
+                        </div>
+                    );
+                }
+                // VIDEO
+                if (type.includes("mp4") || type.includes("ogg")) {
+                    return (
+                        <>
+                            <video
+                                src={url}
+                                controls
+                                className={`object-contain ${size} cursor-pointer`}
+                                width={250}
+                                onClick={openFile}
+                                height={250}
+                            ></video>
+                            <p className="mt-1 w-fit font-extralight">
+                                {info ? info : message}
+                            </p>
+                        </>
+                    );
+                }
+                if (type.includes("webm")) {
+                    return (
+                        <>
+                            <audio
+                                src={url}
+                                controls
+                                className="object-contain h-[40px] cursor-pointer"
+                            ></audio>
+                            <p className="mt-1 w-fit font-extralight">
+                                {info ? info : message}
+                            </p>
+                        </>
+                    );
+                }
+
+                // PDF
+                if (type.includes("pdf")) {
+                    return (
+                        <>
+                            <FaFilePdf
+                                onClick={openFile}
+                                size={50}
+                                className="cursor-pointer hover:scale-110 transition-all"
+                            />
+                            <p className=" w-fit font-extralight">
+                                {info ? info : message}
+                            </p>
+                        </>
+                    );
+                }
+
+                return (
+                    <p className="text-gray-400 text-sm">Unsupported file</p>
+                );
+            }
+
+            return (
+                <p className=" w-fit font-extralight">
+                    {info ? info : !message ? null : message}
+                </p>
+            );
+        };
+        return (
+            <div className="">
+                {senderInfo?.senderName && !isDummy && (
+                    <SenderNameStyle name={senderInfo?.senderName ?? ""} />
+                )}
+                {renderFile()}{" "}
+            </div>
+        );
+    }
+);
+
+MessageFormat.displayName = "MessageFormat";
+
+export default MessageFormat;

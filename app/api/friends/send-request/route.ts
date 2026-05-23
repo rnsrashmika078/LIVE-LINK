@@ -1,0 +1,71 @@
+import connectDB from "@/app/backend/lib/connectDB";
+import User from "@/app/backend/models/User";
+import { NextResponse } from "next/server";
+
+
+export async function POST(req: Request) {
+  try {
+    await connectDB();
+
+    const { requestReceiver, requestSender } = await req.json();
+    const {
+      dp: rec_dp,
+      email: rec_email,
+      name: rec_name,
+      uid: rec_uid,
+    } = requestReceiver;
+    const {
+      dp: sen_dp,
+      email: sen_email,
+      name: sen_name,
+      uid: sen_uid,
+    } = requestSender;
+
+    //check if the already sent requests
+    const update = await User.findOne({
+      uid: sen_uid,
+      sentRequests: rec_uid,
+    });
+
+    //check if the user already a friend or not
+    const isAFriendAlready = await User.findOne({
+      uid: sen_uid,
+      friends: rec_uid,
+    });
+    if (isAFriendAlready) {
+      return NextResponse.json({
+        message: "users is already a friend of you!",
+      });
+    }
+    if (update) {
+      return NextResponse.json({
+        message: "already sent!",
+      });
+    }
+
+    await Promise.all([
+      User.findOneAndUpdate(
+        { uid: sen_uid, receivedRequests: { $ne: rec_uid } },
+        { $addToSet: { sentRequests: rec_uid } }
+      ),
+      User.findOneAndUpdate(
+        { uid: rec_uid, sentRequests: { $ne: sen_uid } },
+        { $addToSet: { receivedRequests: sen_uid } }
+      ),
+    ]);
+
+    // const alreadySent
+    return NextResponse.json({
+      message: "Request sent successfully!",
+    });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      {
+        error: "Server error",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
