@@ -181,7 +181,6 @@ type ClickedMessageType = {
   message: Message | null;
 };
 
-
 //group
 export type GroupType = {
   chatId: string;
@@ -276,6 +275,18 @@ export type ScheduleMessage = {
   status: string;
 };
 
+//agent task types
+export type OpenChatType = {
+  chatId: string;
+  replyMessage: string;
+  title: string;
+};
+export type ScheduleMessageType = {
+  time: string;
+  scheduleMessage: string;
+  chatId: string;
+  replyMessage: string;
+};
 //redux types
 export type PusherChatState = ReturnType<typeof store.getState>;
 export type PusherChatDispatch = typeof store.dispatch;

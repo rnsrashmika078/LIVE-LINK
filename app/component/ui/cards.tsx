@@ -27,13 +27,15 @@ import { OnMessageSeen } from "@/app/helper/jsxhelper";
 import { TypingIndicator } from "./typingIndicator";
 import { CgClose } from "react-icons/cg";
 import { useAgentContext } from "@/app/context/AgentContext";
+import { Button } from "./button";
 interface UserCardProps {
   avatar?: string;
   name?: string;
+  from?: string;
   handleClick?: () => void;
 }
 export const UserCard = React.memo(
-  ({ avatar, name, handleClick }: UserCardProps) => {
+  ({ avatar, name, handleClick, from }: UserCardProps) => {
     return (
       <div
         className={`hover:bg-[var(--pattern_5)] transition-all w-full p-2 rounded-lg`}
@@ -43,11 +45,16 @@ export const UserCard = React.memo(
           <Avatar image={avatar || "/no_avatar2.png"} />
           <div className="">
             <h1 className="text-sm">{name || "My Status"}</h1>
+            {from === "main" ? null : (
+              <Button size="xs" radius="full" variant="eco">
+                Add as Friend
+              </Button>
+            )}
           </div>
         </div>
       </div>
     );
-  }
+  },
 );
 UserCard.displayName = "UserCard";
 
@@ -70,14 +77,14 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
       },
       handleClick,
     },
-    ref
+    ref,
   ) => {
     const { authUser, typingUsers } = useSelector(
       (store: PusherChatState) => ({
         authUser: store.chat.authUser,
         typingUsers: store.chat.typingUsers,
       }),
-      shallowEqual
+      shallowEqual,
     );
 
     const isUserTyping = useMemo(
@@ -85,14 +92,14 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
         typingUsers.find((u) =>
           u.chatId === chatId && u.type === "Individual" && u.isTyping
             ? u
-            : null
+            : null,
         ),
-      [chatId, typingUsers]
+      [chatId, typingUsers],
     );
 
     //grab unread count
     const unreads = unreadCount?.find(
-      (u) => u.userId === authUser?.uid && u.count > 0
+      (u) => u.userId === authUser?.uid && u.count > 0,
     );
 
     const updateAt = useMemo(
@@ -103,7 +110,7 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
               minute: "2-digit",
             })
           : "Offline",
-      [updatedAt]
+      [updatedAt],
     );
     return (
       <div className={`hover:bg-[var(--pattern_5)] mt-1 transition-all w-full`}>
@@ -136,7 +143,7 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
                   OnMessageSeen(
                     senderId === authUser?.uid,
                     status as string,
-                    "Individual"
+                    "Individual",
                   )}
               </div>
               {unreads ? (
@@ -149,7 +156,7 @@ export const UserChatCard = forwardRef<HTMLDivElement, UCDInterface>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 UserChatCard.displayName = "UserChatCard";
@@ -164,22 +171,22 @@ export const UserGroupCard = forwardRef<HTMLDivElement, UGDInterface>(
       group: { groupName, dp, updatedAt, unreads, chatId, lastMessage },
       handleClick,
     },
-    ref
+    ref,
   ) => {
     const { authUser, typingUsers } = useSelector(
       (store: PusherChatState) => ({
         authUser: store.chat.authUser,
         typingUsers: store.chat.typingUsers,
       }),
-      shallowEqual
+      shallowEqual,
     );
 
     const isUserTyping = useMemo(
       () =>
         typingUsers.find(
-          (u) => u.chatId === chatId && u.type === "Group" && u.isTyping
+          (u) => u.chatId === chatId && u.type === "Group" && u.isTyping,
         ),
-      [chatId, typingUsers]
+      [chatId, typingUsers],
     );
 
     const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -199,10 +206,12 @@ export const UserGroupCard = forwardRef<HTMLDivElement, UGDInterface>(
               minute: "2-digit",
             })
           : "Offline",
-      [updatedAt]
+      [updatedAt],
     );
     return (
-      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all w-full`}>
+      <div
+        className={` hover:bg-[var(--pattern_5)] mt-1 transition-all w-full`}
+      >
         <div
           ref={ref}
           className="w-full flex items-center gap-2 p-2"
@@ -241,7 +250,7 @@ export const UserGroupCard = forwardRef<HTMLDivElement, UGDInterface>(
         </div>
       </div>
     );
-  }
+  },
 );
 UserGroupCard.displayName = "UserGroupCard";
 
@@ -284,7 +293,7 @@ export const MessageVsUsers = ({
         ? friends
             ?.filter(
               (u) =>
-                u.status?.toLowerCase().includes(phrase) && u.userId !== uid
+                u.status?.toLowerCase().includes(phrase) && u.userId !== uid,
             )
             .map((f: SeenByType, i: number) => (
               <div
@@ -366,7 +375,7 @@ export const StatusCard = ({
       {type === "OTHERS" &&
         users?.map((u: StatusType, i: number) => {
           const IsSeenBefore = u?.seenBy?.some((u) =>
-            u.uid === authId ? u.statusId : null
+            u.uid === authId ? u.statusId : null,
           );
           return (
             <div
@@ -452,7 +461,9 @@ export const AgentCard = forwardRef<HTMLDivElement, AgentInterface>(
     const { messages } = useAgentContext();
 
     return (
-      <div className={` hover:bg-[var(--pattern_5)] mt-1 transition-all w-full`}>
+      <div
+        className={` hover:bg-[var(--pattern_5)] mt-1 transition-all w-full`}
+      >
         <div
           className="w-full flex items-center gap-2 p-2"
           ref={ref}
@@ -483,6 +494,6 @@ export const AgentCard = forwardRef<HTMLDivElement, AgentInterface>(
         </div>
       </div>
     );
-  }
+  },
 );
 AgentCard.displayName = "AgentCard";

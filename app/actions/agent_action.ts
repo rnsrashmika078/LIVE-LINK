@@ -1,4 +1,5 @@
 "use server";
+
 import { apiFetch } from "../helper/helper";
 import OpenAI from "openai";
 import { GoogleGenAI } from "@google/genai";
@@ -65,9 +66,7 @@ export async function grok(prompt: string) {
   const response = await client.responses.create({
     model: "openai/gpt-oss-20b",
     input: prompt,
+  
   });
-  console.log("tokens", response.usage);
   return response.output_text;
-
-  // console.log(response.output_text);
 }

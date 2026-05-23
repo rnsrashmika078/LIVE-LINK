@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { Message, RelativePositionType, SessionInfo } from "../types";
+import { UIDataTypes, UIMessage, UITools } from "ai";
 
 type ActionMenuSelectionType = {
   selection: string;
@@ -16,7 +17,6 @@ type ActionMenuSelectionType = {
 interface LiveLinkContextType {
   openModal: boolean;
   setOpenModal: (state: boolean) => void;
-
   actionMenuSelection: { selection: string; message: Message | null };
   setActionMenuSelection: (data: ActionMenuSelectionType) => void;
   currentTab: string;
@@ -42,9 +42,6 @@ interface LiveLinkContextType {
   scheduleActivate: boolean;
   setScheduleActivate: React.Dispatch<React.SetStateAction<boolean>>;
 
-  //agent task
-  agentTask: string;
-  setAgentTask: React.Dispatch<React.SetStateAction<string>>;
 
   //refs
   localAudioRef: React.RefObject<HTMLAudioElement | null>;
@@ -77,7 +74,6 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
   const [internalClickState, setInternalClickState] = useState<string>("chats");
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
   const [dynamic, setDynamic] = useState<string>("");
-  const [agentTask, setAgentTask] = useState<string>("");
   const [scheduleActivate, setScheduleActivate] = useState<boolean>(false);
 
   const [relativePosition, setRelativePosition] =
@@ -159,8 +155,8 @@ export const LiveLink = ({ children }: { children: ReactNode }) => {
         setDynamic,
 
         //perform agent tasks
-        agentTask,
-        setAgentTask,
+
+       
       }}
     >
       {children}

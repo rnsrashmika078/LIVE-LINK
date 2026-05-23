@@ -7,14 +7,14 @@ import {
   useReceivedRequest,
 } from "@/app/lib/tanstack/friendsQuery";
 import { AuthUser, PusherChatState } from "@/app/types";
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { MdArrowDropDown } from "react-icons/md";
 import { useSelector } from "react-redux";
 
 type ToggleStateType = {
   [key: string]: boolean;
 };
-const ConnectionPanel = () => {
+const ConnectionPanel = memo(() => {
   //  useStates
   const [, setId] = useState<string | null>(null);
   const [requests, setRequests] = useState<AuthUser[]>([]);
@@ -22,7 +22,7 @@ const ConnectionPanel = () => {
   //redux
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);
   const realtimeRequests = useSelector(
-    (store: PusherChatState) => store.friends.friendRequest
+    (store: PusherChatState) => store.friends.friendRequest,
   );
 
   const { data: SendRequests, isPending: isGetSendRequestsPending } =
@@ -155,11 +155,11 @@ const ConnectionPanel = () => {
                       {
                         onSuccess: () => {
                           setRequests((prev) =>
-                            prev.filter((r) => r.uid !== req.uid)
+                            prev.filter((r) => r.uid !== req.uid),
                           );
                           // setRequests([]);
                         },
-                      }
+                      },
                     );
                   }}
                   // created_at={new Date().toLocaleTimeString().toString()}
@@ -170,6 +170,7 @@ const ConnectionPanel = () => {
       </div>
     </div>
   );
-};
+});
+ConnectionPanel.displayName = "ConnectionPanel";
 
 export default ConnectionPanel;

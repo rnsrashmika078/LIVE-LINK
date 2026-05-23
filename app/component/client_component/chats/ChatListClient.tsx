@@ -1,6 +1,5 @@
-
 "use client";
-import { ChatsType, GroupType,} from "@/app/types";
+import { ChatsType, GroupType } from "@/app/types";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import { NewChat } from "./NewChat";
 import CreateNewGroup from "./CreateNewGroup";

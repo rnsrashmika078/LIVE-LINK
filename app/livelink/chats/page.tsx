@@ -5,16 +5,17 @@ import ChatListClient from "@/app/component/client_component/chats/ChatListClien
 import { getGroups } from "@/app/actions/group_action";
 
 const ChatPage = async () => {
-  const cookieStore = cookies();
-  const uid = (await cookieStore).get("uid")?.value;
-  if (!uid) return redirect("/");
+    const cookieStore = cookies();
+    const uid = (await cookieStore).get("uid")?.value;
+    console.log(`uid :${uid}`);
+    // if (!uid) return redirect("/");
 
-  const [chats, groupChats] = await Promise.all([
-    getChats(uid ?? ""),
-    getGroups(uid ?? ""),
-  ]);
+    const [chats, groupChats] = await Promise.all([
+        getChats(uid ?? "123"),
+        getGroups(uid ?? "123"),
+    ]);
 
-  return <ChatListClient chats={chats} groupChats={groupChats} />;
+    return <ChatListClient chats={chats} groupChats={groupChats} />;
 };
 
 export default ChatPage;

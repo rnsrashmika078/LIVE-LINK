@@ -9,22 +9,20 @@ import { shallowEqual, useSelector } from "react-redux";
 import { TextArea } from "@/app/component/ui/textarea";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 import SearchArea from "../../ui/searcharea";
-import AppIcons from "../../ui/icons";
-import { agent, MessagePanelIcons, refinePrompt } from "@/app/util/data";
+import { agent,  } from "@/app/util/data";
 import VoiceRecorder from "../../ui/communications/Voice";
 import { useVoiceMessage } from "@/app/context/VoiceMessageContext";
 import Skeleton from "../../ui/skeleton";
 import AgentMessage from "../../agent_component/AgentMessage";
-import { useAgent } from "@/app/lib/tanstack/agentQuery";
 import { useAgentContext } from "@/app/context/AgentContext";
-import { v4 as uuid } from "uuid";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 const AgentMessagePanel = () => {
-  const { messages, setMessages, setAgentIsOpen } = useAgentContext();
+  // const { messages, setMessages, setAgentIsOpen } = useAgentContext();
   const [input, setInput] = useState<string>("");
   const [activeFeature, setActiveFeature] = useState<string>(""); // fo
 
-  const { setClickedIcon, clickedIcon, setActionMenuSelection, setAgentTask } =
-    useLiveLink();
+  const {  clickedIcon, setActionMenuSelection } = useLiveLink();
   const { blobRef } = useVoiceMessage();
 
   const { activeChat } = useSelector(
@@ -37,63 +35,69 @@ const AgentMessagePanel = () => {
   const groupChats = useSelector(
     (store: PusherChatState) => store.chat.groupChats as GroupType[]
   );
-  const authUserName = useSelector(
-    (store: PusherChatState) => store.chat.authUser?.name
-  );
+
   const indChats = useSelector(
     (store: PusherChatState) => store.chat.chats as ChatsType[]
   );
 
   const debounce = useDebounce(input, 200);
-  const { mutate } = useAgent((message) => {
-    if (message) {
-      setAgentTask(message);
-      setMessages((prev) =>
-        prev.map((i) => {
-          const exist = i.id === "dummy-01";
-          if (!exist) return i;
-          return { ...i, id: uuid(), message, type: "assistant" };
-        })
-      );
-    }
-  });
-  const sendMessage = () => {
-    const message = `{"title":"loading", "answer":"Working on it.."`;
+  // const { mutate } = useAgent((message) => {
+  //   if (message) {
+  //     setAgentTask(message);
+  //     setMessages((prev) =>
+  //       prev.map((i) => {
+  //         const exist = i.id === "dummy-01";
+  //         if (!exist) return i;
+  //         return { ...i, id: uuid(), message, type: "assistant" };
+  //       })
+  //     );
+  //   }
+  // });
+  // const sendMessage = () => {
+  //   const message = `{"title":"loading", "answer":"Working on it.."`;
 
-    setMessages((prev) => [
-      ...prev,
-      { id: uuid(), type: "user", message: debounce },
-      { id: "dummy-01", type: "assistant", message },
-    ]);
-    const latestMessage = debounce;
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { id: uuid(), type: "user", message: debounce },
+  //     { id: "dummy-01", type: "assistant", message },
+  //   ]);
+  // const latestMessage = debounce;
 
-    const chatsData = indChats.map((i) => ({
-      chatId: i.chatId,
-      name: i.name,
-    }));
-    const groupData = groupChats.map((g) => ({
-      chatId: g.chatId,
-      groupName: g.groupName,
-    }));
+  const chatsData = indChats.map((i) => ({
+    chatId: i.chatId,
+    name: i.name,
+  }));
+  const groupData = groupChats.map((g) => ({
+    chatId: g.chatId,
+    groupName: g.groupName,
+  }));
 
-    const prompt = `${refinePrompt}
-     USER QUERY:
-     "${latestMessage}" 
-     CHAT HISTORY : ${JSON.stringify(messages)}
+  const prompt = `
      INDIVIDUAL CHATS LIST : ${JSON.stringify(chatsData)}
      GROUP CHATS LIST : ${JSON.stringify(groupData)}
-     
      `;
 
-    mutate({ prompt: prompt });
-    setInput("");
-  };
+  const { messages, sendMessage } = useChat({
+    transport: new DefaultChatTransport({
+      // api: "http://localhost:3000/api/chat",
+      api: `${process.env.NEXT_PUBLIC_API_URL!}/api/chat`,
+      headers: { "Content-Type": "application/json" },
+      body: { system: prompt },
+    }),
+  });
+
+  //   mutate({ prompt: prompt });
+  //   setInput("");
+  // };
+
+  const { setAgentIsOpen } = useAgentContext();
 
   const handleButtonClick = (item: string) => {
     switch (item) {
       case "send":
       case "enter":
-        sendMessage();
+        sendMessage({ text: input });
+        setInput("");
         break;
     }
   };
@@ -106,18 +110,18 @@ const AgentMessagePanel = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (messages.length !== 0) return;
-    const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! welcome to LiveLink. How can I help you today?`;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: uuid(),
-        message: message,
-        type: "assistant",
-      },
-    ]);
-  }, [messages, authUserName]);
+  // useEffect(() => {
+  //   if (messages.length !== 0) return;
+  //   const message = `{"title":"Welcome", "answer":"Hey ${authUserName}! welcome to LiveLink. How can I help you today?`;
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     {
+  //       id: uuid(),
+  //       message: message,
+  //       type: "assistant",
+  //     },
+  //   ]);
+  // }, [messages, authUserName]);
 
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
@@ -139,7 +143,6 @@ const AgentMessagePanel = () => {
                 <p className="text-xs text-[var(--pattern_4)]">Online</p>
               </div>
             </div>
-            {/* <AppIcons iconArray={MessagePanelIcons} callback={setClickedIcon} /> */}
           </div>
 
           <Suspense fallback={<Skeleton version="chats" />}>

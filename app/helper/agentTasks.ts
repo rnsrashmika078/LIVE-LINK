@@ -1,29 +1,37 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AuthUser, MessageContentType } from "../types";
+import {
+  AuthUser,
+  MessageContentType,
+  OpenChatType,
+  ScheduleMessageType,
+} from "../types";
 import { v4 as uuidv4 } from "uuid";
 
 //AT stands for Agent Task
-export const ScheduleMessageAT = async (
-  message: string,
+export const ScheduleMessageTask = async (
+  data: ScheduleMessageType,
   authUser: AuthUser | null,
-  chatId: string,
   scheduleActivate: boolean,
-  time: Date,
   presence: "Online" | "Offline",
   callback: (payload: any) => void
 ) => {
   const messagePayload: MessageContentType = {
     url: "",
     format: "",
-    message,
+    message: data?.scheduleMessage,
     name: "",
     public_id: "",
   };
-  const date = new Date();
+  const dateObj = new Date(data?.time);
+  let iso;
+  if (dateObj !== null) {
+    iso = dateObj.toISOString();
+  }
+
   const customId = uuidv4();
   const name = authUser?.name ?? "";
   const senderId = authUser?.uid ?? "";
-  const receiverId = chatId;
+  const receiverId = data?.chatId;
 
   try {
     const payload = {
@@ -32,17 +40,17 @@ export const ScheduleMessageAT = async (
       files: null,
       senderId,
       receiverId,
-      chatId: chatId,
+      chatId: data?.chatId,
       type: "Individual",
       name,
-      scheduleTime: scheduleActivate ? time : null,
+      scheduleTime: scheduleActivate ? iso : null,
       isSchedule: scheduleActivate,
       dp: authUser?.dp ?? "",
-      createdAt: date.toISOString(),
+      createdAt: iso,
       status: presence === "Online" ? "delivered" : "sent",
       unreads: [
         {
-          userId: chatId,
+          userId: data?.chatId,
           count: 0,
         },
       ],
@@ -50,8 +58,17 @@ export const ScheduleMessageAT = async (
     callback(payload);
     // mutate({ message: payload });
   } catch (err) {
-    console.error("Invalid JSON:", message, err);
+    console.error("Invalid JSON:", err);
   }
 
   //   dispatch(setUnreads(unreads + 1));
+};
+
+export const openChatTask = (
+  data: OpenChatType,
+  chatRefs: React.RefObject<Record<string, HTMLDivElement | null>>
+) => {
+  if (data?.title?.includes("open-chat")) {
+    chatRefs.current[data.chatId]?.click();
+  }
 };

@@ -11,3 +11,6 @@ message structure must change from string to JSON -> finished
 //TODOS:
 User cards need to clean up  ( Ui )
 lazy load skeleton ( suspense ) 
+
+
+stream re render cause re run the tools .-> need to fix it 
