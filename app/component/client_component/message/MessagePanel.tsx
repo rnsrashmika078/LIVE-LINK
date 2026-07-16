@@ -289,7 +289,6 @@ const MessagePanel = () => {
     }
   };
 
-  console.log("last message", messages.at(-1));
   return (
     <div className="flex flex-col w-full h-full relative overflow-hidden">
       {activeChat && (

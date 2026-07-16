@@ -10,7 +10,6 @@ import { setActiveChat } from "@/app/lib/redux/chatslicer";
 import { usePathName } from "@/app/hooks/useHooks";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
 
-// one hydration error occur in this component that needed be solve
 const Sidebar = React.memo(() => {
   const dispatch = useDispatch<PusherChatDispatch>();
   const authUser = useSelector((store: PusherChatState) => store.chat.authUser);

@@ -13,7 +13,6 @@ const ChatListClient = dynamic(
 const ChatPage = async () => {
   const cookieStore = cookies();
   const uid = (await cookieStore).get("uid")?.value;
-  console.log(`uid :${uid}`);
 
   const [chats, groupChats] = await Promise.all([
     getChats(uid ?? "123"),

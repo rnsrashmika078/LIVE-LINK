@@ -4,17 +4,12 @@ import SearchArea from "@/app/component/ui/searcharea";
 import React, { ReactNode, useEffect, useState } from "react";
 import TopBar from "./relatedUI/TopBar";
 import { useLiveLink } from "@/app/context/LiveLinkContext";
-import { BiArrowBack, BiSync } from "react-icons/bi";
-import { useRouter } from "next/navigation";
+import { BiArrowBack } from "react-icons/bi";
 import UserSettings from "../../modal/UserSettings";
-import { Button } from "../../ui/button";
-import { MdOutlineScheduleSend, MdSchedule } from "react-icons/md";
 
 const ChatLayout = React.memo(({ children }: { children: ReactNode }) => {
   const { internalClickState, setInternalClickState, dynamic } = useLiveLink();
   const handleOnSearch = (value: string) => {};
-  const router = useRouter();
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   const [back, setBack] = useState<boolean>(true);
 

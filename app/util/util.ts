@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 export async function handleFileUpload(
   file: File | Blob | null = null,
   feature?: boolean,
-  prompt?: string
+  prompt?: string,
 ): Promise<FileType | null> {
   if (feature && prompt != null) {
     const res = await apiFetch("/api/ai/image_gen", "POST", prompt); // ai gen image
@@ -30,7 +30,7 @@ export async function handleFileUpload(
       "https://api.cloudinary.com/v1_1/dwcjokd3s/auto/upload",
       "POST",
       data,
-      "EXTERNAL"
+      "EXTERNAL",
     );
     if (!res || !res.ok) return null;
     const result = await res.json();
@@ -53,7 +53,7 @@ export async function handleFileUpload(
 export async function handleAudioUpload(
   file: Blob | null = null,
   feature?: boolean,
-  prompt?: string
+  prompt?: string,
 ): Promise<FileType | null> {
   if (feature && prompt != null) {
     const res = await apiFetch("/api/ai/image_gen", "POST", prompt);
@@ -79,7 +79,7 @@ export async function handleAudioUpload(
       "https://api.cloudinary.com/v1_1/dwcjokd3s/auto/upload", // auto means any : video image
       "POST",
       data,
-      "EXTERNAL"
+      "EXTERNAL",
     );
     if (!res || !res.ok) return null;
     const result = await res.json();

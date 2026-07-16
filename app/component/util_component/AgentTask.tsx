@@ -11,7 +11,6 @@ const AgentTask = () => {
   const { agentTask, chatRefs } = useLiveLink();
 
   const { mutate } = useSaveMessage((result) => {
-    console.log("result", result);
   });
 
   const handler = useCallback(() => {
@@ -25,7 +24,6 @@ const AgentTask = () => {
         data.function.title.includes("scheduler") ||
         data.function.title.includes("Schedule Message")
       ) {
-        console.log("ai data", data);
         ScheduleMessageAT(
           data.function.message,
           authUser,
@@ -34,12 +32,10 @@ const AgentTask = () => {
           data.function.time,
           "Offline",
           (p) => {
-            console.log("payload", p);
             mutate({ message: p });
           }
         );
       } else {
-        console.log("test");
       }
     } catch (err) {
       console.log(err);
@@ -47,7 +43,6 @@ const AgentTask = () => {
   }, [agentTask, authUser, chatRefs, mutate]);
 
   useEffect(() => {
-    console.log("agent task re render!");
     if (!agentTask) return;
     handler();
   }, [agentTask]);

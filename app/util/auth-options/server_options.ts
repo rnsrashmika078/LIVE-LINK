@@ -1,7 +1,9 @@
+// 'use server'
 import { auth, provider } from "@/app/lib/firebase/firebase";
 import { signInWithPopup } from "firebase/auth";
 import { signInAnonymously } from "firebase/auth";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+// import { cookies } from "next/headers";
 
 export async function signInWithGoogle() {
   try {
@@ -36,7 +38,7 @@ export async function signUpWithEmail(email: string, password: string) {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
-      password
+      password,
     );
     return {
       success: true,
@@ -50,4 +52,13 @@ export async function signUpWithEmail(email: string, password: string) {
       message: error instanceof Error ? error.message : "Unknown error",
     };
   }
+}
+export async function signOut() {
+  const cookieStore = await cookies();
+  cookieStore.delete("uid");
+  await auth.signOut();
+  return {
+    success: true,
+    message: "Successfully Logout!",
+  };
 }
